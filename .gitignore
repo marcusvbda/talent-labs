@@ -31,16 +31,16 @@ yarn-error.log
 /.zed
 /.agents
 /.amp
-/.claude
 /.cursor
 /.factory
 /.grok
 /.junie
 /.kiro
 /.pi
-/.mcp.json
-/AGENTS.md
-/CLAUDE.md
-/boost.json
 /opencode.json
 /opencode.jsonc
+
+# Claude Code local state (never versioned)
+/.claude/state/
+/.claude/settings.local.json
+.playwright-mcp

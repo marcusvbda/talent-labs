@@ -1,0 +1,46 @@
+{
+    "$schema": "https://json.schemastore.org/claude-code-settings.json",
+    "permissions": {
+        "ask": [
+            "Bash(git add)",
+            "Bash(git add *)",
+            "Bash(git commit)",
+            "Bash(git commit *)",
+            "Bash(git push)",
+            "Bash(git push *)"
+        ],
+        "deny": [
+            "Bash(git branch *)",
+            "Bash(git checkout *)",
+            "Bash(git switch *)",
+            "Bash(git merge *)",
+            "Bash(git rebase)",
+            "Bash(git rebase *)",
+            "Bash(git reset)",
+            "Bash(git reset *)",
+            "Bash(git restore *)",
+            "Bash(git stash)",
+            "Bash(git stash *)",
+            "Bash(git tag *)",
+            "Bash(git cherry-pick *)",
+            "Bash(git revert *)",
+            "Bash(git clean *)",
+            "Bash(git am *)",
+            "Bash(php artisan migrate:fresh)",
+            "Bash(php artisan migrate:fresh *)",
+            "Bash(php artisan migrate:refresh)",
+            "Bash(php artisan migrate:refresh *)",
+            "Bash(php artisan migrate:reset)",
+            "Bash(php artisan migrate:reset *)",
+            "Bash(php artisan migrate:rollback)",
+            "Bash(php artisan migrate:rollback *)",
+            "Bash(php artisan db:wipe)",
+            "Bash(php artisan db:wipe *)"
+        ]
+    },
+    "enabledMcpjsonServers": [
+        "laravel-boost",
+        "context7",
+        "playwright"
+    ]
+}
