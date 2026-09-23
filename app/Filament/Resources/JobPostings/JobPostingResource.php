@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\JobPostings;
 
 use App\Filament\Resources\JobPostings\Pages\ListJobPostings;
+use App\Filament\Resources\JobPostings\Pages\ViewJobPosting;
 use App\Filament\Resources\JobPostings\Schemas\JobPostingInfolist;
 use App\Filament\Resources\JobPostings\Tables\JobPostingsTable;
 use App\Models\JobPosting;
@@ -49,6 +50,7 @@ class JobPostingResource extends Resource
     {
         return [
             'index' => ListJobPostings::route('/'),
+            'view' => ViewJobPosting::route('/{record}'),
         ];
     }
 }
