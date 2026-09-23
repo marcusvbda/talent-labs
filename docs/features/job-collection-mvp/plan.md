@@ -12,10 +12,10 @@ file.
 | Phase | Title                                              | Role                              | Depends on       | Size | Status       |
 | ----- | -------------------------------------------------- | --------------------------------- | ---------------- | ---- | ------------ |
 | 0     | Audit + Claude harness (Part 0.2 + Part A)         | orchestrator                      | none             | M    | DONE         |
-| 1     | Infra: notifications json, dev processes, env docs | laravel-backend                   | 0                | S    | PENDING      |
-| 2     | User access model + UserSeeder                     | laravel-backend                   | 1                | S    | PENDING      |
-| 3     | Users admin resource + admin guards                | filament-admin                    | 2                | M    | PENDING      |
-| 4     | Sources data model + SourceSeeder                  | laravel-backend                   | 2                | S    | PENDING      |
+| 1     | Infra: notifications json, dev processes, env docs | laravel-backend                   | 0                | S    | DONE         |
+| 2     | User access model + UserSeeder                     | laravel-backend                   | 1                | S    | DONE         |
+| 3     | Users admin resource + admin guards                | filament-admin                    | 2                | M    | DONE         |
+| 4     | Sources data model + SourceSeeder                  | laravel-backend                   | 2                | S    | DONE         |
 | 5     | Collection data model (runs, source runs, posts)   | laravel-backend                   | 4                | M    | PENDING      |
 | 6     | Sources admin resource                             | filament-admin                    | 5                | M    | PENDING      |
 | 7     | Adapter contract + Greenhouse, Lever, Ashby        | laravel-backend                   | 4                | M    | PENDING      |
@@ -169,7 +169,28 @@ six rules from `ask` to `deny`.
 
 ### Phase 1 — Infra: notifications json, dev processes, env docs
 
-Status: PENDING
+Status: DONE
+
+Evidence: `database/migrations/2026_09_23_003047_change_notifications_data_to_json.php`
+(raw `DB::statement` with `USING data::json`/`USING data::text`, since
+PostgreSQL's schema builder didn't emit `USING` — checked with
+`migrate --pretend` first). `config/talent.php` as specified.
+`AppServiceProvider::boot()` registers `reverb` and `queue` via
+`DevCommands::artisan(...)`. `.env.example` fixed `BROADCAST_CONNECTION`,
+added `FILAMENT_REALTIME_SERVER`, documented `SEED_*`. `.env` got only the
+one appended key. `php artisan migrate` run; `Schema::getColumns('notifications')`
+confirms `data` is `json`. `php artisan dev` (~9s) showed `reverb`, `queue`
+(no `queue:listen`), `server`, `logs`, `vite` — no duplicates, all stopped
+cleanly afterward. `config('talent.seed.admin.email')` resolves. Pint passed;
+PHPStan passed at `--memory-limit=1G` (this machine's `php.ini` default of
+128M is too low for `composer types:check` as configured — not a code issue,
+not fixed since it's outside this phase's contract; worth a follow-up).
+`code-reviewer`: AC05/AC09/AC14 (scope of this phase) all PASS, Verdict
+APPROVED. Non-blocking, unrelated finding: `.env` has a live-looking
+`OPENAI_API_KEY` — pre-existing, flagged for the owner, not touched.
+Pre-existing stray processes noticed (not from this run, left alone): a Vite
+dev server on port 5173, and two orphaned `tail -F storage/pail/*.pail`
+processes (PIDs 81980/96039 at the time) — the owner may want to stop them.
 Role: laravel-backend · Depends on: 0 · Covers: AC05 (config), AC09 (prereq), AC14 · Size: S
 Spec: 0.2 (PostgreSQL note), B.4.1, B.6
 
@@ -219,7 +240,25 @@ run Reverb (debug) and a `collection` queue worker, and document the env keys.
 
 ### Phase 2 — User access model + UserSeeder
 
-Status: PENDING
+Status: DONE
+
+Evidence: `App\Enums\UserStatus` (Active/Blocked, `HasLabel`/`HasColor`).
+Migration `add_access_columns_to_users_table` adds `is_admin`/`status`,
+backfills existing rows to admin/active. `User` implements `FilamentUser`;
+`canAccessPanel()` branches on `$panel->getId()` — deviated intentionally
+from this phase's originally-written contract (which predates the spec's
+two-panel rewrite and only checked `is_admin && active` unconditionally) to
+match current `spec.md` B.2: `admin` → `is_admin && active`, `app` → `active`
+only, default → denied. The `app` panel doesn't exist yet; this is forward-
+correct for when a later phase adds it. `UserSeeder` idempotent per spec;
+`DatabaseSeeder` now calls only `UserSeeder` (old factory stub removed).
+Migration run; existing user backfilled to admin/active. `db:seed` run twice,
+user count unchanged (3) both times. `Auth::attempt` succeeded for both seed
+users; `canAccessPanel` against the real `admin` panel returned true for
+admins, false for the client. Pint and PHPStan (`--memory-limit=1G`) passed.
+`code-reviewer`: AC02/AC05 (this phase's scope) PASS, Verdict APPROVED.
+Non-blocking finding (not fixed, out of contract scope): `UserSeeder` doesn't
+guard against an empty `SEED_*_NAME` the way it guards email/password.
 Role: laravel-backend · Depends on: 1 · Covers: AC02 (admin side), AC05 (users) · Size: S
 Spec: B.2, B.3 users, B.4.1
 
@@ -263,7 +302,32 @@ Spec: B.2, B.3 users, B.4.1
 
 ### Phase 3 — Users admin resource + admin guards
 
-Status: PENDING
+Status: DONE
+
+Evidence: `App\Actions\Users\AdminGuard::violation()` implements self/last-admin
+reasons exactly as specified. `UserResource` (Filament 5 `Resource`/`Schemas`/
+`Tables`/`Pages` split), nav group Access: table with name/email/`is_admin`
+icon/status badge/created_at + status filter; form with required name/email
+(unique)/password (required on create only, dehydrated only when filled)/
+`is_admin` toggle/status select; Block/Unblock/Edit/Delete row actions, all
+guard-checked server-side (not just disabled UI) — Delete via `before()` +
+`$action->cancel()`, Edit-page save via `handleRecordUpdate` override +
+`throw new Halt` before persistence. The implementing subagent stalled twice
+(hit its turn limit before reporting, once on implementation and once on
+review) — per token-discipline's one-resume cap, each was resumed exactly
+once; when the second implementation resume still didn't produce a report,
+the orchestrator verified the (already-complete) code directly instead of a
+third delegation round: read every file, ran Pint and PHPStan directly (both
+passed), exercised `AdminGuard` in tinker for all three change types across
+self/normal/last-admin cases (rolled back the last-admin simulation's DB
+transaction), confirmed the three resource routes register, cycled a
+throwaway user through create/block/unblock/delete, and simulated
+authenticated HTTP requests to index/create/edit (all 200, no exceptions).
+`code-reviewer` traced the Delete and `handleRecordUpdate` guard mechanisms
+against Filament's own vendor source (confirmed `Cancel`/`Halt` genuinely
+abort before persistence, not just cosmetic): AC01/AC03 PASS, Verdict
+APPROVED. Non-blocking, unfixed: `UsersTable`/`EditUser` construct
+`AdminGuard` redundantly per action (harmless, minor style nit).
 Role: filament-admin (guard class: laravel-backend style, same phase) · Depends on: 2 · Covers: AC01 (admin-only creation), AC03 · Size: M
 Spec: B.8 Users, B.2
 
@@ -306,7 +370,45 @@ impossible, both in the UI and on the server.
 
 ### Phase 4 — Sources data model + SourceSeeder
 
-Status: PENDING
+Status: DONE
+
+Evidence: `App\Enums\SourceAdapter` (Greenhouse/Lever/Ashby/Remotive,
+`HasLabel`/`HasColor`, `requiresIdentifier()`, `sourceLabel()`) and
+`SourceRunStatus` (pending/running/completed/failed). Migration `sources`
+with all B.3 columns plus a unique `(adapter, identifier)` index using
+`->nullsNotDistinct()` (PostgreSQL 17 — makes multiple-NULL-identifier rows
+a real conflict at the DB level, not just via the seeder's matching logic;
+verified: a raw insert of a second null-identifier Remotive row threw
+`UniqueConstraintViolationException`). `Source` model with the specified
+casts, `scopeActive()`, and `booted()` `saved`/`deleted` hooks dispatching
+`sources`/`SourceUpdated`. `SourceSeeder` idempotent for the four rows;
+`DatabaseSeeder` now calls `[UserSeeder::class, SourceSeeder::class]`.
+
+Deviation (implementer's own addition, reviewed and approved): the realtime
+dispatch is wrapped in a `broadcastUpdated()` helper that catches
+`Illuminate\Broadcasting\BroadcastException` and calls `report($e)`, because
+`RealtimeEvent` is `ShouldBroadcastNow` (synchronous) and was throwing —
+breaking plain database writes, including seeding — whenever Reverb wasn't
+running. `code-reviewer` confirmed this is the right level of defensiveness
+(catches the specific exception, still surfaces it via `report()`, doesn't
+silently swallow) and flagged it as a pattern later phases' models
+(`CollectionRun`/`SourceRun`/`JobPosting`) should reuse rather than each
+reinventing a bare `RealtimeEvent::dispatch()` call.
+
+Verified: migration ran; `db:seed` run twice gave `Source::count()===4` both
+times with exactly one Remotive row (`identifier` null, `settings` decodes to
+`['limit'=>100]`); saving a source succeeded both with and without Reverb
+running (no exception either way, confirming the try/catch). Pint and
+`phpstan --memory-limit=1G` passed. `code-reviewer`: AC04/AC05/AC10 (this
+phase's scope) PASS, Verdict APPROVED, no blocking findings.
+
+---
+
+**Stopping here per the owner's request** ("pode terminar a fase 4 e parar
+nela... depois continuo" — finish phase 4 and stop, continue later). Phases
+5 and 6 (originally also requested in this run, "fase 1 até 6") were **not**
+started — they remain PENDING. Next dependency-ready phase: `/execute-phases
+docs/features/job-collection-mvp/plan.md 5`.
 Role: laravel-backend · Depends on: 2 · Covers: AC04 (data), AC05 (sources), AC10 (sources channel) · Size: S
 Spec: B.3 sources, B.4 seeder, B.7
 
