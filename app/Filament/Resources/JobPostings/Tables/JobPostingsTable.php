@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\JobPostings\Tables;
 
+use App\Enums\ContactStatus;
 use App\Enums\SourceAdapter;
 use App\Models\CollectionRun;
 use App\Models\JobPosting;
@@ -20,7 +21,7 @@ class JobPostingsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['collectionRun', 'source']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['collectionRun', 'source', 'company']))
             ->defaultGroup(
                 Group::make('collection_run_id')
                     ->label('Run')
@@ -36,6 +37,11 @@ class JobPostingsTable
                 TextColumn::make('company_name')
                     ->label('Company')
                     ->searchable(),
+
+                TextColumn::make('contact_status')
+                    ->label('Contact')
+                    ->state(fn (JobPosting $record): ContactStatus => $record->company_id === null ? ContactStatus::Pending : $record->company->contact_status)
+                    ->badge(),
 
                 TextColumn::make('location')
                     ->placeholder('—'),
@@ -94,6 +100,25 @@ class JobPostingsTable
                         'collection_run_id',
                         CollectionRun::query()->startedToday()->pluck('id'),
                     )),
+
+                SelectFilter::make('contact_status')
+                    ->label('Contact status')
+                    ->options(ContactStatus::class)
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+
+                        if (blank($value)) {
+                            return $query;
+                        }
+
+                        if ($value === ContactStatus::Pending->value) {
+                            return $query->where(fn (Builder $q) => $q
+                                ->whereNull('company_id')
+                                ->orWhereHas('company', fn (Builder $c) => $c->where('contact_status', $value)));
+                        }
+
+                        return $query->whereHas('company', fn (Builder $q) => $q->where('contact_status', $value));
+                    }),
             ])
             ->recordActions([
                 ViewAction::make(),

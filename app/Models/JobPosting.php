@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $source_id
  * @property int $collection_run_id
  * @property int|null $last_seen_run_id
+ * @property int|null $company_id
  * @property string $external_id
  * @property string $title
  * @property string $company_name
@@ -73,5 +74,13 @@ class JobPosting extends Model
     public function lastSeenRun(): BelongsTo
     {
         return $this->belongsTo(CollectionRun::class, 'last_seen_run_id');
+    }
+
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 }

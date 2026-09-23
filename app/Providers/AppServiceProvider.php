@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             DevCommands::artisan('reverb:start --debug', 'reverb');
-            DevCommands::artisan('queue:work database --queue=collection,default', 'queue');
+            DevCommands::artisan('queue:work database --queue=collection,contacts,default', 'queue');
         }
     }
 

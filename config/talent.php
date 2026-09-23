@@ -13,4 +13,10 @@ return [
             'password' => env('SEED_CLIENT_PASSWORD'),
         ],
     ],
+
+    'contacts' => [
+        'smtp_helo' => env('CONTACTS_SMTP_HELO', 'localhost'),
+        'smtp_mail_from' => env('CONTACTS_SMTP_MAIL_FROM', ''),
+        'smtp_timeout' => 5,
+    ],
 ];

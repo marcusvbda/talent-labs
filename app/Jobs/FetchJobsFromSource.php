@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Collection\Data\JobPostingData;
+use App\Contacts\Jobs\DiscoverContactsForPosting;
 use App\Enums\SourceRunStatus;
 use App\Models\JobPosting;
 use App\Models\SourceRun;
@@ -61,6 +62,7 @@ class FetchJobsFromSource implements ShouldQueue
             }
 
             $jobsNew = 0;
+            $newExternalIds = [];
 
             foreach (array_chunk($items, self::CHUNK_SIZE, true) as $chunk) {
                 $existing = JobPosting::query()
@@ -69,7 +71,9 @@ class FetchJobsFromSource implements ShouldQueue
                     ->pluck('external_id')
                     ->all();
 
-                $jobsNew += count(array_diff(array_map('strval', array_keys($chunk)), $existing));
+                $chunkNewIds = array_diff(array_map('strval', array_keys($chunk)), $existing);
+                $jobsNew += count($chunkNewIds);
+                array_push($newExternalIds, ...$chunkNewIds);
 
                 $now = now();
 
@@ -119,6 +123,18 @@ class FetchJobsFromSource implements ShouldQueue
         try {
             RealtimeEvent::dispatch('job_postings', 'JobPostingsUpdated', ['source_run_id' => $sourceRun->id]);
         } catch (BroadcastException $e) {
+            report($e);
+        }
+
+        try {
+            foreach (array_chunk($newExternalIds, self::CHUNK_SIZE) as $chunk) {
+                JobPosting::query()
+                    ->where('source_id', $source->id)
+                    ->whereIn('external_id', $chunk)
+                    ->pluck('id')
+                    ->each(fn (int $id) => DiscoverContactsForPosting::dispatch($id));
+            }
+        } catch (Throwable $e) {
             report($e);
         }
     }
