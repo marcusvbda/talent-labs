@@ -4,13 +4,13 @@ namespace App\Models;
 
 use App\Enums\CollectionRunStatus;
 use App\Models\Concerns\BroadcastsRealtime;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -22,10 +22,10 @@ use Illuminate\Support\Carbon;
  * @property int $sources_failed
  * @property int $jobs_fetched
  * @property int $jobs_new
- * @property Carbon|null $started_at
- * @property Carbon|null $finished_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $started_at
+ * @property CarbonImmutable|null $finished_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read string $label
  */
 #[Fillable(['status', 'triggered_by', 'batch_id', 'sources_total', 'sources_succeeded', 'sources_failed', 'jobs_fetched', 'jobs_new', 'started_at', 'finished_at'])]

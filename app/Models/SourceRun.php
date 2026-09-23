@@ -4,10 +4,10 @@ namespace App\Models;
 
 use App\Enums\SourceRunStatus;
 use App\Models\Concerns\BroadcastsRealtime;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -17,10 +17,10 @@ use Illuminate\Support\Carbon;
  * @property int $jobs_fetched
  * @property int $jobs_new
  * @property string|null $error_message
- * @property Carbon|null $started_at
- * @property Carbon|null $finished_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $started_at
+ * @property CarbonImmutable|null $finished_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
 #[Fillable(['collection_run_id', 'source_id', 'status', 'jobs_fetched', 'jobs_new', 'error_message', 'started_at', 'finished_at'])]
 class SourceRun extends Model

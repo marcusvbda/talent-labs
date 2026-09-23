@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -23,12 +23,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $apply_url
  * @property string|null $description_html
  * @property string|null $description_text
- * @property Carbon|null $published_at
+ * @property CarbonImmutable|null $published_at
  * @property array<string, mixed> $raw
- * @property Carbon $first_seen_at
- * @property Carbon $last_seen_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable $first_seen_at
+ * @property CarbonImmutable $last_seen_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
 #[Fillable(['source_id', 'collection_run_id', 'last_seen_run_id', 'external_id', 'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'url', 'apply_url', 'description_html', 'description_text', 'published_at', 'raw', 'first_seen_at', 'last_seen_at'])]
 class JobPosting extends Model

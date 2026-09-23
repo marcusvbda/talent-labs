@@ -5,12 +5,12 @@ namespace App\Models;
 use App\Enums\SourceAdapter;
 use App\Enums\SourceRunStatus;
 use App\Models\Concerns\BroadcastsRealtime;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -20,10 +20,10 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $settings
  * @property int $interval_minutes
  * @property bool $is_active
- * @property Carbon|null $last_run_at
+ * @property CarbonImmutable|null $last_run_at
  * @property SourceRunStatus|null $last_run_status
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read Collection<int, SourceRun> $sourceRuns
  * @property-read Collection<int, JobPosting> $jobPostings
  */

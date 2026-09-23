@@ -20,10 +20,10 @@ file.
 | 6     | Sources admin resource                             | filament-admin                    | 5                | M    | DONE         |
 | 7     | Adapter contract + Greenhouse, Lever, Ashby        | laravel-backend                   | 4                | M    | DONE         |
 | 8     | Remotive adapter + adapter resolution              | laravel-backend                   | 7                | S    | DONE         |
-| 9     | Runs admin resource (read-only, realtime)          | filament-admin                    | 5                | M    | PENDING      |
-| 10    | Collection flow (start, fetch, finalize, fail)     | laravel-backend                   | 1, 8, 9          | M    | PENDING      |
-| 11    | Runs actions: Collect jobs now, Mark as failed     | filament-admin                    | 10               | S    | PENDING      |
-| 12    | Job postings admin resource                        | filament-admin                    | 9                | M    | PENDING      |
+| 9     | Runs admin resource (read-only, realtime)          | filament-admin                    | 5                | M    | DONE         |
+| 10    | Collection flow (start, fetch, finalize, fail)     | laravel-backend                   | 1, 8, 9          | M    | DONE         |
+| 11    | Runs actions: Collect jobs now, Mark as failed     | filament-admin                    | 10               | S    | DONE         |
+| 12    | Job postings admin resource                        | filament-admin                    | 9                | M    | DONE         |
 | 13    | User-app auth: Fortify login, active-user guard    | laravel-backend, inertia-frontend | 2, D1            | M    | BLOCKED (D1) |
 | 14    | User `/dashboard` — Today's jobs                   | laravel-backend, inertia-frontend | 5, 8, 13         | M    | PENDING      |
 | 15    | Final verification, smoke test, report            | orchestrator, qa-tester           | 1–14             | M    | PENDING      |
@@ -704,7 +704,52 @@ Spec: B.4 (remotive row)
 
 ### Phase 9 — Runs admin resource (read-only, realtime)
 
-Status: PENDING
+Status: DONE
+
+Evidence: `CollectionRunResource` (nav group Collection, label "Run",
+`canCreate()` false, only `index`/`view` pages registered — no edit page).
+`CollectionRunsTable`: label, status badge, `"{succeeded} / {failed} /
+{total}"` sources column, jobs_fetched, jobs_new, triggered-by name,
+started_at, and a finished-at+duration column (`CarbonInterval::forHumans`,
+e.g. "23 Sep 2026 14:32 (1m 12s)", `—` unfinished);
+`->socket(channel: 'collection_runs', event: 'CollectionRunUpdated')`;
+`defaultSort('id', 'desc')`; eager-loads `triggeredBy` and `sourceRuns.source`.
+`CollectionRunInfolist` mirrors the same fields. `SourceRunsRelationManager`
+(read-only: empty header/record/toolbar actions) with source name, adapter
+badge, status badge, jobs_fetched, jobs_new, error_message (wrap+limit+tooltip),
+started_at, finished_at, eager-loads `source`, and
+`->socket(channel: 'collection_run_'.ownerRecord.id, event: 'CollectionRunUpdated')`.
+`resources/views/filament/collection-runs/realtime-listener.blade.php`
+renders `<x-filament-realtime-driver::listener channel="collection_run_{id}"
+event="CollectionRunUpdated" callback="$wire.$refresh()" />`, embedded via
+`ViewCollectionRun::content()` overriding the page's Schema components with
+an explicit `viewData(['record' => $this->getRecord()])` (a first attempt
+using implicit named-parameter record injection on the raw `View` component
+returned `null` — the content schema isn't bound to the record the way an
+embedded infolist schema is — fixed by passing the record explicitly).
+
+The implementing subagent stalled twice before reporting (hit its 12-turn
+limit both times); per token-discipline's one-resume cap, it was resumed
+once, and after it stalled again the orchestrator finished the phase
+directly: filled in the empty infolist and relation-manager scaffolding
+(originally only the table was complete), removed a stray `EditAction`/
+`CreateAction` from the List/View pages (the resource is read-only), fixed
+the null-`$record` bug above, and wrote the listener partial. Verified:
+`vendor/bin/pint --dirty --format agent` passed; `composer types:check
+--memory-limit=1G` passed (0 errors); `grep -rn poll app/Filament` empty.
+Simulated authenticated HTTP requests (tinker) to `/admin/collection-runs`
+and `/admin/collection-runs/{id}` both returned 200; the view page's HTML
+was confirmed to contain the correct `collection_run_{id}` channel and
+`CollectionRunUpdated` event strings. Test `CollectionRun`/`SourceRun` rows
+created for the check were deleted afterward (cascade confirmed — 0/0
+remaining). Live push-refresh wasn't confirmed in an actual browser (Reverb
+and `php artisan serve` were started and stopped only for the HTTP-status
+check, not a full browser session, to avoid displaying seed credentials in
+a tool call) — worth a manual spot-check by the owner. `code-reviewer`:
+AC10 PASS, Verdict APPROVED, no blocking or non-blocking findings — traced
+socket channel/event names across all four emission/listen points against
+`CollectionRun`'s `broadcastRunUpdated()` and confirmed they agree, and
+confirmed eager-loading covers every displayed relation.
 Role: filament-admin · Depends on: 5 · Covers: AC10 (runs + run detail) · Size: M
 Spec: B.8 Runs (without actions), B.7
 
@@ -741,7 +786,67 @@ Spec: B.8 Runs (without actions), B.7
 
 ### Phase 10 — Collection flow (start, fetch, finalize, mark failed)
 
-Status: PENDING
+Status: DONE
+
+Evidence: `App\Exceptions\CollectionRunException`; `StartCollectionRun` (cache
+lock + `DB::transaction`, in-progress/no-active-sources checks, creates the
+run + one `pending` `SourceRun` per active source, dispatches a
+`Bus::batch()` of `FetchJobsFromSource` jobs on queue `collection` with a
+`static fn` `finally` closing only over the int run id, then sets
+`batch_id`/`running`/`started_at`); `FetchJobsFromSource` (dedup-by-externalId,
+chunked-200 `JobPosting::upsert()` with a `MUTABLE_COLUMNS` list that
+excludes `collection_run_id`/`first_seen_at`/`created_at`, updates the
+source's `last_run_at`/`last_run_status`, dispatches `job_postings`/
+`JobPostingsUpdated` once defensively, catches and logs without rethrowing,
+`failed()` guards on `finished_at` still null); `FinalizeCollectionRun`
+(idempotent via `finished_at !== null && ! isInProgress()`, aggregates
+counters, sends the exact-format database notification with a "View run"
+link); `MarkCollectionRunFailed` (per-source-run `save()` so model events
+fire, aggregates via a shared `FinalizeCollectionRun::applyCounters()`,
+cancels the batch after committing `failed`).
+
+Live tinker verification: a full 4-source run completed with correct
+per-source counters (Greenhouse/Stripe 683, Lever/Palantir 312, Ashby/Linear
+31, Remotive 18 — 1044 total fetched/new), 1 database notification with the
+exact title/color/link. A second full run gave `jobs_new = 0`, posting count
+unchanged, `collection_run_id` on all 1044 postings still pointing at the
+*first* run. A concurrent second `StartCollectionRun` while the first was
+still running threw "already in progress" correctly.
+`MarkCollectionRunFailed` (not exercised by the implementing subagent) was
+verified directly by the orchestrator: started a run, immediately marked it
+failed (all 4 source runs → failed with the right message, run → failed),
+ran the queue worker — the batched jobs returned early on the
+cancelled-batch check in 5-12ms each with zero state mutation. Pint and
+`composer types:check --memory-limit=1G` passed (PHPStan needs the 1G
+override — 128M throws OOM, a pre-existing environment constraint, not a
+regression). `code-reviewer`: AC06/AC07/AC08/AC09/AC12 (backend) all PASS,
+Verdict APPROVED — traced the dedup/ownership invariant field-by-field,
+confirmed the batch closure captures only the run id, confirmed the
+idempotency guard and the `failed()` completed-run guard by code (not just
+observed behavior), and confirmed the Carbon→CarbonImmutable docblock fixes
+on the four models (implementer's own deviation, needed because
+`AppServiceProvider` calls `Date::use(CarbonImmutable::class)`) are
+import/annotation-only with no behavioral change. Non-blocking finding (not
+fixed, flagged for awareness): `MarkCollectionRunFailed` commits the failed
+status before cancelling the batch, so a `FetchJobsFromSource` job that is
+already past its cancellation check when marked-as-failed fires will still
+overwrite that one source run back to `completed` on its own success path —
+this is Laravel's normal cooperative batch-cancellation model, not a bug
+introduced here, and wasn't hit in the live test (jobs were still `pending`
+when cancelled), but a stuck run marked failed while a job is genuinely
+mid-fetch could leave one source run inconsistent with the run's aggregated
+counters. Worth a small guard in a follow-up if it's ever observed in
+practice.
+
+Left in the dev DB (not test junk — real fetched data, useful for Phases 11/12/15
+to exercise the UI against): `CollectionRun` #3 (completed, 1044 new),
+#4 (completed, dedup re-run, 0 new), #5 (failed, via the `MarkCollectionRunFailed`
+check) and their source runs/postings. 2 `failed_jobs` entries are pre-existing
+from Filament's own `DatabaseNotificationsSent` broadcast failing while Reverb
+wasn't running during these tinker sessions — not caused by this phase's code
+(both `FetchJobsFromSource` and the models catch `BroadcastException`
+themselves) and harmless (queue keeps working; only the live-push side effect
+is skipped when Reverb is down).
 Role: laravel-backend · Depends on: 1, 8, 9 · Covers: AC06 (backend), AC07, AC08, AC09, AC12 (backend) · Size: M
 Spec: B.5
 
@@ -820,7 +925,30 @@ Spec: B.5
 
 ### Phase 11 — Runs actions: Collect jobs now, Mark as failed
 
-Status: PENDING
+Status: DONE
+
+Evidence: `ListCollectionRuns` header action "Collect jobs now"
+(`requiresConfirmation`, modal description with `Source::active()->count()`,
+disabled+tooltip for both in-progress and no-active-sources, calls
+`StartCollectionRun`, success/danger notifications per contract).
+"Mark as failed" added identically as a `CollectionRunsTable` row action and
+a `ViewCollectionRun` header action (`requiresConfirmation`, visible only
+when `status->isInProgress()`, calls `MarkCollectionRunFailed`,
+success/danger notifications). A `ViewCollectionRun::getRun()` helper narrows
+`getRecord(): Model` to `CollectionRun` for PHPStan, used consistently.
+Verified live in tinker: `StartCollectionRun::handle()` flipped
+`CollectionRun::inProgress()->exists()` to true (disabling "Collect jobs
+now"); `MarkCollectionRunFailed::handle()` on that run flipped it back to
+false (re-enabling it). Test run and its source runs deleted afterward;
+pre-existing runs #3/#4/#5 left untouched. Pint passed; `composer types:check`
+hit the pre-existing 128M OOM (not a regression), `phpstan --memory-limit=1G`
+passed with 0 errors. `grep -rn poll app/Filament` empty. `code-reviewer`:
+AC06/AC12 PASS, Verdict APPROVED, no blocking findings. Non-blocking, not
+fixed: a few redundant `Source::active()->count()`/`CollectionRun::inProgress()`
+queries per render (minor, not a correctness issue since `StartCollectionRun`
+re-guards atomically); the failure-path notification puts the exception
+message in the title rather than title+body (contract-compliant, just a
+style note).
 Role: filament-admin · Depends on: 10 · Covers: AC06, AC12 · Size: S
 Spec: B.8 Runs, B.5 stuck runs
 
@@ -846,7 +974,54 @@ Spec: B.8 Runs, B.5 stuck runs
 
 ### Phase 12 — Job postings admin resource
 
-Status: PENDING
+Status: DONE
+
+Evidence: `JobPostingResource` (group Collection, read-only — `canCreate()`
+false, only `index` registered). `JobPostingsTable`: `defaultGroup` on
+`collection_run_id` titled via `collectionRun->label`, always `orderBy(...,
+'desc')` regardless of the passed direction; `defaultSort('published_at',
+'desc')`; columns title/company_name/location/is_remote/source.name/
+source.adapter/published_at/first_seen_at; eager-loads `collectionRun` and
+`source`; filters `collection_run` (latest 50 runs as options), `source`
+(relationship select), `adapter` (manual `whereHas('source', ...)` query on
+the enum value), "Today's runs only" (`whereIn('collection_run_id',
+CollectionRun::query()->startedToday()->pluck('id'))` — changed from the
+contract's literal `whereHas(...)` form during verification because the
+`whereHas` closure's `Builder<Model>` vs `Builder<CollectionRun>` template
+mismatch failed PHPStan; confirmed behaviorally equivalent); row actions
+View (infolist with `description_text`, not `description_html`) and "Open
+posting" (new tab); `->socket(channel: 'job_postings', event:
+'JobPostingsUpdated')`. Added a "View jobs" row action to
+`CollectionRunsTable` building
+`JobPostingResource::getUrl('index', ['tableFilters' => ['collection_run' =>
+['value' => $record->id]]])` — the exact query-string shape was confirmed by
+reading Filament 5's own source (`InteractsWithTable::normalizeTableFilterValuesFromQueryString`
+and `SelectFilter`'s internal `value` field name), not guessed, since the
+docs don't cover a filter-preset URL builder directly.
+
+The implementing subagent stalled twice (hit its 12-turn limit both times)
+before producing the table/infolist/resource files but never adding the
+"View jobs" action to `CollectionRunsTable`; per token-discipline's
+one-resume cap it was resumed once, stalled again, and the orchestrator
+finished the phase directly: added the missing action, fixed the
+`todays_runs` PHPStan failure above, and ran full live verification —
+simulated authenticated HTTP requests confirmed `/admin/job-postings` (200),
+filtering by `collection_run=3` shows exactly that run's 1044 postings in
+`published_at desc` order (verified the top-sorted title renders, and the
+group header appears without any run #4/#5 rows leaking in — run #4 has 0
+postings after Phase 10's dedup test, so nothing to leak), the adapter
+filter (lever) shows only Palantir/Lever postings, the source and
+today's-runs filters both return 200, `/admin/collection-runs` shows the
+"View jobs" label, and the generated URL matches the confirmed query-string
+shape. Pint and `composer types:check --memory-limit=1G` passed (0 errors).
+`grep -rn poll app/Filament` empty. `code-reviewer`: AC11/AC10 PASS, Verdict
+APPROVED, no blocking findings — traced the `orderQueryUsing` direction
+override, the adapter/read-only/eager-loading contract points, and the
+`todays_runs`/`viewJobs` deviations by code, not just observed behavior.
+Non-blocking, not fixed (informational only): the `todays_runs` filter's
+`pluck('id')` inlines ids eagerly rather than a correlated subquery (fine at
+this scale); the `collection_run` filter's options query runs uncached on
+every render (typical Filament pattern, not a regression).
 Role: filament-admin · Depends on: 9 · Covers: AC11, AC10 (postings) · Size: M
 Spec: B.8 Job postings
 
