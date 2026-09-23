@@ -4,13 +4,11 @@ namespace App\Filament\Resources\Sources\Schemas;
 
 use App\Enums\SourceAdapter;
 use App\Models\Source;
-use Closure;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
 
 class SourceForm
@@ -22,31 +20,14 @@ class SourceForm
                 TextInput::make('name')
                     ->required()
                     ->string()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(),
 
                 Select::make('adapter')
                     ->options(SourceAdapter::class)
                     ->required()
-                    ->live()
-                    // Remotive's identifier is always null, so the identifier
-                    // field's unique() rule below never applies to it — the
-                    // DB's nullsNotDistinct() unique index still rejects a
-                    // second Remotive row, so this catches that case with a
-                    // friendly message instead of a 500.
-                    ->rule(fn (?Model $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
-                        if ($value !== SourceAdapter::Remotive->value) {
-                            return;
-                        }
-
-                        $exists = Source::query()
-                            ->where('adapter', SourceAdapter::Remotive->value)
-                            ->when($record, fn ($query) => $query->whereKeyNot($record->getKey()))
-                            ->exists();
-
-                        if ($exists) {
-                            $fail('A Remotive source already exists.');
-                        }
-                    }),
+                    ->disabled()
+                    ->live(),
 
                 TextInput::make('identifier')
                     ->required(fn (callable $get): bool => self::adapterFrom($get)?->requiresIdentifier() ?? true)
@@ -61,10 +42,15 @@ class SourceForm
                     ),
 
                 KeyValue::make('settings')
-                    ->visible(fn (callable $get): bool => self::adapterFrom($get) === SourceAdapter::Remotive)
+                    ->visible(fn (callable $get): bool => ! (self::adapterFrom($get)?->requiresIdentifier() ?? true))
                     ->keyLabel('Key')
                     ->valueLabel('Value')
-                    ->helperText('Keys: category, search, limit'),
+                    ->helperText(fn (callable $get): string => match (self::adapterFrom($get)) {
+                        SourceAdapter::Remotive => 'Keys: category, search, limit',
+                        SourceAdapter::Jobicy => 'Keys: count, geo, industry, tag',
+                        SourceAdapter::RemoteOk, SourceAdapter::Arbeitnow => 'No settings used',
+                        default => '',
+                    }),
 
                 TextInput::make('interval_minutes')
                     ->label('Interval (minutes)')

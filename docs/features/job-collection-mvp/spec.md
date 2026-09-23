@@ -303,7 +303,8 @@ Filament user; without this they'd lose admin access).
 | `last_run_status`  | string, nullable              | last `SourceRunStatus`                                                                               |
 | timestamps         |                               |                                                                                                      |
 
-Unique: `(adapter, identifier)`.
+Unique: `(adapter, identifier)` only when `identifier` is not null (partial
+index), so aggregator sources may repeat per adapter.
 
 #### `collection_runs` (a "leva")
 
@@ -395,14 +396,11 @@ a descriptive User-Agent (`talent-labs/0.1 (local)`), and throw on non-2xx.
 Endpoint shapes for greenhouse/lever/ashby were verified live on 2026-09-22.
 Still sanity-check one real response per adapter during implementation.
 
-Seeder `SourceSeeder` (idempotent, `updateOrCreate` on `adapter + identifier`),
+Seeder `SourceSeeder` (idempotent, `firstOrCreate` on `adapter + identifier`),
 all active:
 
 | name     | adapter    | identifier | settings         |
 | -------- | ---------- | ---------- | ---------------- |
-| Stripe   | greenhouse | `stripe`   | —                |
-| Palantir | lever      | `palantir` | —                |
-| Linear   | ashby      | `linear`   | —                |
 | Remotive | remotive   | null       | `{"limit": 100}` |
 
 #### B.4.1 Seeders (local, ready to log in)
@@ -439,8 +437,7 @@ SEED_CLIENT_PASSWORD=password
   console warning instead of failing.
 - Refuse to run in production (`app()->isProduction()` → warn and return).
 
-`SourceSeeder`: the four sources above, `updateOrCreate` on
-`adapter + identifier`.
+`SourceSeeder`: the source above, `firstOrCreate` on `adapter + identifier`.
 
 Run with `php artisan db:seed` (never `migrate:fresh --seed`).
 
@@ -624,7 +621,7 @@ Navigation groups: **Collection** (Runs, Job postings, Sources) and **Access**
   adapters with the identifier/settings validation in B.8; interval is
   stored; a source with history can't be deleted.
 - **AC05** — Migrations and `php artisan db:seed` have been run on the local
-  DB. Seeding is idempotent and creates the four starter sources, an active
+  DB. Seeding is idempotent and creates the starter source, an active
   admin and an active client user from the `SEED_*` env keys (via
   `config/talent.php`). The admin logs in at `/admin` and `/app`; the
   client logs in at `/app` and is denied at `/admin`.

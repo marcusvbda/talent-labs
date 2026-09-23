@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -22,11 +23,11 @@ return new class extends Migration
             $table->timestamp('last_run_at')->nullable();
             $table->string('last_run_status')->nullable();
             $table->timestamps();
-
-            // NULLS NOT DISTINCT (PostgreSQL 15+) so a null identifier (Remotive)
-            // still counts toward uniqueness per adapter.
-            $table->unique(['adapter', 'identifier'])->nullsNotDistinct();
         });
+
+        // Identifier-less (aggregator) sources may repeat per adapter, so
+        // uniqueness only applies when an identifier is set.
+        DB::statement('CREATE UNIQUE INDEX sources_adapter_identifier_unique ON sources (adapter, identifier) WHERE identifier IS NOT NULL');
     }
 
     /**

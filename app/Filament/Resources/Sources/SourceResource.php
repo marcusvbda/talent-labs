@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Sources;
 
-use App\Filament\Resources\Sources\Pages\CreateSource;
 use App\Filament\Resources\Sources\Pages\EditSource;
 use App\Filament\Resources\Sources\Pages\ListSources;
 use App\Filament\Resources\Sources\Schemas\SourceForm;
@@ -22,6 +21,11 @@ class SourceResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Collection';
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -44,7 +48,6 @@ class SourceResource extends Resource
     {
         return [
             'index' => ListSources::route('/'),
-            'create' => CreateSource::route('/create'),
             'edit' => EditSource::route('/{record}/edit'),
         ];
     }

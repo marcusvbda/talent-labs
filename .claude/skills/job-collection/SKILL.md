@@ -20,13 +20,18 @@ Cheat sheet. Product truth: Part B of `docs/features/job-collection-mvp/spec.md`
 - `JobPostingData`: readonly DTO — `externalId, title, companyName, location,
   isRemote, department, employmentType, url, applyUrl, descriptionHtml,
   descriptionText, publishedAt, raw`.
-- `SourceAdapter` enum (`greenhouse`, `lever`, `ashby`, `remotive`) resolves
-  class, label, and `requiresIdentifier()` (false only for `remotive`, whose
-  `identifier` must be null; it uses `settings.category/search/limit`).
+- `SourceAdapter` enum (`greenhouse`, `lever`, `ashby`, `remotive`,
+  `remote_ok`, `arbeitnow`, `jobicy`) resolves class, label, and
+  `requiresIdentifier()` (false for the aggregators `remotive`, `remote_ok`,
+  `arbeitnow`, `jobicy`, whose `identifier` must be null; they read `settings`:
+  Remotive `category/search/limit`, Jobicy `count/geo/industry/tag`,
+  RemoteOK/Arbeitnow none).
 - HTTP: `Http::timeout(20)->retry(2, 500)->acceptJson()->withUserAgent('talent-labs/0.1 (local)')`, throw on non-2xx.
 - Direct field mapping only — no AI/NLP extraction. `raw` keeps the full item.
 - `companyName` = payload value, else `sources.name`.
-- Remotive: label "via Remotive", keep original `url`, call sparingly.
+- Aggregators: label "via Remotive" / "via RemoteOK" / "via Arbeitnow" /
+  "via Jobicy", keep original `url` (required attribution link-back), call
+  sparingly.
 
 ## Dedup and ownership
 
