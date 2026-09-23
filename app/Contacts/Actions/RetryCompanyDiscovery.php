@@ -5,6 +5,7 @@ namespace App\Contacts\Actions;
 use App\Contacts\Jobs\DiscoverContactsForCompany;
 use App\Enums\ContactStatus;
 use App\Enums\DomainStatus;
+use App\Enums\OutreachStatus;
 use App\Models\Company;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +21,7 @@ class RetryCompanyDiscovery
 
             $company->domain_status = DomainStatus::Pending;
             $company->contact_status = ContactStatus::Pending;
+            $company->outreach_status = OutreachStatus::Pending;
             $company->is_catch_all = null;
             $company->domain = null;
 

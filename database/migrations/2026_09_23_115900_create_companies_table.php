@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('contact_status')->default('pending');
             $table->timestamp('contact_checked_at')->nullable();
             $table->boolean('is_catch_all')->nullable();
+            $table->string('outreach_status')->default('pending');
             $table->timestamps();
         });
     }

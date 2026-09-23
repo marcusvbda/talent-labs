@@ -7,6 +7,7 @@ use App\Contacts\Support\SmtpProbe;
 use App\Enums\ContactConfidence;
 use App\Enums\ContactStatus;
 use App\Enums\DomainStatus;
+use App\Enums\OutreachStatus;
 use App\Models\Company;
 use Illuminate\Support\Str;
 
@@ -32,6 +33,7 @@ class DiscoverCompanyContacts
 
         if ($company->domain_status !== DomainStatus::Found || $domain === '') {
             $company->contact_status = ContactStatus::NoDomain;
+            $company->outreach_status = OutreachStatus::NoDomain;
             $company->contact_checked_at = now();
             $company->save();
 
@@ -64,6 +66,7 @@ class DiscoverCompanyContacts
         };
 
         $stored = 0;
+        $verified = false;
 
         foreach ($aliasAddresses as $alias => $address) {
             $confidence = $this->confidenceFor($isCatchAll, $result->codes[$address] ?? null);
@@ -78,10 +81,15 @@ class DiscoverCompanyContacts
             );
 
             $stored++;
+
+            if ($confidence === ContactConfidence::SmtpVerified) {
+                $verified = true;
+            }
         }
 
         $company->is_catch_all = $isCatchAll;
         $company->contact_status = $stored > 0 ? ContactStatus::Found : ContactStatus::NotFound;
+        $company->outreach_status = $verified ? OutreachStatus::Verified : OutreachStatus::NotVerifiable;
         $company->contact_checked_at = now();
         $company->save();
     }

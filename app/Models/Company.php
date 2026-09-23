@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ContactStatus;
 use App\Enums\DomainStatus;
+use App\Enums\OutreachStatus;
 use App\Models\Concerns\BroadcastsRealtime;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -21,12 +22,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ContactStatus $contact_status
  * @property CarbonImmutable|null $contact_checked_at
  * @property bool|null $is_catch_all
+ * @property OutreachStatus $outreach_status
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Collection<int, Contact> $contacts
  * @property-read Collection<int, JobPosting> $jobPostings
  */
-#[Fillable(['name', 'normalized_name', 'domain', 'domain_status', 'domain_checked_at', 'contact_status', 'contact_checked_at', 'is_catch_all'])]
+#[Fillable(['name', 'normalized_name', 'domain', 'domain_status', 'domain_checked_at', 'contact_status', 'contact_checked_at', 'is_catch_all', 'outreach_status'])]
 class Company extends Model
 {
     use BroadcastsRealtime;
@@ -58,6 +60,7 @@ class Company extends Model
             'domain_status' => DomainStatus::class,
             'contact_status' => ContactStatus::class,
             'is_catch_all' => 'boolean',
+            'outreach_status' => OutreachStatus::class,
             'domain_checked_at' => 'datetime',
             'contact_checked_at' => 'datetime',
         ];

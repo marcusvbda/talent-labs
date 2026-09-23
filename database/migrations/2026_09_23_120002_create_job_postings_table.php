@@ -17,6 +17,7 @@ return new class extends Migration
             // The run that first discovered this posting.
             $table->foreignId('collection_run_id')->constrained('collection_runs')->restrictOnDelete();
             $table->foreignId('last_seen_run_id')->nullable()->constrained('collection_runs')->nullOnDelete();
+            $table->foreignId('company_id')->nullable()->constrained('companies')->nullOnDelete();
             $table->string('external_id');
             $table->string('title');
             $table->string('company_name');
@@ -37,6 +38,7 @@ return new class extends Migration
             $table->unique(['source_id', 'external_id']);
             $table->index('collection_run_id');
             $table->index('published_at');
+            $table->index('company_id');
         });
     }
 
