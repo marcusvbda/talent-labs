@@ -16,10 +16,10 @@ file.
 | 2     | User access model + UserSeeder                     | laravel-backend                   | 1                | S    | DONE         |
 | 3     | Users admin resource + admin guards                | filament-admin                    | 2                | M    | DONE         |
 | 4     | Sources data model + SourceSeeder                  | laravel-backend                   | 2                | S    | DONE         |
-| 5     | Collection data model (runs, source runs, posts)   | laravel-backend                   | 4                | M    | PENDING      |
-| 6     | Sources admin resource                             | filament-admin                    | 5                | M    | PENDING      |
-| 7     | Adapter contract + Greenhouse, Lever, Ashby        | laravel-backend                   | 4                | M    | PENDING      |
-| 8     | Remotive adapter + adapter resolution              | laravel-backend                   | 7                | S    | PENDING      |
+| 5     | Collection data model (runs, source runs, posts)   | laravel-backend                   | 4                | M    | DONE         |
+| 6     | Sources admin resource                             | filament-admin                    | 5                | M    | DONE         |
+| 7     | Adapter contract + Greenhouse, Lever, Ashby        | laravel-backend                   | 4                | M    | DONE         |
+| 8     | Remotive adapter + adapter resolution              | laravel-backend                   | 7                | S    | DONE         |
 | 9     | Runs admin resource (read-only, realtime)          | filament-admin                    | 5                | M    | PENDING      |
 | 10    | Collection flow (start, fetch, finalize, fail)     | laravel-backend                   | 1, 8, 9          | M    | PENDING      |
 | 11    | Runs actions: Collect jobs now, Mark as failed     | filament-admin                    | 10               | S    | PENDING      |
@@ -442,7 +442,29 @@ Spec: B.3 sources, B.4 seeder, B.7
 
 ### Phase 5 — Collection data model
 
-Status: PENDING
+Status: DONE
+
+Evidence: resumed from an interrupted prior session — `app/Enums/CollectionRunStatus.php`,
+`app/Models/{CollectionRun,SourceRun,JobPosting}.php`,
+`app/Models/Concerns/BroadcastsRealtime.php` (shared trait, reused by
+`Source.php` too, per Phase 4's review recommendation), and the three
+migrations already matched the contract exactly on inspection — no rewrite
+needed, only verification. `php artisan migrate --pretend` showed nothing
+pending (already run); `migrate:status` confirmed both migrations batches
+applied. `model:show CollectionRun` matches the contract (casts, relations,
+`label` attribute). `Schema::getIndexes`/`getForeignKeys` on all three tables
+confirmed uniques (`(collection_run_id, source_id)`, `(source_id,
+external_id)`), indexes (`started_at`, `collection_run_id`, `published_at`)
+and FK behavior (`triggered_by` set-null, `source_runs.collection_run_id`
+cascade, `source_runs.source_id`/`job_postings.source_id` restrict,
+`job_postings.last_seen_run_id` set-null) match B.3 exactly. Tinker:
+`(new CollectionRun(['started_at' => now()]))->forceFill(['id' => 1])->label`
+printed `Run #1 · 23 Sep 2026 08:07`. Pint and
+`composer types:check -- --memory-limit=1G` passed. `code-reviewer`:
+AC07/AC10 (this phase's scope) PASS, Verdict APPROVED. Non-blocking finding
+(not fixed, out of contract scope): `CollectionRun::scopeInProgress()`
+re-implements the pending/running check with a literal `whereIn` instead of
+reusing `CollectionRunStatus::isInProgress()` — minor duplication, not wrong.
 Role: laravel-backend · Depends on: 4 · Covers: AC07 (dedup schema), AC10 (run channels) · Size: M
 Spec: B.3 collection_runs / source_runs / job_postings, B.7
 
@@ -482,7 +504,58 @@ Spec: B.3 collection_runs / source_runs / job_postings, B.7
 
 ### Phase 6 — Sources admin resource
 
-Status: PENDING
+Status: DONE
+
+Evidence: `SourceResource` (nav group Collection) with `SourcesTable` (name,
+adapter badge, identifier, `is_active` ToggleColumn, `interval_minutes`,
+`last_run_at`, `last_run_status` badge; adapter/active filters;
+`->socket(channel: 'sources', event: 'SourceUpdated')`) and `SourceForm`
+(name; adapter select `live()`; identifier required/visible unless remotive,
+dehydrated null for remotive, unique per adapter via `modifyRuleUsing`;
+settings `KeyValue` visible only for remotive; `interval_minutes` with the
+exact required helper text; `is_active` toggle). Delete/bulk-delete gated by
+`! $source->hasHistory()` with the exact tooltip, bulk delete skips
+history-bearing rows and notifies. A `Filament\Support\Concerns\Macroable`-
+aware PHPStan reflection extension (`App\Support\PhpStan\FilamentMacroReflectionExtension`,
+registered in `phpstan.neon`) was added because Larastan's own macro
+detection only recognizes `Illuminate\Support\Traits\Macroable`, and
+`->socket()` — required by the contract — is a runtime macro registered on
+`Filament\Support\Concerns\Macroable`-based components by
+marcusvbda/filament-realtime-driver; a plain PHPStan stub file was tried
+first and confirmed (via isolated reproduction) not to work in this
+project's PHPStan/Larastan version for adding methods to already-autoloaded
+vendor classes, so a small custom reflection extension mirroring Larastan's
+own technique was written instead. This is infrastructure needed for every
+later phase that calls `->socket()` on a Filament table (Phase 9, 12), not
+just this one.
+
+Two real bugs found during verification, both fixed and re-reviewed:
+1. The Remotive-duplicate case: the DB's `(adapter, identifier)` unique
+   index uses `nullsNotDistinct()` (from Phase 4), but Laravel's `unique()`
+   validation rule silently ignores null values, so creating a second
+   Remotive source threw an unhandled `UniqueConstraintViolationException`
+   (500) instead of failing validation — confirmed live in a browser.
+   Fixed with a closure-based `->rule()` on the `adapter` field that checks
+   for an existing Remotive source (ignoring the current record on edit);
+   now shows "A Remotive source already exists." and creates nothing.
+2. `EditSource`'s header `DeleteAction` had no `hasHistory()` guard — a
+   source with history could be deleted from `/admin/sources/{id}/edit`,
+   which would throw an unhandled FK-constraint exception (`restrictOnDelete()`
+   on both `source_runs.source_id` and `job_postings.source_id`). Fixed by
+   adding the same `disabled()`/tooltip guard used on the table's row action.
+   Verified live: created a CollectionRun+SourceRun to give a source
+   history, confirmed the Edit page's Delete button renders `[disabled]`,
+   then cleaned up the test records.
+
+Verified live via Playwright against the running admin panel: form field
+visibility toggles correctly per adapter, a Greenhouse source without an
+identifier is rejected by validation (no record created), a valid Greenhouse
+source creates and redirects to its edit page successfully. Pint and
+`composer types:check -- --memory-limit=1G` (0 errors) passed, `grep -rn
+poll app/Filament` empty. `code-reviewer`: first pass found the two bugs
+above (CHANGES_REQUIRED); after fixes, re-review confirmed both are closed
+and no third unguarded delete surface exists (no View page, no relation
+managers), Verdict APPROVED, AC04 PASS.
 Role: filament-admin · Depends on: 5 · Covers: AC04 · Size: M
 Spec: B.8 Sources
 
@@ -513,7 +586,28 @@ Spec: B.8 Sources
 
 ### Phase 7 — Adapter contract + Greenhouse, Lever, Ashby
 
-Status: PENDING
+Status: DONE
+
+Evidence: `App\Collection\Contracts\JobSourceAdapter` (`fetch(Source): iterable<JobPostingData>`),
+`App\Collection\Data\JobPostingData` (final readonly DTO, 13 properties, `raw` typed
+`array<string, mixed>`), a shared `InteractsWithJobBoardApi` trait
+(`Http::timeout(20)->retry(2,500)->acceptJson()->withUserAgent('talent-labs/0.1 (local)')->throw()`
+plus small type-safe helpers), and `GreenhouseAdapter`/`LeverAdapter`/`AshbyAdapter`
+under `App\Collection\Adapters`, each mapping fields exactly per the contract
+(Lever's top-level-array response, `workplaceType==='remote'` with
+`array_key_exists` null-guard, Unix-ms `createdAt` via
+`CarbonImmutable::createFromTimestampMs`; Ashby's `isListed === false` skip).
+Verified live against the real seeded sources in tinker, one call per
+adapter, no DB writes: Greenhouse/Stripe → 683 items, Lever/Palantir → 312
+items, Ashby/Linear → 31 items, all with expected fields populated. Pint and
+`composer types:check -- --memory-limit=1G` (level 7) passed. `code-reviewer`:
+AC07 PASS, Verdict APPROVED, no blocking findings. Non-blocking, unfixed
+(judged acceptable, not bugs): entity-decode-after-strip_tags in Greenhouse's
+plain-text extraction goes slightly beyond "whitespace normalized"; malformed
+items (missing externalId/title/url) are silently skipped; Lever's list-item
+`<h3>` text is HTML-escaped via `e()` (a safe addition not in the literal
+contract); all three adapters `rawurlencode()` the identifier in the request
+URL (harmless, not in the contract).
 Role: laravel-backend · Depends on: 4 · Covers: AC07 · Size: M
 Spec: B.4
 
@@ -559,7 +653,31 @@ Spec: B.4
 
 ### Phase 8 — Remotive adapter + adapter resolution
 
-Status: PENDING
+Status: DONE
+
+Evidence: live shape check (`GET remotive.com/api/remote-jobs?limit=5`)
+confirmed every key the contract assumed (`id`, `title`, `company_name`,
+`category`, `job_type`, `candidate_required_location`, `url`, `description`,
+`publication_date`) — no mapping adjustment needed. `RemotiveAdapter` builds
+query params from `settings` (`category`/`search`/`limit`, only set keys,
+`limit` validated as a positive int), maps fields per contract with
+`isRemote` hardcoded true (Remotive is remote-only by definition), skips
+items missing `id`/`title`/`company_name`/`url` (no `?? source.name`
+fallback — that would resolve to the literal string "Remotive", not a real
+employer). `applyUrl` is always null (contract's Remotive mapping doesn't
+list one, and the payload has no separate apply link). `SourceAdapter::adapter()`
+added exactly per contract (`app(match($this) {...})`), no unrelated changes
+to the enum. Verified live in tinker: 18 items fetched from the real
+Remotive source, key fields populated; `SourceAdapter::from($x)->adapter()`
+resolves all four classes correctly. No DB writes. Pint and `composer
+types:check -- --memory-limit=1G` (0 errors) passed. `code-reviewer`: AC07
+PASS, Verdict APPROVED, no blocking findings — both flagged judgment calls
+(`applyUrl = null`, no company-name fallback) confirmed correct, not just
+acceptable. Deferred, not fixed (pre-existing, affects all four adapters
+equally, not introduced here): the shared `htmlToText()` helper doesn't
+insert whitespace at block-tag/`<br>` boundaries, so stripped description
+text can read with words run together (e.g. "Location: RemoteAvailability:
+...") — worth a follow-up cleanup phase.
 Role: laravel-backend · Depends on: 7 · Covers: AC07 · Size: S
 Spec: B.4 (remotive row)
 

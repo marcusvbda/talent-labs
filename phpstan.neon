@@ -11,3 +11,9 @@ parameters:
         - routes/
 
     level: 7
+
+services:
+    -
+        class: App\Support\PhpStan\FilamentMacroReflectionExtension
+        tags:
+            - phpstan.broker.methodsClassReflectionExtension

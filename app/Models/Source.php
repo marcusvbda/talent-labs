@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Enums\SourceAdapter;
 use App\Enums\SourceRunStatus;
-use Illuminate\Broadcasting\BroadcastException;
+use App\Models\Concerns\BroadcastsRealtime;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use Marcusvbda\FilamentRealtimeDriver\RealtimeEvent;
 
 /**
  * @property int $id
@@ -23,10 +24,14 @@ use Marcusvbda\FilamentRealtimeDriver\RealtimeEvent;
  * @property SourceRunStatus|null $last_run_status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Collection<int, SourceRun> $sourceRuns
+ * @property-read Collection<int, JobPosting> $jobPostings
  */
 #[Fillable(['name', 'adapter', 'identifier', 'settings', 'interval_minutes', 'is_active', 'last_run_at', 'last_run_status'])]
 class Source extends Model
 {
+    use BroadcastsRealtime;
+
     protected static function booted(): void
     {
         static::saved(function (Source $source): void {
@@ -38,16 +43,9 @@ class Source extends Model
         });
     }
 
-    /**
-     * Realtime is best-effort: an unreachable broadcaster must never fail a write.
-     */
     protected static function broadcastUpdated(Source $source): void
     {
-        try {
-            RealtimeEvent::dispatch('sources', 'SourceUpdated', ['id' => $source->id]);
-        } catch (BroadcastException $e) {
-            report($e);
-        }
+        static::broadcastRealtime('sources', 'SourceUpdated', ['id' => $source->id]);
     }
 
     /**
@@ -65,6 +63,30 @@ class Source extends Model
             'last_run_at' => 'datetime',
             'last_run_status' => SourceRunStatus::class,
         ];
+    }
+
+    /**
+     * @return HasMany<SourceRun, $this>
+     */
+    public function sourceRuns(): HasMany
+    {
+        return $this->hasMany(SourceRun::class);
+    }
+
+    /**
+     * @return HasMany<JobPosting, $this>
+     */
+    public function jobPostings(): HasMany
+    {
+        return $this->hasMany(JobPosting::class);
+    }
+
+    /**
+     * Whether the source has run or collected postings (and so cannot be deleted).
+     */
+    public function hasHistory(): bool
+    {
+        return $this->sourceRuns()->exists() || $this->jobPostings()->exists();
     }
 
     /**
