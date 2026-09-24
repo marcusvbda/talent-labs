@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Ai\Agents\ExtractJobPostingProfile;
+use App\Enums\ProfileStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -30,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $last_seen_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
+ * @property-read JobPostingProfile|null $profile
  */
 #[Fillable(['source_id', 'collection_run_id', 'last_seen_run_id', 'external_id', 'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'url', 'apply_url', 'description_html', 'description_text', 'published_at', 'raw', 'first_seen_at', 'last_seen_at'])]
 class JobPosting extends Model
@@ -82,5 +87,25 @@ class JobPosting extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * @return HasOne<JobPostingProfile, $this>
+     */
+    public function profile(): HasOne
+    {
+        return $this->hasOne(JobPostingProfile::class);
+    }
+
+    /**
+     * Postings without a done profile at the current extraction schema version.
+     *
+     * @param  Builder<JobPosting>  $query
+     */
+    public function scopeNeedingProfile(Builder $query): void
+    {
+        $query->whereDoesntHave('profile', fn (Builder $profile) => $profile
+            ->where('status', ProfileStatus::Done)
+            ->where('schema_version', ExtractJobPostingProfile::CACHE_SCHEMA_VERSION));
     }
 }

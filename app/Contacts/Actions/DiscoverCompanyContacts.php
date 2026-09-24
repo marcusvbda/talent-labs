@@ -2,6 +2,7 @@
 
 namespace App\Contacts\Actions;
 
+use App\Ai\Jobs\ExtractJobPostingProfileJob;
 use App\Contacts\Support\DnsLookup;
 use App\Contacts\Support\SmtpProbe;
 use App\Enums\ContactConfidence;
@@ -92,6 +93,11 @@ class DiscoverCompanyContacts
         $company->outreach_status = $verified ? OutreachStatus::Verified : OutreachStatus::NotVerifiable;
         $company->contact_checked_at = now();
         $company->save();
+
+        if ($company->outreach_status === OutreachStatus::Verified) {
+            $company->jobPostings()->needingProfile()->pluck('id')
+                ->each(fn (int $id) => ExtractJobPostingProfileJob::dispatch($id));
+        }
     }
 
     /**

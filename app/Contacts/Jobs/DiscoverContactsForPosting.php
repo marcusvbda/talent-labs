@@ -2,10 +2,12 @@
 
 namespace App\Contacts\Jobs;
 
+use App\Ai\Jobs\ExtractJobPostingProfileJob;
 use App\Contacts\Actions\ResolveCompanyForPosting;
 use App\Contacts\Actions\RunCompanyDiscovery;
 use App\Enums\ContactStatus;
 use App\Enums\DomainStatus;
+use App\Enums\OutreachStatus;
 use App\Models\JobPosting;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -45,6 +47,11 @@ class DiscoverContactsForPosting implements ShouldQueue
                 || $company->contact_status === ContactStatus::Pending
             ) {
                 $runDiscovery->handle($company);
+            } elseif (
+                $company->outreach_status === OutreachStatus::Verified
+                && JobPosting::query()->whereKey($posting->id)->needingProfile()->exists()
+            ) {
+                ExtractJobPostingProfileJob::dispatch($posting->id);
             }
         } catch (Throwable $e) {
             Log::warning('DiscoverContactsForPosting failed', [

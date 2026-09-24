@@ -9,7 +9,10 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -25,6 +28,10 @@ use Illuminate\Support\Carbon;
  * @property UserStatus $status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read JobPreference|null $jobPreference
+ * @property-read Collection<int, ConnectedIntegration> $connectedIntegrations
+ * @property-read ConnectedIntegration|null $gmailIntegration
+ * @property-read Collection<int, Application> $applications
  */
 #[Fillable(['name', 'email', 'password', 'is_admin', 'status'])]
 #[Hidden(['password', 'remember_token'])]
@@ -55,6 +62,38 @@ class User extends Authenticatable implements FilamentUser
             'app' => $this->status === UserStatus::Active,
             default => false,
         };
+    }
+
+    /**
+     * @return HasOne<JobPreference, $this>
+     */
+    public function jobPreference(): HasOne
+    {
+        return $this->hasOne(JobPreference::class);
+    }
+
+    /**
+     * @return HasMany<ConnectedIntegration, $this>
+     */
+    public function connectedIntegrations(): HasMany
+    {
+        return $this->hasMany(ConnectedIntegration::class);
+    }
+
+    /**
+     * @return HasOne<ConnectedIntegration, $this>
+     */
+    public function gmailIntegration(): HasOne
+    {
+        return $this->hasOne(ConnectedIntegration::class)->where('plugin_key', 'gmail');
+    }
+
+    /**
+     * @return HasMany<Application, $this>
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
     }
 
     public function isActive(): bool

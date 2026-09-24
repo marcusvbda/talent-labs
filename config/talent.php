@@ -14,6 +14,12 @@ return [
         ],
     ],
 
+    'outreach' => [
+        // Test mode: when set, every application email is delivered to this address
+        // instead of the company. Empty/unset = emails go to the companies for real.
+        'intercept_to' => env('OUTREACH_INTERCEPT_TO'),
+    ],
+
     'contacts' => [
         'smtp_helo' => env('CONTACTS_SMTP_HELO', 'localhost'),
         'smtp_mail_from' => env('CONTACTS_SMTP_MAIL_FROM', ''),

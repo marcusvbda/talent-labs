@@ -25,6 +25,7 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('app')
             ->login()
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Zinc,
             ])
@@ -48,6 +49,7 @@ class AppPanelProvider extends PanelProvider
             ->plugin(
                 FilamentRealtimeDriverPlugin::make()
                     ->socket()
+                    ->databaseNotifications()
             );
     }
 }

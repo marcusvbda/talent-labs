@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Contracts\OAuthIntegrationPlugin;
+use App\Outreach\Contracts\SendsGmailMessages;
+use App\Outreach\Support\GmailApiMessageSender;
+use App\Services\ConnectedIntegrationRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\DevCommands;
 use Illuminate\Support\Facades\Date;
@@ -16,7 +20,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ConnectedIntegrationRegistry::class, function (): ConnectedIntegrationRegistry {
+            /** @var list<class-string<OAuthIntegrationPlugin>> $pluginClasses */
+            $pluginClasses = config('connected-integrations.plugins', []);
+
+            return new ConnectedIntegrationRegistry(array_map(
+                fn (string $pluginClass): OAuthIntegrationPlugin => $this->app->make($pluginClass),
+                $pluginClasses,
+            ));
+        });
+
+        $this->app->bind(SendsGmailMessages::class, GmailApiMessageSender::class);
     }
 
     /**
@@ -28,7 +42,15 @@ class AppServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             DevCommands::artisan('reverb:start --debug', 'reverb');
-            DevCommands::artisan('queue:work database --queue=collection,contacts,default', 'queue');
+
+            // One independent worker per queue, so a slow queue (contacts: SMTP probing)
+            // never delays another (outreach: sending). The `queue` name replaces the
+            // framework's default worker, and carries the `default` queue.
+            DevCommands::artisan('queue:work database --queue=default', 'queue');
+
+            foreach (['collection', 'contacts', 'ai', 'outreach'] as $queue) {
+                DevCommands::artisan("queue:work database --queue={$queue}", "queue-{$queue}");
+            }
         }
     }
 

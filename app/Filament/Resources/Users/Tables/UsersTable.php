@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Tables;
 
 use App\Actions\Users\AdminGuard;
+use App\Enums\ConnectedIntegrationStatus;
 use App\Enums\UserStatus;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -15,6 +16,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UsersTable
 {
@@ -38,10 +40,25 @@ class UsersTable
                     ->badge()
                     ->sortable(),
 
+                TextColumn::make('gmailIntegration.status')
+                    ->label('Gmail')
+                    ->badge()
+                    ->placeholder('Not connected')
+                    ->default(null)
+                    ->formatStateUsing(fn (mixed $state): string => $state instanceof ConnectedIntegrationStatus ? $state->getLabel() : 'Not connected')
+                    ->color(fn (mixed $state): string => $state instanceof ConnectedIntegrationStatus ? $state->getColor() : 'gray'),
+
+                TextColumn::make('sent_today_count')
+                    ->label('Sent today')
+                    ->numeric(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
             ])
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query
+                ->with('gmailIntegration')
+                ->withCount(['applications as sent_today_count' => fn ($q) => $q->countedToday()]))
             ->filters([
                 SelectFilter::make('status')
                     ->options(UserStatus::class),
