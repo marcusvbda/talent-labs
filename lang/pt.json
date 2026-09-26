@@ -1,0 +1,8 @@
+{
+    "locale.en": "English",
+    "locale.pt": "Português",
+    "locale.es": "Español",
+    "auth.failed": "Essas credenciais não correspondem aos nossos registros.",
+    "auth.throttle": "Muitas tentativas de login. Tente novamente em :seconds segundos.",
+    "auth.inactive": "Sua conta não está ativa. Fale com o suporte se achar que isso é um engano."
+}

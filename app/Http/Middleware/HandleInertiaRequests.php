@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
+use App\Support\I18n\Translations;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,11 +37,35 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        /** @var User|null $user */
+        $user = $request->user();
+        $locale = app()->getLocale();
+
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'app' => [
+                'brand' => [
+                    'name' => config('talent.brand.name'),
+                    'wordmark' => config('talent.brand.wordmark'),
+                ],
+                'env' => config('app.env'),
+                'useFixtures' => config('talent.client.use_fixtures'),
+            ],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'initials' => $user->initials(),
+                    'locale' => $user->locale,
+                ] : null,
+            ],
+            'locale' => $locale,
+            'locales' => config('talent.locales'),
+            'translations' => Translations::for($locale),
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
             ],
         ];
     }

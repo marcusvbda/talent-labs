@@ -1,15 +1,28 @@
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { configureEcho } from '@laravel/echo-react';
+import { I18nProvider } from '@/i18n/i18n-provider';
+import type { SharedProps } from '@/types/shared';
 
 configureEcho({
     broadcaster: 'reverb',
 });
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+let brand = '';
+
+router.on('navigate', (event) => {
+    brand = (event.detail.page.props as unknown as SharedProps).app.brand.name;
+});
 
 void createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => {
+        return title ? `${title} - ${brand}` : brand;
+    },
+    withApp(app, { page }) {
+        brand = page.props.app.brand.name;
+
+        return <I18nProvider initialPage={page}>{app}</I18nProvider>;
+    },
     progress: {
-        color: '#4B5563',
+        color: 'var(--color-accent)',
     },
 });

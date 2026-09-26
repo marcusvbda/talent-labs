@@ -1,0 +1,8 @@
+{
+    "locale.en": "English",
+    "locale.pt": "Português",
+    "locale.es": "Español",
+    "auth.failed": "These credentials do not match our records.",
+    "auth.throttle": "Too many login attempts. Please try again in :seconds seconds.",
+    "auth.inactive": "Your account is not active. Contact support if you think this is a mistake."
+}

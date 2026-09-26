@@ -12,11 +12,11 @@ session. Phase status is updated in place in this file.
 | ----- | ------------------------------------------------------------------ | ---------------- | ------------------- | ---- | ------------ |
 | 1     | New dependencies, self-hosted Geist, design tokens                 | inertia-frontend | none                | M    | DONE ¹       |
 | 2     | Brand/fixtures/locales config, env keys, SSR off                   | laravel-backend  | none                | S    | DONE         |
-| 3     | `users.locale` + `users.timezone`                                  | laravel-backend  | none                | S    | IN_PROGRESS ² |
-| 4     | Translation files + `SharedProps` contract                         | laravel-backend  | 2, 3                | M    | PENDING      |
-| 5     | Frontend i18n runtime, `lib/format`, root providers, doc title     | inertia-frontend | 4                   | S    | PENDING      |
-| 6     | `SetLocale` middleware + `PUT /locale`                             | laravel-backend  | 3, 4                | M    | PENDING      |
-| 7     | `BareLayout` + `/dev/styleguide` scaffold (tokens, type scale)     | inertia-frontend | 1, 5                | S    | PENDING      |
+| 3     | `users.locale` + `users.timezone`                                  | laravel-backend  | none                | S    | DONE ²       |
+| 4     | Translation files + `SharedProps` contract                         | laravel-backend  | 2, 3                | M    | DONE         |
+| 5     | Frontend i18n runtime, `lib/format`, root providers, doc title     | inertia-frontend | 4                   | S    | DONE         |
+| 6     | `SetLocale` middleware + `PUT /locale`                             | laravel-backend  | 3, 4                | M    | DONE         |
+| 7     | `BareLayout` + `/dev/styleguide` scaffold (tokens, type scale)     | inertia-frontend | 1, 5                | S    | IN_PROGRESS  |
 | 8     | Primitives I: Spinner, Button, IconButton, LiveDot, Kbd            | inertia-frontend | 7                   | M    | PENDING      |
 | 9     | Primitives II: Pill, Chip, Avatar, StatusDisc, ProgressBar, TickMeter | inertia-frontend | 8                | M    | PENDING      |
 | 10    | Primitives III: Card, Skeleton, EmptyState, ErrorState             | inertia-frontend | 8                   | S    | PENDING      |
@@ -266,7 +266,8 @@ env, and turn off Inertia SSR.
 
 ### Phase 3 — `users.locale` + `users.timezone`
 
-Status: IN_PROGRESS (code done and reviewed; waiting for the owner to run `migrate:fresh --seed`)
+Status: DONE
+Evidence: owner confirmed `migrate:fresh --seed` ran (2026-09-26); Boost schema shows `users.locale varchar(5)` and `users.timezone varchar(64)`; both seeded users have `locale = 'en'`; `User` fillable + phpdoc present; pint ✅, `php artisan test --compact` 2 passed.
 Role: laravel-backend · Depends on: none · Covers: AC08 (storage) · Size: S
 Spec: B.8 (last-but-one bullet) · Part 0 decision 8
 
@@ -288,7 +289,8 @@ Spec: B.8 (last-but-one bullet) · Part 0 decision 8
 
 ### Phase 4 — Translation files + `SharedProps` contract
 
-Status: PENDING
+Status: DONE
+Evidence: `share()` keys are exactly errors, app, auth, locale, locales, translations, flash (auth.user null for guests, whitelisted shape otherwise); lang/{en,pt,es}.json have identical key sets; `Translations::for` falls back to en; `types/shared.ts` matches B.9, `types/auth.ts` removed; pint ✅, `composer lint:check` only the pre-existing failure, phpstan (1G) 0 errors, `php artisan test --compact` 2 passed, `yarn types:check` ✅; code-reviewer APPROVED.
 Role: laravel-backend (+ TS type files) · Depends on: 2, 3 · Covers: AC08 (files), AC09 · Size: M
 Spec: B.8 (first two bullets) · B.9 (shared props)
 
@@ -324,7 +326,8 @@ Spec: B.8 (first two bullets) · B.9 (shared props)
 
 ### Phase 5 — Frontend i18n runtime, `lib/format`, root providers, doc title
 
-Status: PENDING
+Status: DONE
+Evidence: `i18n/{locale,translate,i18n-provider}` + `lib/format.ts` added (`intlLocale` lives in `i18n/locale.ts` and is re-exported from `lib/format.ts` to avoid an import cycle); `app.tsx` wraps `I18nProvider` via `withApp`, title from shared brand, progress `var(--color-accent)`; `grep VITE_APP_NAME resources/js` empty; `yarn types:check` ✅, `yarn build` ✅, `yarn run check` fails only on pre-existing md/json files outside `resources/`; node one-off of translate/pluralize/format OK; code-reviewer APPROVED. Browser checks (`t('locale.pt')`, tab title after `BRAND_NAME` change) not run.
 Role: inertia-frontend · Depends on: 4 · Covers: AC08 (frontend), AC05 (`<title>`) · Size: S
 Spec: B.8 (frontend bullet) · B.4 (`app.tsx`, `i18n/`, `lib/`)
 
@@ -347,7 +350,8 @@ page, and derive the document title from the shared brand.
 
 ### Phase 6 — `SetLocale` middleware + `PUT /locale`
 
-Status: PENDING
+Status: DONE
+Evidence: `route:list --name=locale` shows `PUT locale … locale.update`; tinker resolver order verified (user with session → cookie → `es-ES,es;q=0.9` gives `es`, `pt_BR`/`pt-BR` give `pt`, unsupported gives `en`); `/admin/login` and `/app/login` return 200; `PUT /locale` gives 204 (JSON), 422 for `fr`, 302 back for a form request (CSRF required, 419 without); pint ✅, `composer lint:check` only the pre-existing failure, phpstan (1G) 0 errors, `php artisan test --compact` 2 passed (re-run after the last edit); code-reviewer APPROVED.
 Role: laravel-backend · Depends on: 3, 4 · Covers: AC08, AC17 · Size: M
 Spec: B.8 (locale resolution bullet) · B.9 (route `locale.update`)
 
@@ -374,7 +378,7 @@ change it persistently.
 
 ### Phase 7 — `BareLayout` + `/dev/styleguide` scaffold (tokens, type scale)
 
-Status: PENDING
+Status: IN_PROGRESS
 Role: inertia-frontend (+1 route line) · Depends on: 1, 5 · Covers: AC04, AC03 (surface), AC13 · Size: S
 Spec: B.4 (`layouts/bare-layout.tsx`) · B.9 (route table, `dev.styleguide`) · B.12
 

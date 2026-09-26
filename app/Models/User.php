@@ -102,4 +102,21 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->status === UserStatus::Active;
     }
+
+    /**
+     * First letter of the first and last name words, uppercased ("Ada Lovelace" -> "AL").
+     */
+    public function initials(): string
+    {
+        $words = preg_split('/\s+/u', trim($this->name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($words === []) {
+            return '';
+        }
+
+        $first = mb_substr($words[0], 0, 1);
+        $last = count($words) > 1 ? mb_substr($words[count($words) - 1], 0, 1) : '';
+
+        return mb_strtoupper($first.$last);
+    }
 }
