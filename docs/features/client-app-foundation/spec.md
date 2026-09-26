@@ -72,12 +72,12 @@ Wayfinder.
 
 New (npm, via `yarn add`):
 
-| Package | Why |
-|---|---|
-| `@tanstack/react-query` (v5) | Query cache, `useQuery`, `useMutation` (decision 4) |
-| `@tanstack/react-query-devtools` (dev) | Dev-only inspector, not in production bundle |
-| `lucide-react` | The icon family used by the mockup (stroke icons, round caps) |
-| `@headlessui/react` (v2) | Accessible Dialog, Menu, Listbox, Switch, Tabs, Combobox, Popover. Verify React 19 support in the installed version |
+| Package                                | Why                                                                                                                 |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `@tanstack/react-query` (v5)           | Query cache, `useQuery`, `useMutation` (decision 4)                                                                 |
+| `@tanstack/react-query-devtools` (dev) | Dev-only inspector, not in production bundle                                                                        |
+| `lucide-react`                         | The icon family used by the mockup (stroke icons, round caps)                                                       |
+| `@headlessui/react` (v2)               | Accessible Dialog, Menu, Listbox, Switch, Tabs, Combobox, Popover. Verify React 19 support in the installed version |
 
 Nothing else. **No** chart library (charts are hand-rolled SVG), **no**
 animation library (CSS only), **no** `class-variance-authority`
@@ -96,27 +96,27 @@ the contract; components use only these tokens.
 
 Colors:
 
-| Token | Value | Use |
-|---|---|---|
-| `--color-canvas` | `#D6D2CB` | page background outside the shell (desktop only) |
-| `--color-shell` | `#EEECE8` | app container / page background on tablet and mobile |
-| `--color-card` | `#FFFFFF` | cards |
-| `--color-tile` | `#F5F4F1` | tiles, list rows, inactive controls |
-| `--color-ink` | `#121212` | primary text, primary button, active nav pill |
-| `--color-muted` | `#6E6B65` | secondary text |
-| `--color-faint` | `#A29E96` | placeholders, timestamps, axis labels |
-| `--color-hairline` | `#E6E3DD` | separators |
-| `--color-accent` | `#F26A1B` | the single accent |
-| `--color-accent-deep` | `#E4520A` | accent text on light, hover |
-| `--color-accent-soft` | `#FFF1E6` | selected rows, plan chip bg |
-| `--color-accent-line` | `#F9B98F` | selected row border |
-| `--color-dark` | `#1A1917` | live sending card |
-| `--color-dark-2` | `#24231F` | inner panels of the dark card |
-| `--color-dark-line` | `#33322D` | lines/inactive on dark |
-| `--color-dark-muted` | `#A19D93` | secondary text on dark |
-| `--color-success` | `#1E9E5A` (bg `#DDEFE4`, text `#177A45`) | status only |
-| `--color-danger` | `#D64545` (bg `#F7DEDA`, text `#B23A2A`) | status only |
-| disc tints | orange `#FFE4D0`, neutral `#E3E0D8`, green `#DDEFE4`, red `#F7DEDA` | icon discs |
+| Token                 | Value                                                               | Use                                                  |
+| --------------------- | ------------------------------------------------------------------- | ---------------------------------------------------- |
+| `--color-canvas`      | `#D6D2CB`                                                           | page background outside the shell (desktop only)     |
+| `--color-shell`       | `#EEECE8`                                                           | app container / page background on tablet and mobile |
+| `--color-card`        | `#FFFFFF`                                                           | cards                                                |
+| `--color-tile`        | `#F5F4F1`                                                           | tiles, list rows, inactive controls                  |
+| `--color-ink`         | `#121212`                                                           | primary text, primary button, active nav pill        |
+| `--color-muted`       | `#6E6B65`                                                           | secondary text                                       |
+| `--color-faint`       | `#A29E96`                                                           | placeholders, timestamps, axis labels                |
+| `--color-hairline`    | `#E6E3DD`                                                           | separators                                           |
+| `--color-accent`      | `#F26A1B`                                                           | the single accent                                    |
+| `--color-accent-deep` | `#E4520A`                                                           | accent text on light, hover                          |
+| `--color-accent-soft` | `#FFF1E6`                                                           | selected rows, plan chip bg                          |
+| `--color-accent-line` | `#F9B98F`                                                           | selected row border                                  |
+| `--color-dark`        | `#1A1917`                                                           | live sending card                                    |
+| `--color-dark-2`      | `#24231F`                                                           | inner panels of the dark card                        |
+| `--color-dark-line`   | `#33322D`                                                           | lines/inactive on dark                               |
+| `--color-dark-muted`  | `#A19D93`                                                           | secondary text on dark                               |
+| `--color-success`     | `#1E9E5A` (bg `#DDEFE4`, text `#177A45`)                            | status only                                          |
+| `--color-danger`      | `#D64545` (bg `#F7DEDA`, text `#B23A2A`)                            | status only                                          |
+| disc tints            | orange `#FFE4D0`, neutral `#E3E0D8`, green `#DDEFE4`, red `#F7DEDA` | icon discs                                           |
 
 Hero gradient (only for the one hero card per screen):
 `linear-gradient(155deg, #FF7C33 0%, #F26A1B 45%, #DF4E08 100%)`, with one flat
@@ -134,17 +134,17 @@ Font: `--font-sans: "Geist", system-ui, sans-serif`, variable weight 100–900,
 
 Type scale (size / weight / tracking; line-height 1 for numerals):
 
-| Name | Desktop | Mobile |
-|---|---|---|
-| `display` (page title) | 56 / 500 / -0.045em | 34 |
-| `hero-numeral` | 176 / 450 / -0.065em | 112 |
-| `hero-suffix` ("/ 50") | 44 / 400 / -0.03em, 72% white | 28 |
-| `numeral-lg` (KPI, chart headline) | 62–64 / 450 / -0.055em | 44 |
-| `card-title` | 26 / 500 / -0.03em | 22 |
-| `row-title` | 17.5 / 550 / -0.02em | 16 |
-| `body` | 15 / 400 | 15 |
-| `label` | 15–16 / 400, muted | 14 |
-| `chip` | 12.5–13 / 500–650 | same |
+| Name                               | Desktop                       | Mobile |
+| ---------------------------------- | ----------------------------- | ------ |
+| `display` (page title)             | 56 / 500 / -0.045em           | 34     |
+| `hero-numeral`                     | 176 / 450 / -0.065em          | 112    |
+| `hero-suffix` ("/ 50")             | 44 / 400 / -0.03em, 72% white | 28     |
+| `numeral-lg` (KPI, chart headline) | 62–64 / 450 / -0.055em        | 44     |
+| `card-title`                       | 26 / 500 / -0.03em            | 22     |
+| `row-title`                        | 17.5 / 550 / -0.02em          | 16     |
+| `body`                             | 15 / 400                      | 15     |
+| `label`                            | 15–16 / 400, muted            | 14     |
+| `chip`                             | 12.5–13 / 500–650             | same   |
 
 Spacing: shell padding `26 40 44` (desktop), grid gap 24, card padding 28,
 tile padding `22 20 20`, row padding `14 20 14 16`, row gap 10. Control
@@ -153,7 +153,7 @@ footer), segmented items 44.
 
 Icons: `lucide-react`, stroke width 1.8, round caps/joins, 20 px default.
 Mapping used by the mockup: send (paper-plane icon is allowed as an
-*action* icon, not as the logo), bell, search, globe, chevron-down, plus,
+_action_ icon, not as the logo), bell, search, globe, chevron-down, plus,
 arrow-up-right, check, x, clock, layers, trending-up/down arrows, sliders,
 pause, radio (live).
 
@@ -255,28 +255,28 @@ fixed palette of the disc tints), `PlanGate` (overlay, B.10),
   a 2×2 grid; `NavPills` horizontally scrollable; user chip shows avatar
   only.
 - **< 768 (mobile):** single column. Top bar: logo + notifications + avatar
-  + menu button opening `MobileNav` (sheet with the nav items, language,
-  plan, logout). Page header actions become a full-width button under the
-  title; segmented control scrolls. Type scale uses the mobile column in
-  B.3. Card radius 28, card padding 20. `JobRow` stacks: title line, meta
-  line, chips wrap. Sticky action bar pinned to the bottom with safe-area
-  inset. Hero numeral uses `clamp()`.
+    - menu button opening `MobileNav` (sheet with the nav items, language,
+      plan, logout). Page header actions become a full-width button under the
+      title; segmented control scrolls. Type scale uses the mobile column in
+      B.3. Card radius 28, card padding 20. `JobRow` stacks: title line, meta
+      line, chips wrap. Sticky action bar pinned to the bottom with safe-area
+      inset. Hero numeral uses `clamp()`.
 - No horizontal page scroll at any width ≥ 360 px. Test widths: 360, 390,
   768, 1024, 1280, 1440, 1600.
 
 ### B.6 Brand and logo (swappable in one place)
 
 - Config: add to `config/talent.php`:
-  ```php
-  'brand' => [
-      'name' => env('BRAND_NAME', 'Talent Labs'),
-      // Wordmark split: first part regular weight, second part bold.
-      'wordmark' => [env('BRAND_WORDMARK_REGULAR', 'Talent'), env('BRAND_WORDMARK_BOLD', 'Labs')],
-  ],
-  ```
-  Shared to the frontend as `app.brand` (B.9). `.env.example` gets the keys
-  (append only, never overwrite existing `.env` values). Also keep
-  `APP_NAME` in sync manually (documented in `.env.example`).
+    ```php
+    'brand' => [
+        'name' => env('BRAND_NAME', 'Talent Labs'),
+        // Wordmark split: first part regular weight, second part bold.
+        'wordmark' => [env('BRAND_WORDMARK_REGULAR', 'Talent'), env('BRAND_WORDMARK_BOLD', 'Labs')],
+    ],
+    ```
+    Shared to the frontend as `app.brand` (B.9). `.env.example` gets the keys
+    (append only, never overwrite existing `.env` values). Also keep
+    `APP_NAME` in sync manually (documented in `.env.example`).
 - `patterns/Logo.tsx` renders the mark + wordmark; props: `variant`
   (`full` | `mark`), `tone` (`default` on light: ink mark + accent dot;
   `inverse` on dark: white mark + accent dot; `on-accent`: ink mark + white
@@ -284,16 +284,18 @@ fixed palette of the disc tints), `PlanGate` (overlay, B.10),
   `resources/js/components/patterns/logo-mark.tsx` so swapping the logo is a
   one-file change. Exact mark (approved, see `reference/logo-t-dot.png`):
 
-  ```svg
-  <svg viewBox="0 0 48 48" aria-hidden="true">
-    <path d="M13 6h8.5v23.2c0 4.3 2 6.3 6.2 6.3H31V44h-4.2C17.7 44 13 39.3 13 30.6Z" fill="currentColor"/>
-    <rect x="6.5" y="15" width="23" height="7.5" rx="1.2" fill="currentColor"/>
-    <circle cx="36.5" cy="10" r="6.5" fill="var(--logo-dot, #F26A1B)"/>
-  </svg>
-  ```
-  Wordmark: Geist, "Talent" weight 400 + "Labs" weight 650, tracking -0.03em.
-  The mockup shows a paper plane inside a black circle as the brand: that was
-  a placeholder. The top bar uses the bare mark (ink) at 36 px + wordmark.
+    ```svg
+    <svg viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M13 6h8.5v23.2c0 4.3 2 6.3 6.2 6.3H31V44h-4.2C17.7 44 13 39.3 13 30.6Z" fill="currentColor"/>
+      <rect x="6.5" y="15" width="23" height="7.5" rx="1.2" fill="currentColor"/>
+      <circle cx="36.5" cy="10" r="6.5" fill="var(--logo-dot, #F26A1B)"/>
+    </svg>
+    ```
+
+    Wordmark: Geist, "Talent" weight 400 + "Labs" weight 650, tracking -0.03em.
+    The mockup shows a paper plane inside a black circle as the brand: that was
+    a placeholder. The top bar uses the bare mark (ink) at 36 px + wordmark.
+
 - Favicons/app icons generated from the same SVG: `public/favicon.svg`
   (mark, ink on transparent), `public/apple-touch-icon.png` (180, ink rounded
   square, white mark, accent dot) — produce the PNG by exporting the SVG
@@ -382,15 +384,15 @@ Files in `resources/js/data/`:
 Client routes live at the **root**, not under `/app` (Filament owns
 `/app/*` until it is removed):
 
-| Method | Path | Name | Page / behavior | Middleware |
-|---|---|---|---|---|
-| GET | `/` | `home` | `landing` (B.11) | web |
-| GET | `/login` | `login` | `auth/login` | guest |
-| POST | `/login` | `login.store` | authenticate, redirect intended or `dashboard` | guest, throttle:6,1 |
-| POST | `/logout` | `logout` | logout, redirect `home` | auth |
-| PUT | `/locale` | `locale.update` | B.8 | web |
-| GET | `/dashboard` | `dashboard` | `dashboard` (placeholder in this spec) | auth, client |
-| GET | `/dev/styleguide` | `dev.styleguide` | `dev/styleguide` | only registered when `app()->isLocal()` |
+| Method | Path              | Name             | Page / behavior                                | Middleware                              |
+| ------ | ----------------- | ---------------- | ---------------------------------------------- | --------------------------------------- |
+| GET    | `/`               | `home`           | `landing` (B.11)                               | web                                     |
+| GET    | `/login`          | `login`          | `auth/login`                                   | guest                                   |
+| POST   | `/login`          | `login.store`    | authenticate, redirect intended or `dashboard` | guest, throttle:6,1                     |
+| POST   | `/logout`         | `logout`         | logout, redirect `home`                        | auth                                    |
+| PUT    | `/locale`         | `locale.update`  | B.8                                            | web                                     |
+| GET    | `/dashboard`      | `dashboard`      | `dashboard` (placeholder in this spec)         | auth, client                            |
+| GET    | `/dev/styleguide` | `dev.styleguide` | `dev/styleguide`                               | only registered when `app()->isLocal()` |
 
 - `client` middleware alias → `EnsureActiveClient`: user must be active
   (`User::isActive()`); inactive users are logged out with a flash message.
@@ -405,17 +407,31 @@ Client routes live at the **root**, not under `/app` (Filament owns
   login pages.
 - Shared props (`HandleInertiaRequests::share`) — exact shape, typed in
   `resources/js/types/shared.ts`:
-  ```ts
-  type SharedProps = {
-    app: { brand: { name: string; wordmark: [string, string] }; env: 'local' | 'production' | string; useFixtures: boolean };
-    auth: { user: { id: number; name: string; email: string; initials: string; locale: Locale } | null };
-    locale: Locale; locales: Locale[]; translations: Record<string, string>;
-    flash: { success: string | null; error: string | null };
-  };
-  type Locale = 'en' | 'pt' | 'es';
-  ```
-  Do not share the full `User` model (today `auth.user` shares the whole
-  model; replace it with the whitelisted shape above).
+    ```ts
+    type SharedProps = {
+        app: {
+            brand: { name: string; wordmark: [string, string] };
+            env: 'local' | 'production' | string;
+            useFixtures: boolean;
+        };
+        auth: {
+            user: {
+                id: number;
+                name: string;
+                email: string;
+                initials: string;
+                locale: Locale;
+            } | null;
+        };
+        locale: Locale;
+        locales: Locale[];
+        translations: Record<string, string>;
+        flash: { success: string | null; error: string | null };
+    };
+    type Locale = 'en' | 'pt' | 'es';
+    ```
+    Do not share the full `User` model (today `auth.user` shares the whole
+    model; replace it with the whitelisted shape above).
 - Remove `pages/welcome.tsx` (replaced by `landing`).
 - Error pages: render Inertia `errors/error` for 403/404/419/500/503 in
   non-debug mode (`bootstrap/app.php` `withExceptions` → `respond`), using
@@ -529,9 +545,9 @@ the phase message that installs them should say so explicitly.
 ## Roadmap (execution order of all specs)
 
 1. `client-app-foundation` (this) → 2. `client-app-screens` →
-3. `client-core-wiring` → 4. `preferences-clarity` →
-5. `application-languages` → 6. `plans-and-sending-modes` →
-7. `collection-scheduler` → 8. `regional-pricing-and-billing` →
-9. `inventory-and-sources` → 10. `production-readiness`.
-Specs 1–2 are frontend only (navigable prototype on fixtures). Specs 3–6 wire
-the backend screen by screen. 7 can run any time after 3.
+2. `client-core-wiring` → 4. `preferences-clarity` →
+3. `application-languages` → 6. `plans-and-sending-modes` →
+4. `collection-scheduler` → 8. `regional-pricing-and-billing` →
+5. `inventory-and-sources` → 10. `production-readiness`.
+   Specs 1–2 are frontend only (navigable prototype on fixtures). Specs 3–6 wire
+   the backend screen by screen. 7 can run any time after 3.

@@ -42,17 +42,17 @@ this spec runs first), skill `job-collection`.
 New table `collection_schedules` (singleton, one row, created by a seeder
 if missing — idempotent `firstOrCreate(['id' => 1], defaults)`):
 
-| Column | Type | Default |
-|---|---|---|
-| id | bigint | 1 |
-| enabled | boolean | true |
-| times | jsonb (list of `"HH:MM"`, 24 h, unique, sorted, 1–12 items) | `["06:00", "18:00"]` |
-| timezone | string(64) IANA | `config('app.timezone')` |
-| last_slot_key | string(32) nullable (`"YYYY-MM-DD HH:MM"` of the last slot handled) | null |
-| last_dispatched_at | timestamp nullable | null |
-| last_result | string(200) nullable (e.g. "Started run #42", "Skipped: a run is already in progress") | null |
-| updated_by | foreignId users nullable, nullOnDelete | null |
-| timestamps | | |
+| Column             | Type                                                                                   | Default                  |
+| ------------------ | -------------------------------------------------------------------------------------- | ------------------------ |
+| id                 | bigint                                                                                 | 1                        |
+| enabled            | boolean                                                                                | true                     |
+| times              | jsonb (list of `"HH:MM"`, 24 h, unique, sorted, 1–12 items)                            | `["06:00", "18:00"]`     |
+| timezone           | string(64) IANA                                                                        | `config('app.timezone')` |
+| last_slot_key      | string(32) nullable (`"YYYY-MM-DD HH:MM"` of the last slot handled)                    | null                     |
+| last_dispatched_at | timestamp nullable                                                                     | null                     |
+| last_result        | string(200) nullable (e.g. "Started run #42", "Skipped: a run is already in progress") | null                     |
+| updated_by         | foreignId users nullable, nullOnDelete                                                 | null                     |
+| timestamps         |                                                                                        |                          |
 
 Model `CollectionSchedule` with `current(): self` (cached per request) and
 casts. Broadcast changes with the existing `BroadcastsRealtime` concern on a
@@ -65,19 +65,19 @@ public admin channel `collection_schedule` (ids only).
   is skipped when null.
 - Command **`collection:tick`**, scheduled in `routes/console.php`
   `everyMinute()->withoutOverlapping()->onOneServer()`:
-  1. Load the schedule; exit if `enabled` is false.
-  2. `now` in the schedule timezone; `slot = now->format('H:i')`; exit if
-     `slot` is not in `times`.
-  3. `slotKey = date + slot`; exit if equal to `last_slot_key` (a slot runs
-     at most once, even if the scheduler ticks twice).
-  4. Store `last_slot_key` first (atomic update `where last_slot_key is
-     distinct from slotKey`; if 0 rows updated, exit), then call
-     `StartCollectionRun::handle(null)`.
-  5. On `CollectionRunException` (already running / no active sources):
-     `last_result` = "Skipped: <message>". On success: "Started run #<id>".
-     Always set `last_dispatched_at`.
-  Missed slots (server down at that minute) are **not** caught up; the next
-  slot runs normally.
+    1. Load the schedule; exit if `enabled` is false.
+    2. `now` in the schedule timezone; `slot = now->format('H:i')`; exit if
+       `slot` is not in `times`.
+    3. `slotKey = date + slot`; exit if equal to `last_slot_key` (a slot runs
+       at most once, even if the scheduler ticks twice).
+    4. Store `last_slot_key` first (atomic update `where last_slot_key is
+distinct from slotKey`; if 0 rows updated, exit), then call
+       `StartCollectionRun::handle(null)`.
+    5. On `CollectionRunException` (already running / no active sources):
+       `last_result` = "Skipped: <message>". On success: "Started run #<id>".
+       Always set `last_dispatched_at`.
+       Missed slots (server down at that minute) are **not** caught up; the next
+       slot runs normally.
 - Command **`collection:run`**: manual run now through
   `StartCollectionRun::handle(null)`; prints the run id or the reason. Works
   even when the schedule is paused (pausing only affects automatic runs).
@@ -85,6 +85,7 @@ public admin channel `collection_schedule` (ids only).
 ### B.4 Admin page (Filament `/admin`, group "Collection")
 
 Page **Collection schedule** (custom Filament page, form + infolist):
+
 - Status header: "Automatic collection is **on/off**", next run at
   (computed from times + timezone, "today 18:00" / "tomorrow 06:00"), last
   result + time, link to the latest `CollectionRun`.

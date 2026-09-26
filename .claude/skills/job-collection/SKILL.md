@@ -18,8 +18,8 @@ Cheat sheet. Product truth: Part B of `docs/features/job-collection-mvp/spec.md`
 
 - Contract: `App\Collection\Contracts\JobSourceAdapter::fetch(Source $source): iterable<JobPostingData>`.
 - `JobPostingData`: readonly DTO — `externalId, title, companyName, location,
-  isRemote, department, employmentType, url, applyUrl, descriptionHtml,
-  descriptionText, publishedAt, raw`.
+isRemote, department, employmentType, url, applyUrl, descriptionHtml,
+descriptionText, publishedAt, raw`.
 - `SourceAdapter` enum (`greenhouse`, `lever`, `ashby`, `remotive`,
   `remote_ok`, `arbeitnow`, `jobicy`) resolves class, label, and
   `requiresIdentifier()` (false for the aggregators `remotive`, `remote_ok`,

@@ -249,21 +249,21 @@ the match use the same vocabulary.
 
 #### B.3.1 Table `job_preferences` (one row per user)
 
-| column              | type                        | notes                                                                   |
-| ------------------- | --------------------------- | ----------------------------------------------------------------------- |
-| `id`                | pk                          |                                                                         |
-| `user_id`           | fk, unique, cascadeOnDelete |                                                                         |
-| `titles`            | jsonb, default `[]`         | role names/keywords, e.g. `["backend", "php developer"]`                |
-| `keywords`          | jsonb, default `[]`         | the "description" preference: words that must appear in the description |
-| `stack`             | jsonb, default `[]`         | normalized via `StackNormalizer`                                        |
-| `locations`         | jsonb, default `[]`         | e.g. `["Portugal", "Spain", "EU"]`                                      |
-| `accepts_remote`    | boolean, default true       |                                                                         |
-| `cv_path`           | string, nullable            | private disk path (B.4)                                                 |
-| `cv_original_name`  | string, nullable            | used as the attachment filename                                         |
-| `email_subject`     | string, nullable            | template (B.6)                                                          |
-| `email_body`        | text, nullable              | template (B.6)                                                          |
+| column              | type                        | notes                                                                         |
+| ------------------- | --------------------------- | ----------------------------------------------------------------------------- |
+| `id`                | pk                          |                                                                               |
+| `user_id`           | fk, unique, cascadeOnDelete |                                                                               |
+| `titles`            | jsonb, default `[]`         | role names/keywords, e.g. `["backend", "php developer"]`                      |
+| `keywords`          | jsonb, default `[]`         | the "description" preference: words that must appear in the description       |
+| `stack`             | jsonb, default `[]`         | normalized via `StackNormalizer`                                              |
+| `locations`         | jsonb, default `[]`         | e.g. `["Portugal", "Spain", "EU"]`                                            |
+| `accepts_remote`    | boolean, default true       |                                                                               |
+| `cv_path`           | string, nullable            | private disk path (B.4)                                                       |
+| `cv_original_name`  | string, nullable            | used as the attachment filename                                               |
+| `email_subject`     | string, nullable            | template (B.6)                                                                |
+| `email_body`        | text, nullable              | template (B.6)                                                                |
 | `auto_send_enabled` | boolean, default false      | unused (automatic sending was removed; kept only to avoid an alter migration) |
-| timestamps          |                             |                                                                         |
+| timestamps          |                             |                                                                               |
 
 #### B.3.2 Matching rule — `App\Outreach\Queries\MatchingJobPostings::forUser(User $user): Builder`
 
@@ -384,22 +384,22 @@ Nothing else in the codebase hardcodes these values.
 
 #### B.7.2 Table `applications`
 
-| column                  | type                                                                                | notes                                      |
-| ----------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------ |
-| `id`                    | pk                                                                                  |                                            |
-| `user_id`               | fk, cascadeOnDelete                                                                 |                                            |
-| `company_id`            | fk, restrictOnDelete                                                                |                                            |
-| `job_posting_id`        | fk, nullOnDelete                                                                    | the posting that triggered it              |
-| `contact_id`            | fk, nullOnDelete                                                                    | chosen recipient                           |
-| `recipient_email`       | string                                                                              | snapshot                                   |
-| `subject` / `body`      | string / text                                                                       | rendered snapshot of what was sent         |
+| column                  | type                                                                                | notes                                        |
+| ----------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| `id`                    | pk                                                                                  |                                              |
+| `user_id`               | fk, cascadeOnDelete                                                                 |                                              |
+| `company_id`            | fk, restrictOnDelete                                                                |                                              |
+| `job_posting_id`        | fk, nullOnDelete                                                                    | the posting that triggered it                |
+| `contact_id`            | fk, nullOnDelete                                                                    | chosen recipient                             |
+| `recipient_email`       | string                                                                              | snapshot                                     |
+| `subject` / `body`      | string / text                                                                       | rendered snapshot of what was sent           |
 | `origin`                | string enum: `auto`, `manual`                                                       | only `manual` is produced (`auto` is legacy) |
-| `status`                | string enum `ApplicationStatus`: `queued`, `sending`, `sent`, `failed`, `ambiguous` |                                            |
-| `attempts`              | unsigned int, default 0                                                             |                                            |
-| `provider_message_id`   | string, nullable                                                                    | Gmail message id                           |
-| `last_error`            | string, nullable                                                                    | exception class + short message, no tokens |
-| `queued_at` / `sent_at` | timestamp, nullable                                                                 |                                            |
-| timestamps              |                                                                                     |                                            |
+| `status`                | string enum `ApplicationStatus`: `queued`, `sending`, `sent`, `failed`, `ambiguous` |                                              |
+| `attempts`              | unsigned int, default 0                                                             |                                              |
+| `provider_message_id`   | string, nullable                                                                    | Gmail message id                             |
+| `last_error`            | string, nullable                                                                    | exception class + short message, no tokens   |
+| `queued_at` / `sent_at` | timestamp, nullable                                                                 |                                              |
+| timestamps              |                                                                                     |                                              |
 
 **Unique `(user_id, company_id)`** — this _is_ the send dedup (Part 0.1
 item 8), enforced by the DB, not only by application code.

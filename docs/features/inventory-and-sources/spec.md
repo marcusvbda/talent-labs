@@ -19,6 +19,7 @@ remote aggregators in English. The owner wants Brazilian and Spanish
 language jobs too.
 
 Decided:
+
 1. **Measure before adding.** A repeatable funnel report is the first step
    and the input for pricing and limits (limits are constants the owner
    raises as the pool grows).
@@ -62,6 +63,7 @@ expose company websites (domain resolution quality), expected volume in
 the target role families, and cost/keys.
 
 Candidates to evaluate (nothing verified yet):
+
 - **Adzuna API** — official API with country endpoints and a free key
   (`ADZUNA_APP_ID`, `ADZUNA_APP_KEY`); verify which countries are available
   (e.g. Brazil, Spain) and the attribution requirements.

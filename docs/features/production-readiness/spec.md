@@ -15,6 +15,7 @@ probes company mail servers over SMTP. Production must keep these
 processes alive, protect client data, and meet Google's OAuth rules.
 
 Decided:
+
 1. **Services:** hosting with PostgreSQL (web, queue workers, Reverb and
    scheduler on the same host), **Resend** (transactional email), **Stripe**
    (when billing ships), an **error tracker**. Nothing else.
@@ -36,6 +37,7 @@ Decided:
 ### B.1 Hosting target (architecture recommendation)
 
 A single VPS to start, managed by a provisioning tool:
+
 - **Server:** a small Linux VPS from a provider that **allows outbound port
   25 on request** (e.g. Hetzner Cloud; verify their current policy — new
   accounts usually have it blocked until a request is approved), 2 vCPU /
@@ -48,15 +50,15 @@ A single VPS to start, managed by a provisioning tool:
 
 ### B.2 Processes (supervisor / provisioning tool daemons)
 
-| Process | Command |
-|---|---|
-| Web | nginx + php-fpm 8.4, HTTPS (Let's Encrypt), HTTP/2 |
-| Queue `collection` | `php artisan queue:work database --queue=collection --tries=1 --timeout=120` |
-| Queue `contacts` | `php artisan queue:work database --queue=contacts --timeout=60` |
-| Queue `outreach` | `php artisan queue:work database --queue=outreach --timeout=75` (must exceed the job timeout 60 and stay below `retry_after` 90) |
-| Queue `default` | `php artisan queue:work database --queue=default` |
-| Reverb | `php artisan reverb:start` behind nginx (`wss://<domain>/app` proxy with upgrade headers) |
-| Scheduler | cron `* * * * * php artisan schedule:run` |
+| Process            | Command                                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Web                | nginx + php-fpm 8.4, HTTPS (Let's Encrypt), HTTP/2                                                                               |
+| Queue `collection` | `php artisan queue:work database --queue=collection --tries=1 --timeout=120`                                                     |
+| Queue `contacts`   | `php artisan queue:work database --queue=contacts --timeout=60`                                                                  |
+| Queue `outreach`   | `php artisan queue:work database --queue=outreach --timeout=75` (must exceed the job timeout 60 and stay below `retry_after` 90) |
+| Queue `default`    | `php artisan queue:work database --queue=default`                                                                                |
+| Reverb             | `php artisan reverb:start` behind nginx (`wss://<domain>/app` proxy with upgrade headers)                                        |
+| Scheduler          | cron `* * * * * php artisan schedule:run`                                                                                        |
 
 Deploy script: `composer install --no-dev -o`, `yarn install --frozen-lockfile && yarn build`,
 `php artisan migrate --force`, `config:cache`, `route:cache`,

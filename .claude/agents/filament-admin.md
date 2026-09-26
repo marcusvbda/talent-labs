@@ -26,15 +26,15 @@ Filament 5 specialist for the `/admin` panel (`AdminPanelProvider`).
   `$pollingInterval`. The panel already has
   `FilamentRealtimeDriverPlugin::make()->socket()->databaseNotifications()`
   and `$panel->databaseNotifications()` — don't add them again.
-  - Tables: `->socket(channel: '...', event: '...')`.
-  - Pages/infolists: `<x-filament-realtime-driver::listener channel="..."
-    event="..." callback="$wire.$refresh()" />` scoped to the record.
-  - The write must broadcast: model `booted()` `saved`/`deleted` hooks
-    dispatch `RealtimeEvent::dispatch($channel, $event, ['id' => ...])`;
-    query-builder writes (`upsert`, bulk `update`) bypass model events →
-    dispatch explicitly after them.
-  - Database notifications: `->sendToDatabase($user, isEventDispatched: true)`.
-  - Reference: `vendor/marcusvbda/filament-realtime-driver/README.md`.
+    - Tables: `->socket(channel: '...', event: '...')`.
+    - Pages/infolists: `<x-filament-realtime-driver::listener channel="..."
+event="..." callback="$wire.$refresh()" />` scoped to the record.
+    - The write must broadcast: model `booted()` `saved`/`deleted` hooks
+      dispatch `RealtimeEvent::dispatch($channel, $event, ['id' => ...])`;
+      query-builder writes (`upsert`, bulk `update`) bypass model events →
+      dispatch explicitly after them.
+    - Database notifications: `->sendToDatabase($user, isEventDispatched: true)`.
+    - Reference: `vendor/marcusvbda/filament-realtime-driver/README.md`.
 
 ## Before finishing
 

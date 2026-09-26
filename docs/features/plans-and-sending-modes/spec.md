@@ -13,13 +13,13 @@
 
 1. **Plans and modes** (catalog from `client-core-wiring` B.4, values in
    config/env, editable before deploy):
-   - **Free** — 25/day — `auto`: the system chooses and sends by itself,
-     within the client's preferences and languages. No choosing, no review.
-   - **Starter** — 50/day — `select`: the client chooses the jobs.
-   - **Pro** — 150/day — `review`: chooses **and** edits each email before
-     it is queued.
-   The owner explicitly **reintroduces automatic sending** (it was removed
-   earlier only to validate the flow).
+    - **Free** — 25/day — `auto`: the system chooses and sends by itself,
+      within the client's preferences and languages. No choosing, no review.
+    - **Starter** — 50/day — `select`: the client chooses the jobs.
+    - **Pro** — 150/day — `review`: chooses **and** edits each email before
+      it is queued.
+      The owner explicitly **reintroduces automatic sending** (it was removed
+      earlier only to validate the flow).
 2. **One by one, spaced.** Every client's emails leave one at a time with a
    random gap between `OUTREACH_SEND_INTERVAL_MIN_SECONDS` and
    `…_MAX_SECONDS` (defaults 45 and 120; the owner will test values like
@@ -106,7 +106,7 @@ string(32) nullable (`manual`, `reauthorization_required`,
 - `QueueApplication` (all modes) sets `scheduled_for = nextSlot()` inside
   its transaction (the existing per-user `lockForUpdate` serializes this)
   and dispatches `SendApplicationEmail::dispatch($id, $scheduledFor)
-  ->delay($scheduledFor)->afterCommit()`. Remove the comment "Sent right away".
+->delay($scheduledFor)->afterCommit()`. Remove the comment "Sent right away".
 - Bulk queueing (select) loops in the client's selection order; each item
   gets the next slot after the previous one.
 - `SendApplicationEmail` receives `expectedScheduledFor`; at start, if the
@@ -123,17 +123,17 @@ Keep every existing safety rule; change the structure so stages are real:
 
 1. **Pre-checks without locks**, each sub-step persisted then paced
    (`usleep(step_delay_ms)` after each):
-   - `validating_recipient`: `checking_company` (company still
-     `verified`), `confirming_recipient` (contact exists, belongs to the
-     company, `smtp_verified`), `checking_gmail` (integration connected
-     and `accessToken()` obtainable — this refreshes the token if needed).
-   - `adapting_template`: `filling_variables` (snapshot subject/body present
-     and within limits), `building_html` (`ApplicationTemplateRenderer::html`).
-   - `attaching_cv`: `opening_cv` (profile CV exists and owned),
-     `checking_pdf` (≤ 5 MB and starts with `%PDF-`), `attaching_file`
-     (build the MIME with the attachment → raw string).
-   A failed check → status `failed`, `stage = failed`, `sub_step` = the
-   failing sub-step, `last_error` = existing reason text. No retry.
+    - `validating_recipient`: `checking_company` (company still
+      `verified`), `confirming_recipient` (contact exists, belongs to the
+      company, `smtp_verified`), `checking_gmail` (integration connected
+      and `accessToken()` obtainable — this refreshes the token if needed).
+    - `adapting_template`: `filling_variables` (snapshot subject/body present
+      and within limits), `building_html` (`ApplicationTemplateRenderer::html`).
+    - `attaching_cv`: `opening_cv` (profile CV exists and owned),
+      `checking_pdf` (≤ 5 MB and starts with `%PDF-`), `attaching_file`
+      (build the MIME with the attachment → raw string).
+      A failed check → status `failed`, `stage = failed`, `sub_step` = the
+      failing sub-step, `last_error` = existing reason text. No retry.
 2. **Lock and mark sending** in a short transaction: `lockForUpdate`, status
    must still be `queued` (else exit), user not paused, quota not exceeded
    for today (the quota was reserved at queue time; re-check defensively),

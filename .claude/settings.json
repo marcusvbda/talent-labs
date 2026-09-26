@@ -38,9 +38,5 @@
             "Bash(php artisan db:wipe *)"
         ]
     },
-    "enabledMcpjsonServers": [
-        "laravel-boost",
-        "context7",
-        "playwright"
-    ]
+    "enabledMcpjsonServers": ["laravel-boost", "context7", "playwright"]
 }

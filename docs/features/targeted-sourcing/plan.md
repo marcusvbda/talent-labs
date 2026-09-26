@@ -10,18 +10,18 @@ Run phases with `/execute-phases docs/features/targeted-sourcing/plan.md <phases
 
 ## Status board
 
-| Phase | Title                                                    | Role            | Depends on | Size | Status       |
-| ----- | -------------------------------------------------------- | --------------- | ---------- | ---- | ------------ |
-| 1     | Role classifier + `role_family` on postings              | laravel-backend | none       | M    | DONE         |
-| 2     | Relevance gate: discovery + matching only target roles   | laravel-backend | 1          | S    | DONE         |
-| 3     | Admin: role family column/filter + settings hints        | filament-admin  | 1          | S    | DONE         |
-| 4     | Query-side targeting for RemoteOK, Jobicy and Arbeitnow  | laravel-backend | none       | M    | DONE         |
-| 5     | New source: Himalayas (search API)                       | laravel-backend | 4          | M    | DONE         |
-| 6     | New source: We Work Remotely (category RSS)              | laravel-backend | 4          | M    | DONE         |
-| 7     | New source: Working Nomads                               | laravel-backend | 4          | S    | DONE         |
-| 8     | New source: Hacker News "Who is hiring?"                 | laravel-backend | 4          | M    | DONE         |
-| 9     | Company website hint → domain resolution                 | laravel-backend | 8          | M    | DONE         |
-| 10    | Verification and report (before/after funnel)            | qa-tester       | 1–8 (9)    | S    | BLOCKED (owner run) |
+| Phase | Title                                                   | Role            | Depends on | Size | Status              |
+| ----- | ------------------------------------------------------- | --------------- | ---------- | ---- | ------------------- |
+| 1     | Role classifier + `role_family` on postings             | laravel-backend | none       | M    | DONE                |
+| 2     | Relevance gate: discovery + matching only target roles  | laravel-backend | 1          | S    | DONE                |
+| 3     | Admin: role family column/filter + settings hints       | filament-admin  | 1          | S    | DONE                |
+| 4     | Query-side targeting for RemoteOK, Jobicy and Arbeitnow | laravel-backend | none       | M    | DONE                |
+| 5     | New source: Himalayas (search API)                      | laravel-backend | 4          | M    | DONE                |
+| 6     | New source: We Work Remotely (category RSS)             | laravel-backend | 4          | M    | DONE                |
+| 7     | New source: Working Nomads                              | laravel-backend | 4          | S    | DONE                |
+| 8     | New source: Hacker News "Who is hiring?"                | laravel-backend | 4          | M    | DONE                |
+| 9     | Company website hint → domain resolution                | laravel-backend | 8          | M    | DONE                |
+| 10    | Verification and report (before/after funnel)           | qa-tester       | 1–8 (9)    | S    | BLOCKED (owner run) |
 
 ## Audit — 2026-09-26
 
@@ -61,7 +61,7 @@ Findings:
    `verified` company. `ResolveCompanyDomain` guesses `<slug>.com` only (71
    companies without a domain, and some guesses may be the wrong company);
    242 companies have a domain but only `catch_all`/`mx_only` contacts, which
-   the outreach rules exclude. More relevant *input* helps, but this ratio
+   the outreach rules exclude. More relevant _input_ helps, but this ratio
    stays unless the domain is known from the source (Phase 9) — see D3.
 5. **Remotive's public API is capped** at ~19–20 jobs and ignores
    `category` (tested: `category=software-development` returned a German
@@ -69,17 +69,17 @@ Findings:
 
 ### Live API research (all public, no key, tested 2026-09-26)
 
-| Source                 | Endpoint / filter tested                                                               | Result                                                                                                                                                                                                                                                                   |
-| ---------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| RemoteOK               | `GET https://remoteok.com/api?tag=backend`                                             | Works: 100 items, all backend/frontend engineering. Same shape as today (first element = legal blob).                                                                                                                                                                  |
-| Jobicy                 | `GET https://jobicy.com/api/v2/remote-jobs?count=100&industry=engineering`             | Works: 100 engineering jobs. Industry slugs (`?get=industries`): `engineering`, `technical-support`, `supporting`, `qa-testing`, `web-app-design`, `project-management`, … Fair use: at most one automated check per hour.                                            |
-| Arbeitnow              | `GET https://www.arbeitnow.com/api/job-board-api?page=N`                               | Pagination works (100–250/page, `links.next`). `?search=` is **ignored**. Documented filters: `remote=true`, `visa_sponsorship=true`. Only local filtering can target roles.                                                                                            |
-| Himalayas (new)        | `GET https://himalayas.app/jobs/api/search?q=backend&page=N`                           | Works: `totalCount` 5000, 20/page. Params: `q`, `country`, `worldwide`, `exclude_worldwide`, `seniority`, `employment_type`, `company`, `sort`, `page`. Returns 429 when rate-limited. Requires visible link back + "data from Himalayas". Refreshes every 24h.        |
-| We Work Remotely (new) | `GET https://weworkremotely.com/categories/<slug>.rss`                                 | RSS/XML. Item counts today: `remote-programming-jobs` 25, `remote-full-stack-programming-jobs` 41, `remote-customer-support-jobs` 29, `remote-product-jobs` 7, `remote-back-end-programming-jobs` 6. Title is `"Company: Role"`. PHP `SimpleXML` is installed. |
-| Working Nomads (new)   | `GET https://www.workingnomads.com/api/exposed_jobs/`                                  | 57 items; `category_name` counts: Development 28, Customer Success 6, … No id field (id lives in `url` `/job/go/{id}/`). Small but cheap.                                                                                                                                |
-| HN Who is hiring (new) | Algolia: `search_by_date?tags=story,author_whoishiring` then `GET /api/v1/items/{id}` | Sept 2026 thread: 256 top-level posts, **72 contain an e-mail address**, header line is `Company \| Role \| Location \| …` and usually has the **company website** → domain known without guessing. Best fit for e-mail outreach; mostly dev roles.                     |
-| Adzuna                 | not tested (needs free `app_id`/`app_key`)                                             | Large volume per country (incl. BR, PT, UK, DE) with `what=` search. Needs registration + `.env` keys → D4.                                                                                                                                                              |
-| Gupy (BR)              | `portal.api.gupy.io` guesses                                                           | 404 — no stable public endpoint found. Not planned.                                                                                                                                                                                                                      |
+| Source                 | Endpoint / filter tested                                                              | Result                                                                                                                                                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RemoteOK               | `GET https://remoteok.com/api?tag=backend`                                            | Works: 100 items, all backend/frontend engineering. Same shape as today (first element = legal blob).                                                                                                                                                           |
+| Jobicy                 | `GET https://jobicy.com/api/v2/remote-jobs?count=100&industry=engineering`            | Works: 100 engineering jobs. Industry slugs (`?get=industries`): `engineering`, `technical-support`, `supporting`, `qa-testing`, `web-app-design`, `project-management`, … Fair use: at most one automated check per hour.                                      |
+| Arbeitnow              | `GET https://www.arbeitnow.com/api/job-board-api?page=N`                              | Pagination works (100–250/page, `links.next`). `?search=` is **ignored**. Documented filters: `remote=true`, `visa_sponsorship=true`. Only local filtering can target roles.                                                                                    |
+| Himalayas (new)        | `GET https://himalayas.app/jobs/api/search?q=backend&page=N`                          | Works: `totalCount` 5000, 20/page. Params: `q`, `country`, `worldwide`, `exclude_worldwide`, `seniority`, `employment_type`, `company`, `sort`, `page`. Returns 429 when rate-limited. Requires visible link back + "data from Himalayas". Refreshes every 24h. |
+| We Work Remotely (new) | `GET https://weworkremotely.com/categories/<slug>.rss`                                | RSS/XML. Item counts today: `remote-programming-jobs` 25, `remote-full-stack-programming-jobs` 41, `remote-customer-support-jobs` 29, `remote-product-jobs` 7, `remote-back-end-programming-jobs` 6. Title is `"Company: Role"`. PHP `SimpleXML` is installed.  |
+| Working Nomads (new)   | `GET https://www.workingnomads.com/api/exposed_jobs/`                                 | 57 items; `category_name` counts: Development 28, Customer Success 6, … No id field (id lives in `url` `/job/go/{id}/`). Small but cheap.                                                                                                                       |
+| HN Who is hiring (new) | Algolia: `search_by_date?tags=story,author_whoishiring` then `GET /api/v1/items/{id}` | Sept 2026 thread: 256 top-level posts, **72 contain an e-mail address**, header line is `Company \| Role \| Location \| …` and usually has the **company website** → domain known without guessing. Best fit for e-mail outreach; mostly dev roles.             |
+| Adzuna                 | not tested (needs free `app_id`/`app_key`)                                            | Large volume per country (incl. BR, PT, UK, DE) with `what=` search. Needs registration + `.env` keys → D4.                                                                                                                                                     |
+| Gupy (BR)              | `portal.api.gupy.io` guesses                                                          | 404 — no stable public endpoint found. Not planned.                                                                                                                                                                                                             |
 
 Not recommended: LinkedIn/Indeed/Glassdoor scraping (ToS, anti-bot); more
 fixed single-company ATS boards (the `more-aggregators` spec already dropped
@@ -89,15 +89,15 @@ possible either.
 
 ### Repo facts the phases rely on
 
-| Check                          | Result                                                                                                                                         |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Adapter contract               | `JobSourceAdapter::fetch(Source): iterable<JobPostingData>`; shared HTTP trait `InteractsWithJobBoardApi` (`acceptJson`, `throw`, retry 2).     |
-| Fetch job                      | `FetchJobsFromSource`: collects the whole iterable, then upserts in chunks; `$timeout = 120`; any exception fails the whole source run.         |
-| Sources unique key             | `(adapter, identifier)`; aggregators have `identifier = null`. Seeder uses `firstOrCreate(adapter, identifier)` → **one row per aggregator**. |
-| Settings                       | `sources.settings` JSON, edited as a generic KeyValue (string values) in `SourceForm`.                                                        |
-| Discovery trigger              | `FetchJobsFromSource` → `DiscoverContactsForPosting` per new posting → company resolve/domain/SMTP → `ExtractJobPostingProfileJob`.            |
-| Matching                       | `App\Outreach\Queries\MatchingJobPostings::forUser()` — single source of truth for the client Jobs page.                                        |
-| Migrations                     | `2026_09_23_120002_create_job_postings_table.php` exists; no dependency changes needed anywhere in this plan.                                 |
+| Check              | Result                                                                                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Adapter contract   | `JobSourceAdapter::fetch(Source): iterable<JobPostingData>`; shared HTTP trait `InteractsWithJobBoardApi` (`acceptJson`, `throw`, retry 2).   |
+| Fetch job          | `FetchJobsFromSource`: collects the whole iterable, then upserts in chunks; `$timeout = 120`; any exception fails the whole source run.       |
+| Sources unique key | `(adapter, identifier)`; aggregators have `identifier = null`. Seeder uses `firstOrCreate(adapter, identifier)` → **one row per aggregator**. |
+| Settings           | `sources.settings` JSON, edited as a generic KeyValue (string values) in `SourceForm`.                                                        |
+| Discovery trigger  | `FetchJobsFromSource` → `DiscoverContactsForPosting` per new posting → company resolve/domain/SMTP → `ExtractJobPostingProfileJob`.           |
+| Matching           | `App\Outreach\Queries\MatchingJobPostings::forUser()` — single source of truth for the client Jobs page.                                      |
+| Migrations         | `2026_09_23_120002_create_job_postings_table.php` exists; no dependency changes needed anywhere in this plan.                                 |
 
 ## Proposal (product contract)
 
@@ -117,18 +117,18 @@ possible either.
 
 Role families (enum `RoleFamily`, string-backed):
 
-| Case             | Value              | Label            | Examples (title, any language)                                                      |
-| ---------------- | ------------------ | ---------------- | ----------------------------------------------------------------------------------- |
-| Backend          | `backend`          | Backend          | backend, back-end, api, php, laravel, node, golang, java, python, ruby, .net, rails |
-| Frontend         | `frontend`         | Frontend         | frontend, front-end, react, vue, angular, ui engineer, web developer                |
-| Fullstack        | `fullstack`        | Full stack       | full stack, fullstack, full-stack                                                   |
-| Software         | `software`         | Software (other) | software engineer/developer, programmer, entwickler, développeur, desenvolvedor     |
-| Mobile           | `mobile`           | Mobile           | ios, android, flutter, react native, mobile                                         |
-| Devops           | `devops`           | DevOps / SRE     | devops, sre, site reliability, platform engineer, infrastructure engineer          |
-| Qa               | `qa`               | QA               | qa, quality assurance, test engineer, sdet, tester                                  |
-| Support          | `support`          | Support          | support engineer, technical support, help desk, it support, suporte, kundenservice  |
-| CustomerService  | `customer_service` | Customer service | customer success, customer service, customer care, customer experience, atendimento |
-| Product          | `product`          | Product          | product manager, product owner, product analyst, product operations                 |
+| Case            | Value              | Label            | Examples (title, any language)                                                      |
+| --------------- | ------------------ | ---------------- | ----------------------------------------------------------------------------------- |
+| Backend         | `backend`          | Backend          | backend, back-end, api, php, laravel, node, golang, java, python, ruby, .net, rails |
+| Frontend        | `frontend`         | Frontend         | frontend, front-end, react, vue, angular, ui engineer, web developer                |
+| Fullstack       | `fullstack`        | Full stack       | full stack, fullstack, full-stack                                                   |
+| Software        | `software`         | Software (other) | software engineer/developer, programmer, entwickler, développeur, desenvolvedor     |
+| Mobile          | `mobile`           | Mobile           | ios, android, flutter, react native, mobile                                         |
+| Devops          | `devops`           | DevOps / SRE     | devops, sre, site reliability, platform engineer, infrastructure engineer           |
+| Qa              | `qa`               | QA               | qa, quality assurance, test engineer, sdet, tester                                  |
+| Support         | `support`          | Support          | support engineer, technical support, help desk, it support, suporte, kundenservice  |
+| CustomerService | `customer_service` | Customer service | customer success, customer service, customer care, customer experience, atendimento |
+| Product         | `product`          | Product          | product manager, product owner, product analyst, product operations                 |
 
 Rules: exclusions win (sales, account executive/manager, business
 development, marketing, recruiter, accountant, legal, designer — including
@@ -191,7 +191,7 @@ the numbers are still low (needs you to register a free key; `.env`
   phase; say in the evidence that it is needed.
 - `job-collection` invariants: adapter contract unchanged; `raw` keeps the
   full item; `companyName` from payload; dedup key `(source_id,
-  external_id)`; never touch `collection_run_id`/`first_seen_at` of existing
+external_id)`; never touch `collection_run_id`/`first_seen_at` of existing
   postings; `JobPostingsUpdated` once per source run.
 - Aggregators keep their original `url` (attribution link-back) and get a
   `sourceLabel()` "via X".
@@ -209,17 +209,17 @@ the numbers are still low (needs you to register a free key; `.env`
 
 ## Acceptance-criteria coverage
 
-| AC                                                                                             | Phases  |
-| ---------------------------------------------------------------------------------------------- | ------- |
-| AC01 Every new/updated posting has `role_family` set by the classifier (or null = other)       | 1       |
-| AC02 Contact discovery is dispatched only for target-family postings                           | 2       |
-| AC03 Client Jobs page shows only target-family postings (plus existing preference filters)     | 2       |
-| AC04 Admin Job Postings shows and filters by role family                                       | 3       |
+| AC                                                                                               | Phases  |
+| ------------------------------------------------------------------------------------------------ | ------- |
+| AC01 Every new/updated posting has `role_family` set by the classifier (or null = other)         | 1       |
+| AC02 Contact discovery is dispatched only for target-family postings                             | 2       |
+| AC03 Client Jobs page shows only target-family postings (plus existing preference filters)       | 2       |
+| AC04 Admin Job Postings shows and filters by role family                                         | 3       |
 | AC05 RemoteOK/Jobicy/Arbeitnow honour the new targeting settings; empty settings = old behaviour | 4       |
-| AC06 Himalayas, WWR, Working Nomads, HN adapters return > 0 items live, fields mapped          | 5,6,7,8 |
-| AC07 Seeder adds the new sources idempotently with the default targeting settings               | 4–8     |
-| AC08 (D3) HN postings with a website resolve the company domain from it                        | 9       |
-| AC09 A full run reports more target-family postings in the verified pool than the baseline     | 10      |
+| AC06 Himalayas, WWR, Working Nomads, HN adapters return > 0 items live, fields mapped            | 5,6,7,8 |
+| AC07 Seeder adds the new sources idempotently with the default targeting settings                | 4–8     |
+| AC08 (D3) HN postings with a website resolve the company domain from it                          | 9       |
+| AC09 A full run reports more target-family postings in the verified pool than the baseline       | 10      |
 
 ## Phases
 
@@ -242,7 +242,7 @@ deterministic `role_family`.
   strips gender markers like `(m/w/d)`, `(f/m/x)`, `(H/F)`, `(all genders)`
   before matching. Keyword lists live as constants in the class.
 - `config/talent.php` → `'collection' => ['target_role_families' => [...all
-  RoleFamily values...]]` (all families targeted by default).
+RoleFamily values...]]` (all families targeted by default).
 - Column `job_postings.role_family` string nullable + index, added **inside**
   `2026_09_23_120002_create_job_postings_table.php`. `JobPosting` casts it to
   `RoleFamily`.
@@ -324,7 +324,7 @@ Role: laravel-backend · Depends on: none · Covers: AC05, AC07 · Size: M
 **Contract.**
 
 - Shared helper in `InteractsWithJobBoardApi`: `settingList(Source, string
-  $key): list<string>` (comma-split, trimmed, unique, non-empty) and a
+$key): list<string>` (comma-split, trimmed, unique, non-empty) and a
   `pause()` (250 ms) plus the "stop paging on 429" pattern (catch
   `RequestException` with status 429 → stop, keep collected items).
 - `RemoteOkAdapter`: setting `tags` → one `GET https://remoteok.com/api?tag=<tag>`
@@ -441,18 +441,18 @@ Role: laravel-backend · Depends on: 4 · Covers: AC06, AC07 · Size: M
 - Each top-level child with non-empty `text` is one posting. Header = text
   before the first `<p>`, HTML-decoded, tags stripped, split on `|` into
   trimmed segments. Require ≥ 2 segments, else skip.
-  - companyName = segment 0 with any URL/parenthetical removed.
-  - title = first segment that the `RoleClassifier` (Phase 1 is not a
-    dependency — use a small local regex `/(engineer|developer|programmer|
-    manager|designer|support|success|product|sre|devops|lead|architect|
-    scientist|analyst)/i`) matches, else segment 1.
-  - location = first segment matching `/remote|onsite|on-site|hybrid|,/i`
-    other than the title, else null; isRemote = header matches `/remote/i`.
-  - employmentType = segment matching `/full[- ]?time|part[- ]?time|contract/i`.
-  - externalId = child `id`; url = `https://news.ycombinator.com/item?id={id}`;
-    applyUrl = first `href` in the text that isn't news.ycombinator.com,
-    else url; descriptionHtml = `text`; publishedAt = `created_at`; raw = child
-    without its `children`.
+    - companyName = segment 0 with any URL/parenthetical removed.
+    - title = first segment that the `RoleClassifier` (Phase 1 is not a
+      dependency — use a small local regex `/(engineer|developer|programmer|
+manager|designer|support|success|product|sre|devops|lead|architect|
+scientist|analyst)/i`) matches, else segment 1.
+    - location = first segment matching `/remote|onsite|on-site|hybrid|,/i`
+      other than the title, else null; isRemote = header matches `/remote/i`.
+    - employmentType = segment matching `/full[- ]?time|part[- ]?time|contract/i`.
+    - externalId = child `id`; url = `https://news.ycombinator.com/item?id={id}`;
+      applyUrl = first `href` in the text that isn't news.ycombinator.com,
+      else url; descriptionHtml = `text`; publishedAt = `created_at`; raw = child
+      without its `children`.
 - Seeder row "Hacker News", no settings.
 
 **Done when:** checks pass; live tinker reports count (expect ~200+) and 10
@@ -514,14 +514,15 @@ Role: qa-tester · Depends on: 1–8 (and 9 if unblocked) · Covers: AC09 · Siz
 - Reviews: per-phase reviews for 1–4, a combined review for 5–8, and a final integrated review of everything (2 blockers: shared-hosting domains, varchar(255) overflow — both fixed, focused re-review APPROVED).
 - Offline funnel estimate on the 670 postings already in the DB (classifier applied read-only):
 
-  | Source    | Postings | Target family | %   |
-  | --------- | -------- | ------------- | --- |
-  | Arbeitnow | 479      | 106           | 22% |
-  | RemoteOK  | 100      | 36            | 36% |
-  | Jobicy    | 72       | 24            | 33% |
-  | Remotive  | 19       | 11            | 58% |
+    | Source    | Postings | Target family | %   |
+    | --------- | -------- | ------------- | --- |
+    | Arbeitnow | 479      | 106           | 22% |
+    | RemoteOK  | 100      | 36            | 36% |
+    | Jobicy    | 72       | 24            | 33% |
+    | Remotive  | 19       | 11            | 58% |
 
-  Current client pool (verified company + profile done): 113 postings → **33** with the role gate (software 8, support 6, backend 5, customer_service 4, product 4, devops 2, qa 2, fullstack 1, frontend 1). Contact discovery would run for 177 of 670 postings instead of all 670. Only 1 fullstack + 1 frontend + 5 backend in today's pool: the extra volume has to come from the new sources.
+    Current client pool (verified company + profile done): 113 postings → **33** with the role gate (software 8, support 6, backend 5, customer_service 4, product 4, devops 2, qa 2, fullstack 1, frontend 1). Contact discovery would run for 177 of 670 postings instead of all 670. Only 1 fullstack + 1 frontend + 5 backend in today's pool: the extra volume has to come from the new sources.
+
 - Live source yield with the seeded settings (no DB writes): RemoteOK tags 499 items / 10 requests; Jobicy industries 351 / 5; Arbeitnow pages=3 600 / 3; Himalayas 117 / 6; We Work Remotely 100 / 7; Working Nomads 34 / 1; Hacker News 173 / 2 (120 with a company website).
 
 **Owner checklist (needed for AC09 and to see the feature).**

@@ -1,15 +1,10 @@
 {
-    "agents": [
-        "claude_code",
-        "factory"
-    ],
+    "agents": ["claude_code", "factory"],
     "cloud": false,
     "guidelines": false,
     "mcp": true,
     "nightwatch": false,
-    "packages": [
-        "filament/filament"
-    ],
+    "packages": ["filament/filament"],
     "sail": false,
     "skills": [
         "infer-conventions",

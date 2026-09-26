@@ -12,6 +12,7 @@
 ## Part 0 — Context and decisions
 
 Decided (owner):
+
 1. **Stripe** is the payment provider.
 2. **Prices vary by the buyer's region**: Brazil (BRL), Europe (EUR), rest of
    the world (USD). Region comes from the country the user chose (signup /
@@ -22,15 +23,12 @@ Decided (owner):
 4. **Manual plans stay:** a plan set by the admin (testers: owner's wife,
    friend) is never billed and is not overwritten by Stripe events.
 
-Decided here (architecture, delegated by the owner):
-5. **Laravel Cashier (Stripe)** (`laravel/cashier`) for customers,
-   subscriptions, Checkout, Billing Portal and webhooks. One Stripe
-   **Price** per plan × region (currency), IDs in env.
-6. Stripe **Checkout** (hosted) to subscribe, Stripe **Billing Portal**
-   (hosted) to change card, cancel, see invoices. No card forms in the app.
-7. Plan changes: upgrade/downgrade through the Billing Portal (configured to
-   allow switching between the plan prices of the same currency, with
-   proration). The app reacts to webhooks only.
+Decided here (architecture, delegated by the owner): 5. **Laravel Cashier (Stripe)** (`laravel/cashier`) for customers,
+subscriptions, Checkout, Billing Portal and webhooks. One Stripe
+**Price** per plan × region (currency), IDs in env. 6. Stripe **Checkout** (hosted) to subscribe, Stripe **Billing Portal**
+(hosted) to change card, cancel, see invoices. No card forms in the app. 7. Plan changes: upgrade/downgrade through the Billing Portal (configured to
+allow switching between the plan prices of the same currency, with
+proration). The app reacts to webhooks only.
 
 ## Part B — Product spec
 
@@ -87,7 +85,7 @@ the owner must keep them equal (documented in `.env.example`).
   `billingAvailable = config('talent.billing.enabled') && Stripe keys set`.
 - `POST /internal/billing/checkout` `{ plan }` → creates a Checkout Session
   for the user's region price (`$user->newSubscription('default',
-  $priceId)->checkout([...])`), success/cancel URLs back to `/plans`
+$priceId)->checkout([...])`), success/cancel URLs back to `/plans`
   (`?checkout=success|cancel`), returns `{ url }`; the frontend redirects.
   Rejected when billing is off, the plan is the current one, or the user is
   `manual` with a paid plan (message: contact us).
@@ -97,7 +95,7 @@ the owner must keep them equal (documented in `.env.example`).
   map the active price ID back to a plan key (reverse lookup in
   `stripe_prices`), set `plan_key` and `plan_source = stripe`; on
   cancellation at period end or deletion, set `plan_key =
-  config('talent.plans.default')` when the subscription ends. Dispatch
+config('talent.plans.default')` when the subscription ends. Dispatch
   `AccountStatusUpdated`.
 - Failed payment (`invoice.payment_failed`): notify the client (database
   notification + live) with a link to the portal; Stripe's dunning handles

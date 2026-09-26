@@ -13,9 +13,9 @@ tests unless asked.**
 
 ## Two entry modes
 
-| Mode                           | Task graph lives in                      | Status recorded in                      |
-| ------------------------------ | ---------------------------------------- | --------------------------------------- |
-| Feature (`docs/features/<f>/`) | `.claude/state/<f>.md` (you derive it)   | `.claude/state/<f>.md`                  |
+| Mode                            | Task graph lives in                       | Status recorded in                       |
+| ------------------------------- | ----------------------------------------- | ---------------------------------------- |
+| Feature (`docs/features/<f>/`)  | `.claude/state/<f>.md` (you derive it)    | `.claude/state/<f>.md`                   |
 | Plan phases (`/execute-phases`) | the phases of `plan.md` (already derived) | each phase's `Status:` line in `plan.md` |
 
 ## Entry gate
@@ -46,15 +46,16 @@ tests unless asked.**
 1. **Scope** — mark `IN_PROGRESS`. Collect its ACs and embedded contract.
 2. **Delegate** by scope (one task may run roles sequentially):
 
-   | Scope                                                                | Role               |
-   | -------------------------------------------------------------------- | ------------------ |
-   | migration, model, enum, action, job, adapter, seeder, config, policy | `laravel-backend`  |
-   | Filament resource, page, action, table/form/infolist, panel          | `filament-admin`   |
-   | Inertia/React page or component, Tailwind                            | `inertia-frontend` |
+    | Scope                                                                | Role               |
+    | -------------------------------------------------------------------- | ------------------ |
+    | migration, model, enum, action, job, adapter, seeder, config, policy | `laravel-backend`  |
+    | Filament resource, page, action, table/form/infolist, panel          | `filament-admin`   |
+    | Inertia/React page or component, Tailwind                            | `inertia-frontend` |
 
-   The prompt includes: the task, its AC text, the exact contract (columns,
-   signatures, channel names, copy strings), the invariants that apply, and
-   "implement only this scope; never run git writes".
+    The prompt includes: the task, its AC text, the exact contract (columns,
+    signatures, channel names, copy strings), the invariants that apply, and
+    "implement only this scope; never run git writes".
+
 3. **Verify** deterministically with the commands in `project-core` for the
    files actually changed. Failures go back to the same role before review.
 4. **Review** with `code-reviewer`: task + AC text + contract + scoped diff

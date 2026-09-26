@@ -50,21 +50,21 @@ that sends the wrong-language CV. Decisions:
 
 New create migration `application_profiles`:
 
-| Column | Type |
-|---|---|
-| id | bigint |
-| user_id | foreignId users, cascadeOnDelete |
-| language | string(8) (`en`/`pt`/`es`, backed enum `App\Enums\ApplicationLanguage`) |
-| is_active | boolean default true |
-| cv_path | string nullable (private `local` disk, `cvs/{userId}/{language}/<random>.pdf`) |
-| cv_original_name | string nullable |
-| cv_size_bytes | unsignedInteger nullable |
-| cv_uploaded_at | timestamp nullable |
-| email_subject | string(200) |
-| email_body | text |
-| cover_letter | text nullable (max 6000 chars) |
-| timestamps | |
-| unique | (`user_id`, `language`) |
+| Column           | Type                                                                           |
+| ---------------- | ------------------------------------------------------------------------------ |
+| id               | bigint                                                                         |
+| user_id          | foreignId users, cascadeOnDelete                                               |
+| language         | string(8) (`en`/`pt`/`es`, backed enum `App\Enums\ApplicationLanguage`)        |
+| is_active        | boolean default true                                                           |
+| cv_path          | string nullable (private `local` disk, `cvs/{userId}/{language}/<random>.pdf`) |
+| cv_original_name | string nullable                                                                |
+| cv_size_bytes    | unsignedInteger nullable                                                       |
+| cv_uploaded_at   | timestamp nullable                                                             |
+| email_subject    | string(200)                                                                    |
+| email_body       | text                                                                           |
+| cover_letter     | text nullable (max 6000 chars)                                                 |
+| timestamps       |                                                                                |
+| unique           | (`user_id`, `language`)                                                        |
 
 `job_preferences`: **remove** `cv_path`, `cv_original_name`,
 `email_subject`, `email_body` (edit its create migration).
@@ -81,6 +81,7 @@ same rules as `CanSendApplications` today).
 ### B.3 Templates
 
 `ApplicationTemplateRenderer`:
+
 - `ALLOWED_VARIABLES` adds `cover_letter`.
 - `variablesFor(User, JobPosting, ApplicationProfile)` adds
   `cover_letter` (the profile's cover letter rendered with the other
@@ -91,6 +92,7 @@ same rules as `CanSendApplications` today).
   stray `)` of today's default body:
 
 EN — subject `Application: {{ job_title }}`, body:
+
 ```
 Hello {{ company }} team,
 
@@ -103,7 +105,9 @@ My CV is attached. Thank you for your time.
 Best regards,
 {{ client_name }}
 ```
+
 PT — subject `Candidatura: {{ job_title }}`, body:
+
 ```
 Olá, equipe {{ company }},
 
@@ -116,7 +120,9 @@ Meu currículo está em anexo. Obrigado pelo seu tempo.
 Atenciosamente,
 {{ client_name }}
 ```
+
 ES — subject `Candidatura: {{ job_title }}`, body:
+
 ```
 Hola, equipo de {{ company }}:
 
@@ -133,7 +139,7 @@ Saludos cordiales,
 ### B.4 Pool, eligibility, queueing and sending
 
 - `MatchingJobPostings::forUser`: add `profile.language IN (<active complete
-  profile languages of the user>)`; if the user has none, the pool is empty.
+profile languages of the user>)`; if the user has none, the pool is empty.
   The preview (`preferences-clarity` B.4) keeps `byLanguage` ignoring this rule.
 - `CanSendApplications`: replace the CV/template checks with "at least one
   active complete application profile" (`'Create an application profile.'`).
@@ -161,7 +167,7 @@ Under the `/internal` group (`client-core-wiring` B.6):
   default subject/body, empty cover letter, active → `ApplicationProfile`
   (409 if it exists).
 - `PUT /internal/profiles/{language}` `{ emailSubject, emailBody,
-  coverLetter, active }` → validated (subject 1–200, body 1–5000, cover
+coverLetter, active }` → validated (subject 1–200, body 1–5000, cover
   letter ≤ 6000, only allowed variables, no `{{ cover_letter }}` inside the
   cover letter) → `ApplicationProfile`.
 - `DELETE /internal/profiles/{language}` → deletes the profile and its CV
@@ -172,7 +178,7 @@ Under the `/internal` group (`client-core-wiring` B.6):
   deleted after the new one is stored → `ApplicationProfile`.
   `DELETE …/cv` removes it.
 - `POST /internal/profiles/{language}/preview` `{ subject, body,
-  coverLetter }` → `TemplatePreview` rendered against the newest job of the
+coverLetter }` → `TemplatePreview` rendered against the newest job of the
   client's pool in that language (fallback sample job "Acme Robotics",
   "Backend Engineer", localized), job URL replaced by the `{{ job_url }}`
   token (the UI shows the chip). `throttle:60,1`.

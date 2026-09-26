@@ -1,9 +1,9 @@
 ---
 name: deploying-to-cloud
-description: "Deploys and manages Laravel applications on Laravel Cloud using the `cloud` CLI. Use when the user wants to deploy an app, ship to Cloud, create or manage applications, environments, databases, caches, object storage, queues, domains, instances, background processes, secrets, compute, scheduled tasks, or Laravel Cloud infrastructure; or check billing, usage, or spend. Triggers on deployment, shipping, Cloud management, environment setup, database provisioning, billing or usage queries, the `cloud` CLI, and Laravel Cloud deployment troubleshooting."
+description: 'Deploys and manages Laravel applications on Laravel Cloud using the `cloud` CLI. Use when the user wants to deploy an app, ship to Cloud, create or manage applications, environments, databases, caches, object storage, queues, domains, instances, background processes, secrets, compute, scheduled tasks, or Laravel Cloud infrastructure; or check billing, usage, or spend. Triggers on deployment, shipping, Cloud management, environment setup, database provisioning, billing or usage queries, the `cloud` CLI, and Laravel Cloud deployment troubleshooting.'
 license: MIT
 metadata:
-  author: laravel
+    author: laravel
 ---
 
 # Deploying with Laravel Cloud
@@ -82,6 +82,7 @@ Never hardcode command signatures. Always run `cloud <command> -h` to discover o
 - Never use `-q` or `--silent`; they suppress all output.
 
 Flag combos per operation:
+
 - Read (`:list`, `:get`) → `--json -n`
 - Create (`:create`) → `--json -n`
 - Update (`:update`) → `--json -n --force`
@@ -96,10 +97,11 @@ Determine the task and follow the matching path:
 - First deployment: inspect `cloud ship -h`, then run `cloud ship -n` with all required values.
 
 - Existing application:
-  ```shell
-  cloud deploy {app_name} {environment} -n --open
-  cloud deploy:monitor -n
-  ```
+
+    ```shell
+    cloud deploy {app_name} {environment} -n --open
+    cloud deploy:monitor -n
+    ```
 
 - Environment variables: `cloud environment:variables -n --force`
 
@@ -132,6 +134,7 @@ Always run `cloud deploy:monitor -n` after every deploy. If it fails, inspect th
 Delegate high-output operations to subagents using the Task tool to keep the main context window small. Only the summary returns; verbose output stays in the subagent's context.
 
 Delegate these to a subagent:
+
 - `cloud deploy:monitor -n` — deployment logs can be very long
 - `cloud deployment:get --json -n` — full deployment details
 - `cloud <resource>:list --json -n` — listing many resources produces large JSON
@@ -140,6 +143,7 @@ Delegate these to a subagent:
 - Fetching docs from https://cloud.laravel.com/docs/llms.txt via `WebFetch`
 
 Keep in the main context:
+
 - Short commands like `:create`, `:delete`, `:update` — output is small
 - `cloud deploy -n` — you need the deployment ID immediately
 - Any command where you need the result for the next step right away
@@ -147,12 +151,14 @@ Keep in the main context:
 ### Rules
 
 Follow these rules:
+
 - Flag selection — always use the documented combos above
 - Deploy sequence — deploy then monitor, never skip monitoring
 - Destructive commands — always confirm with the user first, show the command and wait for approval. This includes deleting applications, environments, databases, caches, buckets, domains, or secrets.
 - Error loop — diagnose, fix once, ask user if it fails again
 
 Use judgment for:
+
 - Instance sizes, regions, cluster types — ask the user if not specified
 - Which resources to provision — based on what the user describes
 - Order of provisioning — no strict sequence required

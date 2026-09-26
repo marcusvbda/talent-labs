@@ -71,15 +71,15 @@ or ends with a letter or digit (so `C++`, `.NET`, `Node.js` still match).
 Queries use `~*` (case-insensitive regex) with bindings, never string
 interpolation.
 
-| Field | Condition (applied only when the field is non-empty) |
-|---|---|
-| `titles` | `(job_postings.title ~* p1 OR profile.normalized_title ~* p1) OR … pN` |
-| `seniorities` | `profile.seniority IN (…)` `OR profile.seniority = 'unknown'` (when the config flag is true) |
-| `stack` | `profile.stack ?| array[normalized…]` (as today, `StackNormalizer`) |
-| `remote_mode = remote_only` | `profile.is_remote = true` (locations ignored) |
+| Field                               | Condition (applied only when the field is non-empty)                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `titles`                            | `(job_postings.title ~* p1 OR profile.normalized_title ~* p1) OR … pN`                          |
+| `seniorities`                       | `profile.seniority IN (…)` `OR profile.seniority = 'unknown'` (when the config flag is true)    |
+| `stack`                             | `profile.stack ?                                                                                | array[normalized…]`(as today,`StackNormalizer`) |
+| `remote_mode = remote_only`         | `profile.is_remote = true` (locations ignored)                                                  |
 | `remote_mode = remote_or_locations` | when locations non-empty: `profile.is_remote = true OR <location match>`; when empty: no filter |
-| `remote_mode = locations_only` | `<location match>` (locations required, validated) |
-| `exclude_words` | `NOT (title ~* w OR normalized_title ~* w OR profile.stack ? normalized(w))` for each word |
+| `remote_mode = locations_only`      | `<location match>` (locations required, validated)                                              |
+| `exclude_words`                     | `NOT (title ~* w OR normalized_title ~* w OR profile.stack ? normalized(w))` for each word      |
 
 `<location match>` = any location term matches `job_postings.location` or
 any element of `profile.locations` (whole word, `~*`).

@@ -24,7 +24,7 @@
    the existing one-time AI profile extraction also returns the job's
    language. AI stays limited to this single extraction.
 5. **Plans become data here** (catalog + `users.plan_key`) so the account
-   status is real. Sending *modes* are enforced in `plans-and-sending-modes`.
+   status is real. Sending _modes_ are enforced in `plans-and-sending-modes`.
 6. **The client must never receive** job URLs, recipient email addresses or
    company domains in any response (`client-app-screens` Part 0).
 7. Migrations: edit the existing `create_*` migrations (development mode,
@@ -66,19 +66,19 @@ added by foundation). Casts: `region` → `App\Enums\Region`, `plan_key` →
 
 **invitations** (new create migration):
 
-| Column | Type |
-|---|---|
-| id | bigint |
-| token_hash | string(64) unique (sha256 of the raw token) |
-| email | string nullable (when set, registration email must match, case-insensitive) |
-| note | string(200) nullable (admin label, e.g. "Wife") |
-| plan_key | string(32) nullable (plan given on registration; default from config when null) |
-| created_by | foreignId users, restrictOnDelete |
-| used_by | foreignId users nullable, nullOnDelete |
-| used_at | timestamp nullable |
-| expires_at | timestamp nullable |
-| revoked_at | timestamp nullable |
-| timestamps | |
+| Column     | Type                                                                            |
+| ---------- | ------------------------------------------------------------------------------- |
+| id         | bigint                                                                          |
+| token_hash | string(64) unique (sha256 of the raw token)                                     |
+| email      | string nullable (when set, registration email must match, case-insensitive)     |
+| note       | string(200) nullable (admin label, e.g. "Wife")                                 |
+| plan_key   | string(32) nullable (plan given on registration; default from config when null) |
+| created_by | foreignId users, restrictOnDelete                                               |
+| used_by    | foreignId users nullable, nullOnDelete                                          |
+| used_at    | timestamp nullable                                                              |
+| expires_at | timestamp nullable                                                              |
+| revoked_at | timestamp nullable                                                              |
+| timestamps |                                                                                 |
 
 Raw token: 40 random URL-safe chars (`Str::random(40)`), shown **once** in
 the admin after creation. Link: `route('register', ['invite' => $token])`.
@@ -178,7 +178,7 @@ Implement:
   plan from `PlanCatalog`; quota `usedToday` = `applications()->countedToday()`,
   `limit`, `remaining`, `resetsAt` = start of next day (app timezone);
   gmail from `gmailIntegration`; `sending` = `{ paused: false,
-  autoPausedReason: null }` until spec 6; onboarding steps: `basics` =
+autoPausedReason: null }` until spec 6; onboarding steps: `basics` =
   country and timezone set, `gmail` = connected, `profile` = the legacy
   check `CanSendApplications` uses for CV + template (spec 5 switches it to
   profiles), `preferences` = a `job_preferences` row exists; `complete` =
@@ -251,18 +251,18 @@ page for the URL filters), `applications` (first page) as props, used as
   or `withBroadcasting`), with `web` + `auth`.
 - Events (`ShouldBroadcastNow`, `broadcastAs` exactly the contract names,
   `broadcastWith` = contract payload built with the same Resources):
-  - `ApplicationProgressed` → `application.progressed`; dispatched from
-    `Application::booted` `saved` hook (in addition to the existing public
-    admin broadcast), wrapped in the same best-effort try/catch as
-    `BroadcastsRealtime`.
-  - `AccountStatusUpdated` → `account.updated`; dispatched after an
-    application changes quota (status saved) and when the Gmail integration
-    status changes (`ConnectedIntegration` saved), debounced to at most once
-    per second per user (cache lock).
-  - `NotificationCreated` → `notification.created`.
-  - `JobsCollected` on the **public** channel `jobs` → `jobs.collected`
-    `{ collectionRunId, newJobs }`, dispatched by `FinalizeCollectionRun`
-    when the run ends with `jobs_new > 0`. Public payload: ids and counts only.
+    - `ApplicationProgressed` → `application.progressed`; dispatched from
+      `Application::booted` `saved` hook (in addition to the existing public
+      admin broadcast), wrapped in the same best-effort try/catch as
+      `BroadcastsRealtime`.
+    - `AccountStatusUpdated` → `account.updated`; dispatched after an
+      application changes quota (status saved) and when the Gmail integration
+      status changes (`ConnectedIntegration` saved), debounced to at most once
+      per second per user (cache lock).
+    - `NotificationCreated` → `notification.created`.
+    - `JobsCollected` on the **public** channel `jobs` → `jobs.collected`
+      `{ collectionRunId, newJobs }`, dispatched by `FinalizeCollectionRun`
+      when the run ends with `jobs_new > 0`. Public payload: ids and counts only.
 - `App\Notifications\Client\*` base: stores a database notification with
   `type` from the contract and `data`, then dispatches `NotificationCreated`.
   Implement now: `GmailReauthorizationRequired` (sent from

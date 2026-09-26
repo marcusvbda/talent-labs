@@ -24,3 +24,7 @@ Route::middleware(['web', 'auth'])->prefix('integrations')->name('integrations.o
         ->where('plugin', '[a-z0-9-]+')
         ->name('disconnect');
 });
+
+if (app()->isLocal()) {
+    Route::inertia('/dev/styleguide', 'dev/styleguide')->name('dev.styleguide');
+}

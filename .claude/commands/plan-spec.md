@@ -92,6 +92,7 @@ session. Phase status is updated in place in this file.
 ## Owner decisions
 
 ### D1 — <question>
+
 Blocks: Phase N… · Options: A (recommended) …, B …, C … · Why: …
 
 ## Global constraints (every phase)
@@ -113,12 +114,15 @@ Spec: <sections>
 **Goal.** <one or two sentences>
 
 **Contract.**
+
 - <exact details>
 
 **Steps.**
+
 1. …
 
 **Done when.**
+
 - <observable result>
 - <command> passes
 

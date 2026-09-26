@@ -196,12 +196,12 @@ Each file: frontmatter (`name`, `description`, `tools`, `model`, `effort`,
 `maxTurns`) + short role body. **Every agent body ends with:** "Global rules in
 `CLAUDE.md` apply in full. Never run git write commands — the owner commits."
 
-| File                 | model / effort  | Scope                                                                                                                                                                                                                                                                                                                                              |
+| File | model / effort | Scope |
 | -------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `laravel-backend.md` | opus / medium   | migrations, models, enums, actions, jobs, adapters, policies, middleware. Loads `job-collection` skill for domain work.                                                                                                                                                                                                                            |
-| `filament-admin.md`  | sonnet / medium | Filament resources, pages, actions, relation managers, panel config, for **both** the `admin` and `app` panels. Contains the realtime rule: `Table::socket(channel:, event:)` + model/job dispatches `RealtimeEvent`; query-builder writes (`upsert`, bulk `update`) bypass model events → dispatch explicitly after them. Reference `vendor/marcusvbda/filament-realtime-driver/README.md`. |
-| `code-reviewer.md`   | sonnet / medium | Read-only (Read, Grep, Glob, Bash). Reviews the task diff against its acceptance criteria. Output: per-AC PASS/FAIL, blocking, non-blocking, `Verdict: APPROVED                                                                                                                                                                                   | CHANGES_REQUIRED`. Never requests tests. Flags any git write, any `->poll()`, any scope creep as blocking. |
-| `qa-tester.md`       | sonnet / low    | Runs existing tests/checks, diagnoses failures. Doesn't write tests unless the owner authorized it.                                                                                                                                                                                                                                                |
+| `laravel-backend.md` | opus / medium | migrations, models, enums, actions, jobs, adapters, policies, middleware. Loads `job-collection` skill for domain work. |
+| `filament-admin.md` | sonnet / medium | Filament resources, pages, actions, relation managers, panel config, for **both** the `admin` and `app` panels. Contains the realtime rule: `Table::socket(channel:, event:)` + model/job dispatches `RealtimeEvent`; query-builder writes (`upsert`, bulk `update`) bypass model events → dispatch explicitly after them. Reference `vendor/marcusvbda/filament-realtime-driver/README.md`. |
+| `code-reviewer.md` | sonnet / medium | Read-only (Read, Grep, Glob, Bash). Reviews the task diff against its acceptance criteria. Output: per-AC PASS/FAIL, blocking, non-blocking, `Verdict: APPROVED                                                                                                                                                                                   | CHANGES_REQUIRED`. Never requests tests. Flags any git write, any `->poll()`, any scope creep as blocking. |
+| `qa-tester.md` | sonnet / low | Runs existing tests/checks, diagnoses failures. Doesn't write tests unless the owner authorized it. |
 
 ### A.6 Skills (`.claude/skills/<name>/SKILL.md`)
 
@@ -399,9 +399,9 @@ Still sanity-check one real response per adapter during implementation.
 Seeder `SourceSeeder` (idempotent, `firstOrCreate` on `adapter + identifier`),
 all active:
 
-| name     | adapter    | identifier | settings         |
-| -------- | ---------- | ---------- | ---------------- |
-| Remotive | remotive   | null       | `{"limit": 100}` |
+| name     | adapter  | identifier | settings         |
+| -------- | -------- | ---------- | ---------------- |
+| Remotive | remotive | null       | `{"limit": 100}` |
 
 #### B.4.1 Seeders (local, ready to log in)
 
@@ -522,12 +522,12 @@ notifications there — nothing sends the user any).
 
 Public channels, payload = ids only:
 
-| Channel               | Event                  | Dispatched when                                               | Subscribed by                                                                                                          |
-| --------------------- | ---------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `collection_runs`     | `CollectionRunUpdated` | `CollectionRun` saved/deleted (model `booted()` hooks)        | Runs table (admin)                                                                                                     |
-| `collection_run_{id}` | `CollectionRunUpdated` | that run or any of its `SourceRun`s saved                     | Run view page (infolist refresh via listener component) + its source runs relation manager table (admin)               |
-| `job_postings`        | `JobPostingsUpdated`   | after each source run writes its postings (explicit dispatch) | Job postings table (admin) **and** the app panel's Today's jobs table                                                  |
-| `sources`             | `SourceUpdated`        | `Source` saved/deleted                                        | Sources table (admin)                                                                                                   |
+| Channel               | Event                  | Dispatched when                                               | Subscribed by                                                                                            |
+| --------------------- | ---------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `collection_runs`     | `CollectionRunUpdated` | `CollectionRun` saved/deleted (model `booted()` hooks)        | Runs table (admin)                                                                                       |
+| `collection_run_{id}` | `CollectionRunUpdated` | that run or any of its `SourceRun`s saved                     | Run view page (infolist refresh via listener component) + its source runs relation manager table (admin) |
+| `job_postings`        | `JobPostingsUpdated`   | after each source run writes its postings (explicit dispatch) | Job postings table (admin) **and** the app panel's Today's jobs table                                    |
+| `sources`             | `SourceUpdated`        | `Source` saved/deleted                                        | Sources table (admin)                                                                                    |
 
 Plus database notifications (B.5 Finalize) arriving live in the admin bell.
 No `->poll()` / `wire:poll` anywhere, on either panel.

@@ -1,9 +1,9 @@
 ---
 name: filament-development
 description:
-  Builds Filament application and admin panel interfaces. Use when creating,
-  modifying, testing, or debugging Filament panels, resources, relation managers,
-  pages, schemas, forms, tables, actions, infolists, widgets, imports, or exports.
+    Builds Filament application and admin panel interfaces. Use when creating,
+    modifying, testing, or debugging Filament panels, resources, relation managers,
+    pages, schemas, forms, tables, actions, infolists, widgets, imports, or exports.
 ---
 
 # Filament Development
@@ -246,6 +246,6 @@ livewire(ListUsers::class)
 - **`Repeater` uses `->schema()`, not `->fields()`.**
 - **Never add `->dehydrated(false)` to fields that need to be saved.** It strips the value from form state before `->action()` or the save handler runs. Only use it for helper/UI-only fields.
 - **Use correct property types when overriding `Page`, `Resource`, and `Widget` properties.** These properties have union types or modifiers that must be preserved:
-  - `$navigationIcon`: `protected static string | BackedEnum | null` (not `?string`)
-  - `$navigationGroup`: `protected static string | UnitEnum | null` (not `?string`)
-  - `$view`: `protected string` (not `protected static string`) on `Page` and `Widget` classes
+    - `$navigationIcon`: `protected static string | BackedEnum | null` (not `?string`)
+    - `$navigationGroup`: `protected static string | UnitEnum | null` (not `?string`)
+    - `$view`: `protected string` (not `protected static string`) on `Page` and `Widget` classes

@@ -33,22 +33,22 @@ the narrowest one that covers the change, **before** any AI review.
 
 ### PHP changed
 
-| Purpose              | Command                                                   |
-| -------------------- | --------------------------------------------------------- |
-| Format changed files | `vendor/bin/pint --dirty --format agent`                  |
-| Format check only    | `composer lint:check`                                     |
-| Static analysis      | `composer types:check` (PHPStan/Larastan, level 7)        |
-| Focused tests        | `php artisan test --compact --filter=<name>`              |
-| Full PHP gate        | `composer test` (config:clear, lint:check, types, tests)  |
+| Purpose              | Command                                                  |
+| -------------------- | -------------------------------------------------------- |
+| Format changed files | `vendor/bin/pint --dirty --format agent`                 |
+| Format check only    | `composer lint:check`                                    |
+| Static analysis      | `composer types:check` (PHPStan/Larastan, level 7)       |
+| Focused tests        | `php artisan test --compact --filter=<name>`             |
+| Full PHP gate        | `composer test` (config:clear, lint:check, types, tests) |
 
 ### Frontend changed (`resources/js/**`, CSS, `vite.config.ts`)
 
-| Purpose                     | Command                                  |
-| --------------------------- | ---------------------------------------- |
-| Format + lint + types       | `yarn check` (`vp check`)                |
-| Auto-fix format/lint        | `yarn check:fix`                         |
-| Types only                  | `yarn types:check` (`tsc --noEmit`)      |
-| Build (bundle at risk only) | `yarn build`                             |
+| Purpose                     | Command                             |
+| --------------------------- | ----------------------------------- |
+| Format + lint + types       | `yarn check` (`vp check`)           |
+| Auto-fix format/lint        | `yarn check:fix`                    |
+| Types only                  | `yarn types:check` (`tsc --noEmit`) |
+| Build (bundle at risk only) | `yarn build`                        |
 
 ### Final gate
 
@@ -66,9 +66,9 @@ Notes: running existing tests is always fine; creating/modifying tests is not
 - Tables: `->socket(channel: 'x', event: 'XUpdated')`. Never `->poll()`,
   `wire:poll` or `$pollingInterval`.
 - Livewire pages/infolists: `<x-filament-realtime-driver::listener
-  channel="..." event="..." callback="$wire.$refresh()" />`.
+channel="..." event="..." callback="$wire.$refresh()" />`.
 - Emit: `Marcusvbda\FilamentRealtimeDriver\RealtimeEvent::dispatch($channel,
-  $event, ['id' => $id])` from model `booted()` `saved`/`deleted` hooks, and
+$event, ['id' => $id])` from model `booted()` `saved`/`deleted` hooks, and
   **explicitly** after query-builder writes (`upsert`, bulk `update`,
   `saveQuietly`), which skip model events.
 - `RealtimeEvent` is `ShouldBroadcastNow` — no queue worker needed to emit.
