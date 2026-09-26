@@ -13,6 +13,19 @@ use Illuminate\Validation\Rules\Unique;
 
 class SourceForm
 {
+    /**
+     * Supported `settings` keys per adapter value; adapters not listed use no settings.
+     */
+    private const SETTINGS_HINTS = [
+        'remotive' => 'Keys: category, search, limit.',
+        'remote_ok' => 'Key: tags (comma list, max 10, one request per tag). Empty = the whole feed.',
+        'arbeitnow' => 'Keys: pages (1-5), remote ("true" = remote jobs only). Empty = first page only.',
+        'jobicy' => 'Keys: industries (comma list, max 10, one request per industry), count (max 100), geo, tag. Empty = default feed.',
+        'himalayas' => 'Keys: queries (comma list), pages, country, worldwide, seniority.',
+        'we_work_remotely' => 'Key: categories (comma list of feed slugs).',
+        'working_nomads' => 'Key: categories (comma list, matched against the category name).',
+    ];
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -45,12 +58,7 @@ class SourceForm
                     ->visible(fn (callable $get): bool => ! (self::adapterFrom($get)?->requiresIdentifier() ?? true))
                     ->keyLabel('Key')
                     ->valueLabel('Value')
-                    ->helperText(fn (callable $get): string => match (self::adapterFrom($get)) {
-                        SourceAdapter::Remotive => 'Keys: category, search, limit',
-                        SourceAdapter::Jobicy => 'Keys: count, geo, industry, tag',
-                        SourceAdapter::RemoteOk, SourceAdapter::Arbeitnow => 'No settings used',
-                        default => '',
-                    }),
+                    ->helperText(fn (callable $get): string => self::SETTINGS_HINTS[self::adapterFrom($get)?->value] ?? 'No settings used.'),
 
                 TextInput::make('interval_minutes')
                     ->label('Interval (minutes)')

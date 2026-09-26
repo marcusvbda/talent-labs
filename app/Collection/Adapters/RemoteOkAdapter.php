@@ -13,37 +13,82 @@ class RemoteOkAdapter implements JobSourceAdapter
 
     public function fetch(Source $source): iterable
     {
-        $response = $this->http()->get('https://remoteok.com/api');
+        $tags = array_slice($this->settingList($source, 'tags'), 0, self::MAX_REQUESTS_PER_RUN);
 
-        // The first element is a legal/metadata object; the required-field guard skips it.
-        foreach ($this->items($response->json()) as $item) {
-            $externalId = $this->stringOrNull($item['id'] ?? null);
-            $title = $this->decodedOrNull($item['position'] ?? null);
-            $companyName = $this->decodedOrNull($item['company'] ?? null);
-            $url = $this->stringOrNull($item['url'] ?? null);
+        if ($tags === []) {
+            $response = $this->http()->get('https://remoteok.com/api');
 
-            if ($externalId === null || $title === null || $companyName === null || $url === null) {
-                continue;
+            // The first element is a legal/metadata object; the required-field guard skips it.
+            foreach ($this->items($response->json()) as $item) {
+                $posting = $this->map($item);
+
+                if ($posting !== null) {
+                    yield $posting;
+                }
             }
 
-            $html = $this->stringOrNull($item['description'] ?? null);
-
-            yield new JobPostingData(
-                externalId: $externalId,
-                title: $title,
-                companyName: $companyName,
-                location: $this->stringOrNull($item['location'] ?? null),
-                isRemote: true,
-                department: null,
-                employmentType: null,
-                url: $url,
-                applyUrl: $this->stringOrNull($item['apply_url'] ?? null) ?? $url,
-                descriptionHtml: $html,
-                descriptionText: $this->htmlToText($html),
-                publishedAt: $this->parseDate($item['date'] ?? null),
-                raw: $item,
-            );
+            return;
         }
+
+        /** @var array<string, JobPostingData> $postings */
+        $postings = [];
+
+        foreach ($tags as $index => $tag) {
+            if ($index > 0) {
+                $this->pause();
+            }
+
+            $response = $this->getOrNullWhenRateLimited('https://remoteok.com/api', ['tag' => $tag]);
+
+            if ($response === null) {
+                $this->stopOnRateLimit($postings);
+
+                break;
+            }
+
+            foreach ($this->items($response->json()) as $item) {
+                $posting = $this->map($item);
+
+                if ($posting !== null) {
+                    $postings[$posting->externalId] ??= $posting;
+                }
+            }
+        }
+
+        yield from array_values($postings);
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     */
+    private function map(array $item): ?JobPostingData
+    {
+        $externalId = $this->stringOrNull($item['id'] ?? null);
+        $title = $this->decodedOrNull($item['position'] ?? null);
+        $companyName = $this->decodedOrNull($item['company'] ?? null);
+        $url = $this->stringOrNull($item['url'] ?? null);
+
+        if ($externalId === null || $title === null || $companyName === null || $url === null) {
+            return null;
+        }
+
+        $html = $this->stringOrNull($item['description'] ?? null);
+
+        return new JobPostingData(
+            externalId: $externalId,
+            title: $title,
+            companyName: $companyName,
+            location: $this->stringOrNull($item['location'] ?? null),
+            isRemote: true,
+            department: null,
+            employmentType: null,
+            url: $url,
+            applyUrl: $this->stringOrNull($item['apply_url'] ?? null) ?? $url,
+            descriptionHtml: $html,
+            descriptionText: $this->htmlToText($html),
+            publishedAt: $this->parseDate($item['date'] ?? null),
+            raw: $item,
+        );
     }
 
     /**

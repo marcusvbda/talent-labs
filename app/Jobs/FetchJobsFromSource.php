@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Collection\Data\JobPostingData;
+use App\Collection\Support\RoleClassifier;
 use App\Contacts\Jobs\DiscoverContactsForPosting;
 use App\Enums\SourceRunStatus;
 use App\Models\JobPosting;
@@ -27,12 +28,18 @@ class FetchJobsFromSource implements ShouldQueue
     private const CHUNK_SIZE = 200;
 
     /**
+     * Length of the varchar columns (`title`, `company_name`, `location`, `department`,
+     * `employment_type`): one oversized value would make the whole upsert chunk fail.
+     */
+    private const MAX_STRING = 255;
+
+    /**
      * Columns refreshed when a posting already exists. Never `collection_run_id`,
      * `first_seen_at` or `created_at`: those belong to the run that first found it.
      */
     private const MUTABLE_COLUMNS = [
-        'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type',
-        'url', 'apply_url', 'description_html', 'description_text', 'published_at', 'raw',
+        'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'role_family',
+        'url', 'apply_url', 'company_website', 'description_html', 'description_text', 'published_at', 'raw',
         'last_seen_run_id', 'last_seen_at', 'updated_at',
     ];
 
@@ -63,6 +70,7 @@ class FetchJobsFromSource implements ShouldQueue
 
             $jobsNew = 0;
             $newExternalIds = [];
+            $classifier = app(RoleClassifier::class);
 
             foreach (array_chunk($items, self::CHUNK_SIZE, true) as $chunk) {
                 $existing = JobPosting::query()
@@ -82,14 +90,16 @@ class FetchJobsFromSource implements ShouldQueue
                     'collection_run_id' => $sourceRun->collection_run_id,
                     'last_seen_run_id' => $sourceRun->collection_run_id,
                     'external_id' => $item->externalId,
-                    'title' => $item->title,
-                    'company_name' => $item->companyName,
-                    'location' => $item->location,
+                    'title' => mb_substr($item->title, 0, self::MAX_STRING),
+                    'company_name' => mb_substr($item->companyName, 0, self::MAX_STRING),
+                    'location' => $this->fit($item->location),
                     'is_remote' => $item->isRemote,
-                    'department' => $item->department,
-                    'employment_type' => $item->employmentType,
+                    'department' => $this->fit($item->department),
+                    'employment_type' => $this->fit($item->employmentType),
+                    'role_family' => $classifier->classify($item->title, $this->tags($item))?->value,
                     'url' => $item->url,
                     'apply_url' => $item->applyUrl,
+                    'company_website' => $item->companyWebsite,
                     'description_html' => $item->descriptionHtml,
                     'description_text' => $item->descriptionText,
                     'published_at' => $item->publishedAt?->setTimezone(config('app.timezone')),
@@ -126,11 +136,13 @@ class FetchJobsFromSource implements ShouldQueue
             report($e);
         }
 
+        // Only target-family postings trigger contact discovery; "other" and unclassified ones are stored but skipped.
         try {
             foreach (array_chunk($newExternalIds, self::CHUNK_SIZE) as $chunk) {
                 JobPosting::query()
                     ->where('source_id', $source->id)
                     ->whereIn('external_id', $chunk)
+                    ->whereIn('role_family', config('talent.collection.target_role_families'))
                     ->pluck('id')
                     ->each(fn (int $id) => DiscoverContactsForPosting::dispatch($id));
             }
@@ -151,6 +163,41 @@ class FetchJobsFromSource implements ShouldQueue
         }
 
         $this->markFailed($sourceRun, $e);
+    }
+
+    /**
+     * Source-provided labels (tags, industry, category) used as a classification fallback.
+     *
+     * @return list<string>
+     */
+    private function tags(JobPostingData $item): array
+    {
+        $tags = [];
+
+        foreach (['tags', 'jobIndustry', 'category', 'category_name'] as $key) {
+            $value = $item->raw[$key] ?? null;
+
+            if (is_string($value)) {
+                $value = $key === 'tags' ? explode(',', $value) : [$value];
+            }
+
+            if (! is_array($value)) {
+                continue;
+            }
+
+            foreach ($value as $tag) {
+                if (is_string($tag) && trim($tag) !== '') {
+                    $tags[] = trim($tag);
+                }
+            }
+        }
+
+        return $tags;
+    }
+
+    private function fit(?string $value): ?string
+    {
+        return $value === null ? null : mb_substr($value, 0, self::MAX_STRING);
     }
 
     private function markFailed(SourceRun $sourceRun, Throwable $e): void

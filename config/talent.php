@@ -25,4 +25,12 @@ return [
         'smtp_mail_from' => env('CONTACTS_SMTP_MAIL_FROM', ''),
         'smtp_timeout' => 5,
     ],
+
+    'collection' => [
+        // RoleFamily values collected postings are matched against.
+        'target_role_families' => [
+            'backend', 'frontend', 'fullstack', 'software', 'mobile',
+            'devops', 'qa', 'support', 'customer_service', 'product',
+        ],
+    ],
 ];

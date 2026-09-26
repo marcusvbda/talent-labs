@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\JobPostings\Schemas;
 
+use App\Enums\RoleFamily;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
@@ -23,6 +24,12 @@ class JobPostingInfolist
                 IconEntry::make('is_remote')
                     ->label('Remote')
                     ->boolean(),
+
+                TextEntry::make('role_family')
+                    ->label('Role family')
+                    ->badge()
+                    ->color(fn (?RoleFamily $state): string => $state === null ? 'gray' : 'primary')
+                    ->placeholder('Other'),
 
                 TextEntry::make('department')
                     ->placeholder('—'),

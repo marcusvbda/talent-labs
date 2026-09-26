@@ -5,6 +5,7 @@ namespace App\Contacts\Actions;
 use App\Contacts\Support\DnsLookup;
 use App\Enums\DomainStatus;
 use App\Models\Company;
+use App\Support\RegistrableDomain;
 use Illuminate\Support\Str;
 
 class ResolveCompanyDomain
@@ -12,7 +13,8 @@ class ResolveCompanyDomain
     public function __construct(private DnsLookup $dns) {}
 
     /**
-     * Guess the company's domain as "<slug>.com" and mark it found when it resolves.
+     * Try the website domain the source gave us, then "<slug>.com"; the first candidate
+     * that resolves is marked found.
      */
     public function handle(Company $company): void
     {
@@ -20,15 +22,62 @@ class ResolveCompanyDomain
             return;
         }
 
-        $slug = Str::slug($company->normalized_name, '');
-        $candidate = $slug !== '' ? $slug.'.com' : null;
+        $websites = [];
 
-        $found = $candidate !== null && $this->resolves($candidate);
+        $recent = $company->jobPostings()
+            ->whereNotNull('company_website')
+            ->latest('id')
+            ->limit(3)
+            ->pluck('company_website');
 
-        $company->domain = $found ? $candidate : null;
-        $company->domain_status = $found ? DomainStatus::Found : DomainStatus::NotFound;
+        foreach ($recent as $website) {
+            if (is_string($website)) {
+                $websites[] = $website;
+            }
+        }
+
+        $found = null;
+
+        foreach ($this->candidates($websites, $company->normalized_name) as $candidate) {
+            if ($this->resolves($candidate)) {
+                $found = $candidate;
+
+                break;
+            }
+        }
+
+        $company->domain = $found;
+        $company->domain_status = $found !== null ? DomainStatus::Found : DomainStatus::NotFound;
         $company->domain_checked_at = now();
         $company->save();
+    }
+
+    /**
+     * Candidate domains in priority order: the registrable domains of the websites the source gave
+     * us (most recent first), then "<slug>.com".
+     *
+     * @param  list<string>  $websites
+     * @return list<string>
+     */
+    private function candidates(array $websites, string $normalizedName): array
+    {
+        $candidates = [];
+
+        foreach ($websites as $website) {
+            $domain = RegistrableDomain::of($website);
+
+            if ($domain !== null && ! in_array($domain, $candidates, true)) {
+                $candidates[] = $domain;
+            }
+        }
+
+        $slug = Str::slug($normalizedName, '');
+
+        if ($slug !== '' && ! in_array($slug.'.com', $candidates, true)) {
+            $candidates[] = $slug.'.com';
+        }
+
+        return $candidates;
     }
 
     private function resolves(string $domain): bool

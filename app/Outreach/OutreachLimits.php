@@ -4,7 +4,7 @@ namespace App\Outreach;
 
 final class OutreachLimits
 {
-    public const DAILY_SEND_LIMIT = 10;
+    public const DAILY_SEND_LIMIT = 25; // para testes
 
     public const MAX_POSTING_AGE_DAYS = 14;
 

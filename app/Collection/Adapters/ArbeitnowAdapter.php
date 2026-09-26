@@ -6,56 +6,91 @@ use App\Collection\Adapters\Concerns\InteractsWithJobBoardApi;
 use App\Collection\Contracts\JobSourceAdapter;
 use App\Collection\Data\JobPostingData;
 use App\Models\Source;
-use Carbon\CarbonImmutable;
 
 class ArbeitnowAdapter implements JobSourceAdapter
 {
     use InteractsWithJobBoardApi;
 
+    private const URL = 'https://www.arbeitnow.com/api/job-board-api';
+
+    private const MAX_PAGES = 5;
+
     public function fetch(Source $source): iterable
     {
-        $response = $this->http()->get('https://www.arbeitnow.com/api/job-board-api');
+        $settings = is_array($source->settings) ? $source->settings : [];
 
-        foreach ($this->items($response->json('data')) as $item) {
-            $externalId = $this->stringOrNull($item['slug'] ?? null);
-            $title = $this->stringOrNull($item['title'] ?? null);
-            $companyName = $this->stringOrNull($item['company_name'] ?? null);
-            $url = $this->stringOrNull($item['url'] ?? null);
+        $pages = filter_var($settings['pages'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $pages = is_int($pages) ? min($pages, self::MAX_PAGES) : 1;
 
-            if ($externalId === null || $title === null || $companyName === null || $url === null) {
-                continue;
+        $query = $this->stringOrNull($settings['remote'] ?? null) === 'true' ? ['remote' => 'true'] : [];
+
+        /** @var array<string, JobPostingData> $postings */
+        $postings = [];
+
+        for ($page = 1; $page <= $pages; $page++) {
+            if ($page > 1) {
+                $this->pause();
             }
 
-            $html = $this->stringOrNull($item['description'] ?? null);
-            $jobTypes = $item['job_types'] ?? null;
+            $response = $page === 1 && $pages === 1 && $query === []
+                ? $this->http()->get(self::URL)
+                : $this->getOrNullWhenRateLimited(self::URL, ['page' => $page] + $query);
 
-            yield new JobPostingData(
-                externalId: $externalId,
-                title: $title,
-                companyName: $companyName,
-                location: $this->stringOrNull($item['location'] ?? null),
-                isRemote: $this->boolOrNull($item['remote'] ?? null),
-                department: null,
-                employmentType: is_array($jobTypes) ? $this->stringOrNull($jobTypes[0] ?? null) : null,
-                url: $url,
-                applyUrl: $url,
-                descriptionHtml: $html,
-                descriptionText: $this->htmlToText($html),
-                publishedAt: $this->timestampOrNull($item['created_at'] ?? null),
-                raw: $item,
-            );
+            if ($response === null) {
+                $this->stopOnRateLimit($postings);
+
+                break;
+            }
+
+            $items = $this->items($response->json('data'));
+
+            foreach ($items as $item) {
+                $posting = $this->map($item);
+
+                if ($posting !== null) {
+                    $postings[$posting->externalId] ??= $posting;
+                }
+            }
+
+            if ($items === [] || $this->stringOrNull($response->json('links.next')) === null) {
+                break;
+            }
         }
+
+        yield from array_values($postings);
     }
 
     /**
-     * Arbeitnow sends `created_at` as Unix seconds.
+     * @param  array<string, mixed>  $item
      */
-    private function timestampOrNull(mixed $value): ?CarbonImmutable
+    private function map(array $item): ?JobPostingData
     {
-        if (! is_int($value) && ! (is_string($value) && is_numeric($value))) {
+        $externalId = $this->stringOrNull($item['slug'] ?? null);
+        $title = $this->stringOrNull($item['title'] ?? null);
+        $companyName = $this->stringOrNull($item['company_name'] ?? null);
+        $url = $this->stringOrNull($item['url'] ?? null);
+
+        if ($externalId === null || $title === null || $companyName === null || $url === null) {
             return null;
         }
 
-        return CarbonImmutable::createFromTimestamp((int) $value);
+        $html = $this->stringOrNull($item['description'] ?? null);
+        $jobTypes = $item['job_types'] ?? null;
+
+        return new JobPostingData(
+            externalId: $externalId,
+            title: $title,
+            companyName: $companyName,
+            location: $this->stringOrNull($item['location'] ?? null),
+            isRemote: $this->boolOrNull($item['remote'] ?? null),
+            department: null,
+            employmentType: is_array($jobTypes) ? $this->stringOrNull($jobTypes[0] ?? null) : null,
+            url: $url,
+            applyUrl: $url,
+            descriptionHtml: $html,
+            descriptionText: $this->htmlToText($html),
+            publishedAt: $this->timestampOrNull($item['created_at'] ?? null),
+            raw: $item,
+        );
     }
 }

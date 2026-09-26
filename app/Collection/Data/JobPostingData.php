@@ -23,5 +23,6 @@ final readonly class JobPostingData
         public ?string $descriptionText,
         public ?CarbonImmutable $publishedAt,
         public array $raw,
+        public ?string $companyWebsite = null,
     ) {}
 }

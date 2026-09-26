@@ -4,6 +4,7 @@ namespace App\Filament\Resources\JobPostings\Tables;
 
 use App\Enums\ContactStatus;
 use App\Enums\OutreachStatus;
+use App\Enums\RoleFamily;
 use App\Enums\SourceAdapter;
 use App\Models\CollectionRun;
 use App\Models\JobPosting;
@@ -57,6 +58,13 @@ class JobPostingsTable
                     ->state(fn (JobPosting $record): ContactStatus => $record->company_id === null ? ContactStatus::Pending : $record->company->contact_status)
                     ->badge(),
 
+                TextColumn::make('role_family')
+                    ->label('Role')
+                    ->badge()
+                    ->color(fn (?RoleFamily $state): string => $state === null ? 'gray' : 'primary')
+                    ->placeholder('Other')
+                    ->toggleable(),
+
                 TextColumn::make('location')
                     ->placeholder('—'),
 
@@ -95,6 +103,24 @@ class JobPostingsTable
                             fn (Builder $sourceQuery) => $sourceQuery->where('adapter', $value)
                         ),
                     )),
+
+                SelectFilter::make('role_family')
+                    ->label('Role family')
+                    ->options(fn (): array => collect(RoleFamily::cases())
+                        ->mapWithKeys(fn (RoleFamily $role): array => [$role->value => $role->getLabel()])
+                        ->put('other', 'Other')
+                        ->all())
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+
+                        if (blank($value)) {
+                            return $query;
+                        }
+
+                        return $value === 'other'
+                            ? $query->whereNull('role_family')
+                            : $query->where('role_family', $value);
+                    }),
 
                 Filter::make('todays_runs')
                     ->label("Today's runs only")

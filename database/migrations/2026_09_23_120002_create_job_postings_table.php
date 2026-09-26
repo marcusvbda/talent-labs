@@ -25,8 +25,10 @@ return new class extends Migration
             $table->boolean('is_remote')->nullable();
             $table->string('department')->nullable();
             $table->string('employment_type')->nullable();
+            $table->string('role_family')->nullable()->index();
             $table->text('url');
             $table->text('apply_url')->nullable();
+            $table->text('company_website')->nullable();
             $table->longText('description_html')->nullable();
             $table->longText('description_text')->nullable();
             $table->timestamp('published_at')->nullable();

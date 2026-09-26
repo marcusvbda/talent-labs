@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Ai\Agents\ExtractJobPostingProfile;
 use App\Enums\ProfileStatus;
+use App\Enums\RoleFamily;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,8 +25,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property bool|null $is_remote
  * @property string|null $department
  * @property string|null $employment_type
+ * @property RoleFamily|null $role_family
  * @property string $url
  * @property string|null $apply_url
+ * @property string|null $company_website
  * @property string|null $description_html
  * @property string|null $description_text
  * @property CarbonImmutable|null $published_at
@@ -36,7 +39,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $updated_at
  * @property-read JobPostingProfile|null $profile
  */
-#[Fillable(['source_id', 'collection_run_id', 'last_seen_run_id', 'external_id', 'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'url', 'apply_url', 'description_html', 'description_text', 'published_at', 'raw', 'first_seen_at', 'last_seen_at'])]
+#[Fillable(['source_id', 'collection_run_id', 'last_seen_run_id', 'external_id', 'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'role_family', 'url', 'apply_url', 'company_website', 'description_html', 'description_text', 'published_at', 'raw', 'first_seen_at', 'last_seen_at'])]
 class JobPosting extends Model
 {
     /**
@@ -49,6 +52,7 @@ class JobPosting extends Model
         return [
             'is_remote' => 'boolean',
             'raw' => 'array',
+            'role_family' => RoleFamily::class,
             'published_at' => 'datetime',
             'first_seen_at' => 'datetime',
             'last_seen_at' => 'datetime',
