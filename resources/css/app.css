@@ -12,6 +12,8 @@
 
 @theme {
     --font-sans: 'Geist', system-ui, sans-serif;
+    --font-weight-wordmark: 650;
+    --tracking-wordmark: -0.03em;
 
     --color-canvas: #d6d2cb;
     --color-shell: #eeece8;

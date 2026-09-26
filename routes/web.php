@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
@@ -7,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'welcome')->name('home');
 
 Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');
+
+Route::post('/logout', LogoutController::class)->middleware('auth')->name('logout');
 
 Route::middleware(['web', 'auth'])->prefix('integrations')->name('integrations.oauth.')->group(function (): void {
     // Registered before the {plugin} routes so "oauth" is never captured as a plugin key.

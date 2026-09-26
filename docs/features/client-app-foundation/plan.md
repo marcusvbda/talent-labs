@@ -20,15 +20,15 @@ session. Phase status is updated in place in this file.
 | 8     | Primitives I: Spinner, Button, IconButton, LiveDot, Kbd               | inertia-frontend | 7                 | M    | DONE        |
 | 9     | Primitives II: Pill, Chip, Avatar, StatusDisc, ProgressBar, TickMeter | inertia-frontend | 8                 | M    | DONE        |
 | 10    | Primitives III: Card, Skeleton, EmptyState, ErrorState                | inertia-frontend | 8                 | S    | DONE        |
-| 11    | Form I: Field, Input, Textarea, TagsInput, Checkbox, Switch           | inertia-frontend | 8                 | M    | PENDING     |
-| 12    | Form II: Select, MultiSelect, RadioGroup, Segmented, Tabs             | inertia-frontend | 9, 11             | M    | PENDING     |
-| 13    | Overlays: Modal, Sheet, Popover, Menu, Tooltip                        | inertia-frontend | 8                 | M    | PENDING     |
-| 14    | FileDrop + Toast (toaster, flash bridge)                              | inertia-frontend | 9, 10             | M    | PENDING     |
-| 15    | Logo, logo mark, favicons, brand in Blade                             | inertia-frontend | 7                 | S    | PENDING     |
-| 16    | Data layer core: query client, `apiFetch`, keys, source switch        | inertia-frontend | 5                 | S    | PENDING     |
-| 17    | Fixtures runtime + dev state + realtime (`useUserChannel`, emitter)   | inertia-frontend | 16                | M    | PENDING     |
-| 18    | `DevToolbar` + `useSetLocale`                                         | inertia-frontend | 6, 12, 13, 14, 17 | M    | PENDING     |
-| 19    | NavPills, LanguageSwitcher, UserMenu + `POST /logout`                 | inertia-frontend | 9, 13, 18         | M    | PENDING     |
+| 11    | Form I: Field, Input, Textarea, TagsInput, Checkbox, Switch           | inertia-frontend | 8                 | M    | DONE        |
+| 12    | Form II: Select, MultiSelect, RadioGroup, Segmented, Tabs             | inertia-frontend | 9, 11             | M    | DONE        |
+| 13    | Overlays: Modal, Sheet, Popover, Menu, Tooltip                        | inertia-frontend | 8                 | M    | DONE        |
+| 14    | FileDrop + Toast (toaster, flash bridge)                              | inertia-frontend | 9, 10             | M    | DONE        |
+| 15    | Logo, logo mark, favicons, brand in Blade                             | inertia-frontend | 7                 | S    | DONE        |
+| 16    | Data layer core: query client, `apiFetch`, keys, source switch        | inertia-frontend | 5                 | S    | DONE        |
+| 17    | Fixtures runtime + dev state + realtime (`useUserChannel`, emitter)   | inertia-frontend | 16                | M    | DONE        |
+| 18    | `DevToolbar` + `useSetLocale`                                         | inertia-frontend | 6, 12, 13, 14, 17 | M    | DONE        |
+| 19    | NavPills, LanguageSwitcher, UserMenu + `POST /logout`                 | inertia-frontend | 9, 13, 18         | M    | DONE        |
 | 20    | TopBar, MobileNav, PageHeader                                         | inertia-frontend | 15, 19            | M    | PENDING     |
 | 21    | `AppLayout`, `client` middleware, `/dashboard` route (skeleton)       | inertia-frontend | 20                | M    | PENDING     |
 | 22    | Login: controller, request, throttle, `GuestLayout`, login page       | laravel-backend  | 11, 15, 21        | M    | PENDING     |
@@ -502,7 +502,8 @@ responsive at 390 px. `yarn check` and `yarn types:check` pass.
 
 ### Phase 11 — Form I: Field, Input, Textarea, TagsInput, Checkbox, Switch
 
-Status: PENDING
+Status: DONE
+Evidence: Field (render-prop wiring id/aria-describedby/aria-invalid), Input, Textarea, TagsInput, Checkbox, Switch + styleguide forms section (default/focus/error/disabled/filled); `yarn types:check` ✅, `yarn build` ✅, hex grep over components empty, lang key sets identical; code-reviewer APPROVED. Open non-blocking: styleguide demo values not via t(); paste with existing draft text not merged. Not viewed in a browser.
 Role: inertia-frontend · Depends on: 8 · Covers: AC03, AC13 · Size: M
 Spec: B.4 (`Input`, `Textarea`, `TagsInput`, `Switch`, `Checkbox`)
 
@@ -526,7 +527,8 @@ keyboard only. `yarn check` and `yarn types:check` pass.
 
 ### Phase 12 — Form II: Select, MultiSelect, RadioGroup, Segmented, Tabs
 
-Status: PENDING
+Status: DONE
+Evidence: Select, MultiSelect (Chip stack), RadioGroup (check icon + accent-soft/accent-line), Segmented (44 high, scrolls below md), Tabs + styleguide choices section; `yarn types:check` ✅, `yarn build` ✅, hex grep empty, lang key sets identical; code-reviewer APPROVED. Open non-blocking: Select passes `value ?? undefined` to Listbox (controlled/uncontrolled flip when null); styleguide error/empty previews use no-op onChange. Keyboard behaviour not exercised in a browser.
 Role: inertia-frontend · Depends on: 9, 11 · Covers: AC03, AC13 · Size: M
 Spec: B.3 (segmented 44) · B.4 · B.5 (segmented scrolls on mobile)
 
@@ -549,7 +551,8 @@ Enter, Esc), and the styleguide shows the states. `yarn check` and
 
 ### Phase 13 — Overlays: Modal, Sheet, Popover, Menu, Tooltip
 
-Status: PENDING
+Status: DONE
+Evidence: Modal, Sheet (right/bottom, safe-area), Popover, Menu, Tooltip + styleguide overlays section; `yarn types:check` ✅, `yarn build` ✅, hex grep empty, lang key sets identical; code-reviewer APPROVED, 1 correction round (Popover/Menu triggers now `as={Fragment}` so aria + focus restore hit the real Button; collision-safe Menu keys). Open non-blocking: Tooltip has no ESC dismiss and can clip near screen edges at 390 px; tooltip uses text-white. Not viewed in a browser.
 Role: inertia-frontend · Depends on: 8 · Covers: AC03, AC13 · Size: M
 Spec: B.4 (`Modal`, `Sheet`, `Menu`, `Popover`, `Tooltip`)
 
@@ -572,7 +575,8 @@ restored, ESC closes, and the overlays render correctly at 390 px.
 
 ### Phase 14 — FileDrop + Toast (toaster, flash bridge)
 
-Status: PENDING
+Status: DONE
+Evidence: FileDrop (idle/dragging/uploading/error, click+drag+keyboard, type/size validation), Toast store + Toaster (icon+text, aria-live polite, top on mobile / bottom-right md+, 5 s display-only dismiss), useFlashToasts in BareLayout, Toaster mounted in app.tsx, styleguide feedback section; `yarn types:check` ✅, `yarn build` ✅, hex grep empty, lang key sets identical (156); code-reviewer APPROVED. Open non-blocking: cached history restore may replay a flash toast; FileDrop dragleave flicker over children, no .pdf extension fallback when file.type is empty. Not viewed in a browser.
 Role: inertia-frontend · Depends on: 9, 10 · Covers: AC03, AC13 · Size: M
 Spec: B.4 (`FileDrop`, `Toast`) · B.9 (`flash`)
 
@@ -595,7 +599,8 @@ fire each toast type. Toast position is correct at 1440 and 390 px.
 
 ### Phase 15 — Logo, logo mark, favicons, brand in Blade
 
-Status: PENDING
+Status: DONE
+Evidence: logo-mark.tsx (exact B.6 SVG, only hex exception), logo.tsx (full/mark × default/inverse/on-accent × sm/md/lg, wordmark from shared brand, new wordmark weight/tracking tokens), favicon.svg, 180×180 apple-touch-icon.png (viewed, faithful), app.blade.php links only favicon.svg + apple-touch-icon.png with title from `talent.brand.name`, styleguide brand section; `yarn types:check` ✅, `yarn build` ✅, hex grep only logo-mark.tsx, lang key sets identical; code-reviewer APPROVED. Not viewed in a browser.
 Role: inertia-frontend · Depends on: 7 · Covers: AC05, AC03 · Size: S
 Spec: B.6
 
@@ -625,7 +630,8 @@ the approved mark.
 
 ### Phase 16 — Data layer core: query client, `apiFetch`, keys, source switch
 
-Status: PENDING
+Status: DONE
+Evidence: data/{query-client,api,keys,source}.ts, vite-env typing, QueryClientProvider in app.tsx (devtools lazy + DEV-only); `yarn types:check` ✅, `yarn build` ✅, `grep refetchInterval|setInterval` shows only the header comment, `grep -rl react-query-devtools public/build` empty; code-reviewer APPROVED.
 Role: inertia-frontend · Depends on: 5 · Covers: AC10 · Size: S
 Spec: B.7 (`query-client.ts`, `api.ts`, `keys.ts`, `source.ts`)
 
@@ -655,7 +661,8 @@ later hook uses.
 
 ### Phase 17 — Fixtures runtime + dev state + realtime (`useUserChannel`, emitter)
 
-Status: PENDING
+Status: DONE
+Evidence: PlanKey type, dev-state store (invalidates on plan/state/gmail/onboarding; window helper DEV-only), fixtureCall, createFixtureStore, devEmitter + simulations, useUserChannel (fixtures mode subscribes to devEmitter, no socket), initialDataFrom, styleguide data section; `yarn types:check` ✅, `yarn build` ✅, no refetchInterval/setInterval besides the comment, lang key sets identical (177); code-reviewer APPROVED. Deviation (justified): real mode uses `echo().private(...).listen('.event')` per event instead of `useEcho`, whose callback receives no event name. Open non-blocking: data-section imports `useFixtures` directly (rule bend; fixture-only demo). Browser check (setDevState from console, no Echo connection) not run.
 Role: inertia-frontend · Depends on: 16 · Covers: AC10, AC11 (state store) · Size: M
 Spec: B.7 (`fixtures/`, `realtime/`, initialData rule)
 
@@ -694,7 +701,8 @@ Spec: B.7 (`fixtures/`, `realtime/`, initialData rule)
 
 ### Phase 18 — `DevToolbar` + `useSetLocale`
 
-Status: PENDING
+Status: DONE
+Evidence: useSetLocale (same fn for real/fixture, Wayfinder locale.update, router.reload on success), DevToolbar popover (plan/state/locale Segmented, Gmail Select, onboarding Switch, simulate buttons disabled + tooltip, styleguide link) lazy-mounted DEV-only in app.tsx; `yarn types:check` ✅, `yarn build` ✅, `grep -rl 'dev_toolbar\|DevToolbar' public/build` empty, lang key sets identical (198); code-reviewer APPROVED. Open non-blocking: tooltip on disabled simulate buttons is mouse-only. Not exercised in a browser (locale switch persistence to be checked manually).
 Role: inertia-frontend · Depends on: 6, 12, 13, 14, 17 · Covers: AC11, AC08 · Size: M
 Spec: B.7 (`DevToolbar`) · B.8 (switch locale)
 
@@ -723,7 +731,8 @@ locale, Gmail and onboarding, absent from production builds.
 
 ### Phase 19 — NavPills, LanguageSwitcher, UserMenu + `POST /logout`
 
-Status: PENDING
+Status: DONE
+Evidence: LogoutController + `POST /logout` (auth, name `logout`; `route:list --name=logout` ✅; Wayfinder `logout` in `@/routes`), NavPills (white capsule per mockup, aria-current, disabled non-link), LanguageSwitcher, UserMenu (Log out via router.post) + styleguide navigation section; pint ✅, `composer lint:check` only pre-existing failure, phpstan (1G) 0 errors, `php artisan test --compact` 2 passed, `yarn types:check` ✅, `yarn build` ✅, hex grep only logo-mark.tsx, lang key sets identical; code-reviewer APPROVED after 1 correction round (NavPills capsule). Open non-blocking: laptop 16px pill padding tied to lg–xl by inference (mockup has no media query); nav text weight 400 vs mockup 450. Logout flow and locale persistence not exercised in a browser.
 Role: inertia-frontend (+ small backend) · Depends on: 9, 13, 18 · Covers: AC03, AC07 (logout), AC08 · Size: M
 Spec: B.4 (patterns) · B.5 (tablet/mobile variants) · B.9 (`logout`)
 

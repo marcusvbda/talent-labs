@@ -1,5 +1,12 @@
 import { Head } from '@inertiajs/react';
 import { ActionsSection } from '@/features/styleguide/actions-section';
+import { BrandSection } from '@/features/styleguide/brand-section';
+import { ChoicesSection } from '@/features/styleguide/choices-section';
+import { DataSection } from '@/features/styleguide/data-section';
+import { FeedbackSection } from '@/features/styleguide/feedback-section';
+import { FormsSection } from '@/features/styleguide/forms-section';
+import { NavigationSection } from '@/features/styleguide/navigation-section';
+import { OverlaysSection } from '@/features/styleguide/overlays-section';
 import { IndicatorsSection } from '@/features/styleguide/indicators-section';
 import { SurfacesSection } from '@/features/styleguide/surfaces-section';
 import { TokensSection } from '@/features/styleguide/tokens-section';
@@ -14,6 +21,13 @@ export default function Styleguide() {
         { id: 'actions', label: t('styleguide.actions.title') },
         { id: 'indicators', label: t('styleguide.indicators.title') },
         { id: 'surfaces', label: t('styleguide.surfaces.title') },
+        { id: 'forms', label: t('styleguide.forms.title') },
+        { id: 'choices', label: t('styleguide.choices.title') },
+        { id: 'overlays', label: t('styleguide.overlays.title') },
+        { id: 'feedback', label: t('styleguide.feedback.title') },
+        { id: 'data', label: t('styleguide.data.title') },
+        { id: 'navigation', label: t('styleguide.navigation.title') },
+        { id: 'brand', label: t('styleguide.brand.title') },
     ];
 
     return (
@@ -47,6 +61,13 @@ export default function Styleguide() {
                 <ActionsSection />
                 <IndicatorsSection />
                 <SurfacesSection />
+                <FormsSection />
+                <ChoicesSection />
+                <OverlaysSection />
+                <FeedbackSection />
+                <DataSection />
+                <NavigationSection />
+                <BrandSection />
             </div>
         </BareLayout>
     );
