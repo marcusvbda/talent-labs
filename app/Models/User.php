@@ -26,6 +26,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $remember_token
  * @property bool $is_admin
  * @property UserStatus $status
+ * @property string $locale
+ * @property string|null $timezone
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read JobPreference|null $jobPreference
@@ -33,7 +35,7 @@ use Illuminate\Support\Carbon;
  * @property-read ConnectedIntegration|null $gmailIntegration
  * @property-read Collection<int, Application> $applications
  */
-#[Fillable(['name', 'email', 'password', 'is_admin', 'status'])]
+#[Fillable(['name', 'email', 'password', 'is_admin', 'status', 'locale', 'timezone'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {

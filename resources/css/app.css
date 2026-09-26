@@ -3,9 +3,223 @@
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
+@font-face {
+    font-family: 'Geist';
+    src: url('/fonts/geist/Geist-Variable.woff2') format('woff2');
+    font-weight: 100 900;
+    font-display: swap;
+}
+
 @theme {
-    --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+    --font-sans: 'Geist', system-ui, sans-serif;
+
+    --color-canvas: #d6d2cb;
+    --color-shell: #eeece8;
+    --color-card: #ffffff;
+    --color-tile: #f5f4f1;
+    --color-ink: #121212;
+    --color-muted: #6e6b65;
+    --color-faint: #a29e96;
+    --color-hairline: #e6e3dd;
+    --color-accent: #f26a1b;
+    --color-accent-deep: #e4520a;
+    --color-accent-soft: #fff1e6;
+    --color-accent-line: #f9b98f;
+    --color-dark: #1a1917;
+    --color-dark-2: #24231f;
+    --color-dark-line: #33322d;
+    --color-dark-muted: #a19d93;
+
+    --color-success: #1e9e5a;
+    --color-success-bg: #ddefe4;
+    --color-success-text: #177a45;
+    --color-danger: #d64545;
+    --color-danger-bg: #f7deda;
+    --color-danger-text: #b23a2a;
+
+    --color-disc-orange: #ffe4d0;
+    --color-disc-neutral: #e3e0d8;
+    --color-disc-green: #ddefe4;
+    --color-disc-red: #f7deda;
+    --color-scrim: rgba(238, 236, 232, 0.78);
+
+    --radius-shell: 44px;
+    --radius-card: 36px;
+    --radius-card-sm: 28px;
+    --radius-panel: 26px;
+    --radius-tile: 28px;
+    --radius-row: 24px;
+    --radius-logo: 16px;
+    --radius-logo-lg: 18px;
+    --radius-logo-sm: 14px;
+    --radius-checkbox: 8px;
+
+    --shadow-shell: 0 40px 90px rgba(40, 30, 15, 0.1);
+
+    --breakpoint-desk: 90rem;
+
+    --spacing-shell-t: 26px;
+    --spacing-shell-x: 40px;
+    --spacing-shell-b: 44px;
+    --spacing-gap: 24px;
+    --spacing-card: 28px;
+    --spacing-card-sm: 20px;
+    --spacing-tile-t: 22px;
+    --spacing-tile-x: 20px;
+    --spacing-tile-b: 20px;
+    --spacing-row-t: 14px;
+    --spacing-row-r: 20px;
+    --spacing-row-b: 14px;
+    --spacing-row-l: 16px;
+    --spacing-row-gap: 10px;
+    --spacing-control-lg: 60px;
+    --spacing-control-md: 54px;
+    --spacing-control-sm: 46px;
+    --spacing-control-xs: 44px;
+
+    --text-display: 56px;
+    --text-display--line-height: 1;
+    --text-display--letter-spacing: -0.045em;
+    --text-display--font-weight: 500;
+    --text-display-sm: 34px;
+    --text-display-sm--line-height: 1.05;
+    --text-display-sm--letter-spacing: -0.045em;
+    --text-display-sm--font-weight: 500;
+
+    --text-hero-numeral: 176px;
+    --text-hero-numeral--line-height: 1;
+    --text-hero-numeral--letter-spacing: -0.065em;
+    --text-hero-numeral--font-weight: 450;
+    --text-hero-numeral-sm: 112px;
+    --text-hero-numeral-sm--line-height: 1;
+    --text-hero-numeral-sm--letter-spacing: -0.065em;
+    --text-hero-numeral-sm--font-weight: 450;
+
+    --text-hero-suffix: 44px;
+    --text-hero-suffix--line-height: 1.1;
+    --text-hero-suffix--letter-spacing: -0.03em;
+    --text-hero-suffix--font-weight: 400;
+    --text-hero-suffix-sm: 28px;
+    --text-hero-suffix-sm--line-height: 1.1;
+    --text-hero-suffix-sm--letter-spacing: -0.03em;
+    --text-hero-suffix-sm--font-weight: 400;
+
+    --text-numeral-lg: 64px;
+    --text-numeral-lg--line-height: 1;
+    --text-numeral-lg--letter-spacing: -0.055em;
+    --text-numeral-lg--font-weight: 450;
+    --text-numeral-lg-sm: 44px;
+    --text-numeral-lg-sm--line-height: 1;
+    --text-numeral-lg-sm--letter-spacing: -0.055em;
+    --text-numeral-lg-sm--font-weight: 450;
+
+    --text-card-title: 26px;
+    --text-card-title--line-height: 1.2;
+    --text-card-title--letter-spacing: -0.03em;
+    --text-card-title--font-weight: 500;
+    --text-card-title-sm: 22px;
+    --text-card-title-sm--line-height: 1.2;
+    --text-card-title-sm--letter-spacing: -0.03em;
+    --text-card-title-sm--font-weight: 500;
+
+    --text-row-title: 17.5px;
+    --text-row-title--line-height: 1.25;
+    --text-row-title--letter-spacing: -0.02em;
+    --text-row-title--font-weight: 550;
+    --text-row-title-sm: 16px;
+    --text-row-title-sm--line-height: 1.25;
+    --text-row-title-sm--letter-spacing: -0.02em;
+    --text-row-title-sm--font-weight: 550;
+
+    --text-body: 15px;
+    --text-body--line-height: 1.35;
+    --text-body--font-weight: 400;
+
+    --text-label: 16px;
+    --text-label--line-height: 1.35;
+    --text-label--font-weight: 400;
+    --text-label-sm: 14px;
+    --text-label-sm--line-height: 1.35;
+    --text-label-sm--font-weight: 400;
+
+    --text-chip: 13px;
+    --text-chip--line-height: 1.2;
+    --text-chip--font-weight: 500;
+
+    --animate-live-pulse: live-pulse 1.6s infinite;
+    --animate-spin-ring: spin-ring 0.9s linear infinite;
+    --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+
+    @keyframes live-pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(242, 106, 27, 0.45);
+        }
+        70%,
+        100% {
+            box-shadow: 0 0 0 8px rgba(242, 106, 27, 0);
+        }
+    }
+
+    @keyframes spin-ring {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+}
+
+@utility bg-hero {
+    background-image: linear-gradient(
+        155deg,
+        #ff7c33 0%,
+        #f26a1b 45%,
+        #df4e08 100%
+    );
+}
+
+@utility bg-hatched {
+    background:
+        repeating-linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.55) 0 2.5px,
+            transparent 2.5px 7px
+        ),
+        rgba(255, 255, 255, 0.14);
+}
+
+@utility hero-circle {
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+@utility focus-ring {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+}
+
+@layer base {
+    body {
+        background-color: var(--color-shell);
+        color: var(--color-ink);
+        font-feature-settings: 'tnum' 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
 }

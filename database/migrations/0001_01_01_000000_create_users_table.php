@@ -20,6 +20,8 @@ return new class extends Migration
             $table->rememberToken();
             $table->boolean('is_admin')->default(false);
             $table->string('status')->default('active');
+            $table->string('locale', 5)->default('en');
+            $table->string('timezone', 64)->nullable();
             $table->timestamps();
         });
 

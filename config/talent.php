@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'brand' => [
+        'name' => env('BRAND_NAME', 'Talent Labs'),
+        // Wordmark split: first part regular weight, second part bold.
+        'wordmark' => [env('BRAND_WORDMARK_REGULAR', 'Talent'), env('BRAND_WORDMARK_BOLD', 'Labs')],
+    ],
+
+    'client' => [
+        'use_fixtures' => (bool) env('VITE_USE_FIXTURES', false),
+    ],
+
+    'locales' => ['en', 'pt', 'es'],
+
     'seed' => [
         'admin' => [
             'name' => env('SEED_ADMIN_NAME'),
