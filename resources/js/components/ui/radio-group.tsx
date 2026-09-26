@@ -1,7 +1,4 @@
-import {
-    Radio,
-    RadioGroup as HeadlessRadioGroup,
-} from '@headlessui/react';
+import { Radio, RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 import { CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { FieldControlProps } from './field';

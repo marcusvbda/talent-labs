@@ -1,13 +1,23 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+Route::inertia('/', 'landing')->name('home');
+
+Route::inertia('/dashboard', 'dashboard')->middleware(['auth', 'client'])->name('dashboard');
 
 Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');
+
+Route::middleware('guest')->group(function (): void {
+    Route::get('/login', [LoginController::class, 'create'])->name('login');
+    Route::post('/login', [LoginController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('login.store');
+});
 
 Route::post('/logout', LogoutController::class)->middleware('auth')->name('logout');
 

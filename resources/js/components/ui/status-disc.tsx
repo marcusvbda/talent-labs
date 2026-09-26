@@ -5,7 +5,14 @@ import { useT } from '@/i18n/i18n-provider';
 import { cn } from '@/lib/utils';
 
 type DiscStatus = 'sending' | 'done' | 'failed' | 'waiting' | 'icon';
-type DiscTint = 'orange' | 'neutral' | 'green' | 'red';
+type DiscTint =
+    | 'orange'
+    | 'neutral'
+    | 'green'
+    | 'red'
+    | 'dark-done'
+    | 'dark-active'
+    | 'dark-idle';
 type DiscSize = 'sm' | 'md' | 'lg';
 
 const TINTS: Record<DiscTint, string> = {
@@ -13,6 +20,9 @@ const TINTS: Record<DiscTint, string> = {
     neutral: 'bg-disc-neutral text-muted',
     green: 'bg-disc-green text-success-text',
     red: 'bg-disc-red text-danger-text',
+    'dark-done': 'bg-accent text-white',
+    'dark-active': 'bg-dark-2 text-accent ring-2 ring-accent/30',
+    'dark-idle': 'bg-dark-line text-dark-muted',
 };
 
 const SIZES: Record<DiscSize, string> = {
@@ -65,7 +75,7 @@ export function StatusDisc({
             )}
         >
             {status === 'sending' ? (
-                <span aria-hidden="true">
+                <span aria-hidden="true" className="flex">
                     <Spinner size="sm" tone="accent" />
                 </span>
             ) : (

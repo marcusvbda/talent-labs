@@ -31,7 +31,7 @@ export function Segmented<T>({
                 <Radio
                     key={String(option.value)}
                     value={option.value}
-                    className="inline-flex h-control-xs shrink-0 cursor-pointer items-center justify-center rounded-full px-6 text-label-sm whitespace-nowrap text-muted transition-colors hover:text-ink focus-visible:focus-ring data-checked:bg-card data-checked:text-ink data-disabled:cursor-not-allowed data-disabled:opacity-50"
+                    className="inline-flex h-control-xs shrink-0 cursor-pointer items-center justify-center rounded-full px-6 text-label-sm whitespace-nowrap text-muted transition-colors hover:text-ink focus-visible:focus-ring data-checked:bg-ink data-checked:text-white data-disabled:cursor-not-allowed data-disabled:opacity-50"
                 >
                     {option.label}
                 </Radio>

@@ -27,10 +27,15 @@
     --color-accent-deep: #b44108;
     --color-accent-soft: #fff1e6;
     --color-accent-line: #f9b98f;
+    --color-bar-top: #e5e0d6;
+    --color-bar-bottom: #f4f2ec;
+    --color-bar-cap: #cfcabf;
+    --color-bar-stub: #e2ded5;
     --color-dark: #1a1917;
     --color-dark-2: #24231f;
     --color-dark-line: #33322d;
     --color-dark-muted: #a19d93;
+    --color-dark-soft: #d8d4ca;
 
     --color-success: #1e9e5a;
     --color-success-bg: #ddefe4;
@@ -51,14 +56,18 @@
     --radius-panel: 26px;
     --radius-tile: 28px;
     --radius-row: 24px;
+    --radius-queue: 20px;
     --radius-logo: 16px;
     --radius-logo-lg: 18px;
     --radius-logo-sm: 14px;
     --radius-checkbox: 8px;
+    --radius-bar-top: 9px;
 
     --shadow-shell: 0 40px 90px rgba(40, 30, 15, 0.1);
 
     --breakpoint-desk: 90rem;
+
+    --container-shell: 1520px;
 
     --spacing-shell-t: 26px;
     --spacing-shell-x: 40px;
@@ -144,6 +153,10 @@
     --text-label-sm--line-height: 1.35;
     --text-label-sm--font-weight: 400;
 
+    --text-queue-meta: 13.5px;
+    --text-queue-meta--line-height: 1.3;
+    --text-queue-eta: 14.5px;
+    --text-queue-eta--line-height: 1.3;
     --text-chip: 13px;
     --text-chip--line-height: 1.2;
     --text-chip--font-weight: 500;
@@ -151,6 +164,16 @@
     --animate-live-pulse: live-pulse 1.6s infinite;
     --animate-spin-ring: spin-ring 0.9s linear infinite;
     --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+    --animate-fade-in: fade-in 0.2s ease-out;
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
 
     @keyframes live-pulse {
         0% {
@@ -200,6 +223,10 @@
 @utility hero-circle {
     border-radius: 9999px;
     background-color: rgba(255, 255, 255, 0.07);
+}
+
+@utility border-row {
+    border-width: 1.5px;
 }
 
 @utility focus-ring {

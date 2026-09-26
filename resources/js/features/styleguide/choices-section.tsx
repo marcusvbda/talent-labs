@@ -202,12 +202,16 @@ export function ChoicesSection() {
                         {
                             value: 'daily',
                             title: t('styleguide.choices.radio_daily'),
-                            description: t('styleguide.choices.radio_daily_hint'),
+                            description: t(
+                                'styleguide.choices.radio_daily_hint',
+                            ),
                         },
                         {
                             value: 'weekly',
                             title: t('styleguide.choices.radio_weekly'),
-                            description: t('styleguide.choices.radio_weekly_hint'),
+                            description: t(
+                                'styleguide.choices.radio_weekly_hint',
+                            ),
                         },
                         {
                             value: 'never',
@@ -224,7 +228,9 @@ export function ChoicesSection() {
                         {
                             value: 'daily',
                             title: t('styleguide.choices.radio_daily'),
-                            description: t('styleguide.choices.radio_daily_hint'),
+                            description: t(
+                                'styleguide.choices.radio_daily_hint',
+                            ),
                         },
                         {
                             value: 'weekly',
@@ -240,7 +246,10 @@ export function ChoicesSection() {
                     value={segment}
                     onChange={setSegment}
                     options={[
-                        { value: 'day', label: t('styleguide.choices.seg_day') },
+                        {
+                            value: 'day',
+                            label: t('styleguide.choices.seg_day'),
+                        },
                         {
                             value: 'week',
                             label: t('styleguide.choices.seg_week'),
@@ -257,7 +266,10 @@ export function ChoicesSection() {
                     value="week"
                     onChange={() => {}}
                     options={[
-                        { value: 'day', label: t('styleguide.choices.seg_day') },
+                        {
+                            value: 'day',
+                            label: t('styleguide.choices.seg_day'),
+                        },
                         {
                             value: 'week',
                             label: t('styleguide.choices.seg_week'),

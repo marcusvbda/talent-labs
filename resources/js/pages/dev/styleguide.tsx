@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { ActionsSection } from '@/features/styleguide/actions-section';
 import { BrandSection } from '@/features/styleguide/brand-section';
+import { CardsSection } from '@/features/styleguide/cards-section';
 import { ChoicesSection } from '@/features/styleguide/choices-section';
 import { DataSection } from '@/features/styleguide/data-section';
 import { FeedbackSection } from '@/features/styleguide/feedback-section';
@@ -8,6 +9,11 @@ import { FormsSection } from '@/features/styleguide/forms-section';
 import { NavigationSection } from '@/features/styleguide/navigation-section';
 import { OverlaysSection } from '@/features/styleguide/overlays-section';
 import { IndicatorsSection } from '@/features/styleguide/indicators-section';
+import { ChartSection } from '@/features/styleguide/chart-section';
+import { LiveSection } from '@/features/styleguide/live-section';
+import { GatingSection } from '@/features/styleguide/gating-section';
+import { RowsSection } from '@/features/styleguide/rows-section';
+import { ShellSection } from '@/features/styleguide/shell-section';
 import { SurfacesSection } from '@/features/styleguide/surfaces-section';
 import { TokensSection } from '@/features/styleguide/tokens-section';
 import { useT } from '@/i18n/i18n-provider';
@@ -27,6 +33,12 @@ export default function Styleguide() {
         { id: 'feedback', label: t('styleguide.feedback.title') },
         { id: 'data', label: t('styleguide.data.title') },
         { id: 'navigation', label: t('styleguide.navigation.title') },
+        { id: 'shell', label: t('styleguide.shell.title') },
+        { id: 'cards', label: t('styleguide.cards.title') },
+        { id: 'rows', label: t('styleguide.rows.title') },
+        { id: 'live', label: t('styleguide.live.title') },
+        { id: 'chart', label: t('styleguide.chart.title') },
+        { id: 'gating', label: t('styleguide.gating.title') },
         { id: 'brand', label: t('styleguide.brand.title') },
     ];
 
@@ -67,6 +79,12 @@ export default function Styleguide() {
                 <FeedbackSection />
                 <DataSection />
                 <NavigationSection />
+                <ShellSection />
+                <CardsSection />
+                <RowsSection />
+                <LiveSection />
+                <ChartSection />
+                <GatingSection />
                 <BrandSection />
             </div>
         </BareLayout>

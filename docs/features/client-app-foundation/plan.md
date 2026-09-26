@@ -29,19 +29,19 @@ session. Phase status is updated in place in this file.
 | 17    | Fixtures runtime + dev state + realtime (`useUserChannel`, emitter)   | inertia-frontend | 16                | M    | DONE        |
 | 18    | `DevToolbar` + `useSetLocale`                                         | inertia-frontend | 6, 12, 13, 14, 17 | M    | DONE        |
 | 19    | NavPills, LanguageSwitcher, UserMenu + `POST /logout`                 | inertia-frontend | 9, 13, 18         | M    | DONE        |
-| 20    | TopBar, MobileNav, PageHeader                                         | inertia-frontend | 15, 19            | M    | PENDING     |
-| 21    | `AppLayout`, `client` middleware, `/dashboard` route (skeleton)       | inertia-frontend | 20                | M    | PENDING     |
-| 22    | Login: controller, request, throttle, `GuestLayout`, login page       | laravel-backend  | 11, 15, 21        | M    | PENDING     |
-| 23    | Landing page; remove `welcome.tsx`                                    | inertia-frontend | 15, 22            | S    | PENDING     |
-| 24    | Branded Inertia error pages                                           | laravel-backend  | 6, 15, 21         | S    | PENDING     |
-| 25    | Card patterns: HeroCard, StatTile, DataCard, DarkCard, SectionHeader  | inertia-frontend | 9, 10             | M    | PENDING     |
-| 26    | Live patterns: LiveStepper, CountdownBar, ActivityRow                 | inertia-frontend | 9                 | S    | PENDING     |
-| 27    | Row patterns: CompanyLogo, QueueRow, JobRow                           | inertia-frontend | 9, 11             | S    | PENDING     |
-| 28    | BarChart (hand-rolled SVG)                                            | inertia-frontend | 10, 13            | S    | PENDING     |
-| 29    | PlanGate, StickyActionBar, FilterBar                                  | inertia-frontend | 8, 12, 17         | S    | PENDING     |
-| 30    | Demo dashboard composition + visual gate                              | inertia-frontend | 21, 25–29         | M    | PENDING     |
-| 31    | PT/ES Laravel validation messages                                     | laravel-backend  | 4                 | S    | PENDING     |
-| 32    | Verification and report                                               | qa-tester        | 1–31              | S    | PENDING     |
+| 20    | TopBar, MobileNav, PageHeader                                         | inertia-frontend | 15, 19            | M    | DONE        |
+| 21    | `AppLayout`, `client` middleware, `/dashboard` route (skeleton)       | inertia-frontend | 20                | M    | DONE        |
+| 22    | Login: controller, request, throttle, `GuestLayout`, login page       | laravel-backend  | 11, 15, 21        | M    | DONE        |
+| 23    | Landing page; remove `welcome.tsx`                                    | inertia-frontend | 15, 22            | S    | DONE        |
+| 24    | Branded Inertia error pages                                           | laravel-backend  | 6, 15, 21         | S    | DONE        |
+| 25    | Card patterns: HeroCard, StatTile, DataCard, DarkCard, SectionHeader  | inertia-frontend | 9, 10             | M    | DONE        |
+| 26    | Live patterns: LiveStepper, CountdownBar, ActivityRow                 | inertia-frontend | 9                 | S    | DONE        |
+| 27    | Row patterns: CompanyLogo, QueueRow, JobRow                           | inertia-frontend | 9, 11             | S    | DONE        |
+| 28    | BarChart (hand-rolled SVG)                                            | inertia-frontend | 10, 13            | S    | DONE        |
+| 29    | PlanGate, StickyActionBar, FilterBar                                  | inertia-frontend | 8, 12, 17         | S    | DONE        |
+| 30    | Demo dashboard composition + visual gate                              | inertia-frontend | 21, 25–29         | M    | DONE ³      |
+| 31    | PT/ES Laravel validation messages                                     | laravel-backend  | 4                 | S    | DONE        |
+| 32    | Verification and report                                               | qa-tester        | 1–31              | S    | DONE ⁴      |
 
 ¹ Phase 1 installs packages. `CLAUDE.md` requires the owner's approval in the
 same message, so the `/execute-phases` message for Phase 1 must say it
@@ -50,6 +50,10 @@ explicitly, e.g. "I approve installing the B.2 dependencies".
 ² Phase 3 ends with an owner action: the owner runs
 `php artisan migrate:fresh --seed` (D1 = A). Phases 4 and 6 start only after
 the owner confirms it ran.
+
+³ Phase 30 is done pending the owner's visual approval against `reference/dashboard-mockup.png` (AC14).
+
+⁴ Phase 32 is done with the manual items listed in its evidence. A formatter outside the executors (probably the editor on save) rewrote `resources/js/layouts/app-layout.tsx` with double quotes twice, which fails `yarn run check`; `vp fmt` restores it.
 
 ## Audit — 2026-09-26
 
@@ -758,7 +762,8 @@ Spec: B.4 (patterns) · B.5 (tablet/mobile variants) · B.9 (`logout`)
 
 ### Phase 20 — TopBar, MobileNav, PageHeader
 
-Status: PENDING
+Status: DONE
+Evidence: TopBar (wordmark from lg, search pill at xl/icon below, bell dot, language, user), MobileNav Sheet, PageHeader + styleguide shell section; shared `navItemState` in nav-pills; `yarn types:check` ✅, `yarn build` ✅, hex grep only logo-mark.tsx, lang key sets identical; header fits at 360/390/768/1024/1280/1600 (Playwright from node); code-reviewer APPROVED after 1 correction round. Open: `/dev/styleguide` scrollWidth is 368 at 360 px from a Phase 10 surfaces-section element (not Phase 20); `desk:-mx-24` on wide styleguide groups.
 Role: inertia-frontend · Depends on: 15, 19 · Covers: AC03, AC05 (top bar), AC13 · Size: M
 Spec: B.4 (`TopBar`, `MobileNav`, `PageHeader`) · B.5
 
@@ -782,7 +787,8 @@ scroll. `yarn check` and `yarn types:check` pass.
 
 ### Phase 21 — `AppLayout`, `client` middleware, `/dashboard` route (skeleton)
 
-Status: PENDING
+Status: DONE
+Evidence: `EnsureActiveClient` + `client` alias + `GET /dashboard` (`auth`,`client`; `route:list --name=dashboard` ✅), `useMainNav`, `AppLayout`/`AppGrid` (canvas + shell from lg, desk metrics from the mockup), `useFixturePlan` in data/, skeleton `pages/dashboard.tsx`, `--container-shell` token, `dashboard.title` keys (identical key sets); pint ✅, `composer lint:check` only the pre-existing failure, phpstan (1G) 0 errors, `php artisan test --compact` 2 passed, `yarn types:check` ✅, `yarn build` ✅; code-reviewer CHANGES_REQUIRED once (canvas only at desk) → fixed to lg and re-verified by checks (no second review). Not viewed in a browser: `/dashboard` needs a login.
 Role: inertia-frontend (+ small backend) · Depends on: 20 · Covers: AC07 (auth guard), AC13, AC17 · Size: M
 Spec: B.4 (`layouts/app-layout.tsx`) · B.5 (shell) · B.9 (`dashboard`, `client` alias)
 
@@ -813,7 +819,8 @@ Spec: B.4 (`layouts/app-layout.tsx`) · B.5 (shell) · B.9 (`dashboard`, `client
 
 ### Phase 22 — Login: controller, request, throttle, `GuestLayout`, login page
 
-Status: PENDING
+Status: DONE
+Evidence: LoginRequest (5 attempts, Lockout, translated auth.failed/auth.throttle), LoginController, guest `login`/`login.store` (throttle:6,1), `redirectGuestsTo` and `EnsureActiveClient` → `login`, GuestLayout, `pages/auth/login.tsx` (Inertia `<Form {...store()}>`; `.form()` is not generated), `auth.login.*` keys (238, identical). HTTP checks on artisan serve: guest `/dashboard` → `/login`, `/admin`→`/admin/login`, `/app`→`/app/login`; seeded client POST → 302 `/dashboard` then 200; wrong password translated in en/pt/es; 6th attempt throttled message, 7th 429. pint ✅, `composer lint:check` only the pre-existing failure, phpstan (1G) 0 errors, `php artisan test --compact` 2 passed, `yarn types:check` ✅, `yarn build` ✅; code-reviewer APPROVED. Not verified: `/login` rendered in a browser, blocked-user toast, logout to `/`. `yarn check:fix` reformatted 4 unrelated files (multi-select, radio-group, brand-section, choices-section; formatting only).
 Role: laravel-backend (+ page) · Depends on: 11, 15, 21 · Covers: AC07, AC17 · Size: M
 Spec: B.9 (route table, login bullets)
 
@@ -845,7 +852,8 @@ throttling. Unauthenticated users land there.
 
 ### Phase 23 — Landing page; remove `welcome.tsx`
 
-Status: PENDING
+Status: DONE
+Evidence: `/` renders `pages/landing.tsx` (Logo, status, subtitle, one primary-ink button → `login()` for guests / `dashboard()` when authenticated), `welcome.tsx` deleted (`grep welcome resources/js/pages` empty), `landing.*` keys (242, identical); `yarn types:check` ✅, `yarn build` ✅, `php artisan test --compact` 2 passed, pint ✅, hex grep only logo-mark.tsx; code-reviewer APPROVED. Not viewed in a browser.
 Role: inertia-frontend · Depends on: 15, 22 · Covers: AC06, AC05 · Size: S
 Spec: B.11 · B.9 (`home`, remove `welcome.tsx`)
 
@@ -868,7 +876,8 @@ landing.
 
 ### Phase 24 — Branded Inertia error pages
 
-Status: PENDING
+Status: DONE
+Evidence: `Inertia::handleExceptionsUsing` in bootstrap/app.php (debug off, 403/404/419/500/503, not JSON/Livewire, Filament paths excluded, locale set first, `withSharedData`), `pages/errors/error.tsx`, `errors.*` keys (254, identical). With `APP_DEBUG=false` (env override on `php -S`; `.env` untouched): `/does-not-exist` + `locale=pt` cookie → 404 `errors/error` in pt; `/admin|/app/does-not-exist`, X-Livewire and JSON keep default responses; 403/419/500/503 verified through the exception handler in a script (es). pint ✅, `composer lint:check` only the pre-existing failure, phpstan (1G) 0 errors, `php artisan test --compact` 2 passed, `yarn types:check` ✅, `yarn build` ✅; code-reviewer APPROVED. Not verified: browser look, real `php artisan down` 503. Note: `php artisan serve` ignored the `APP_DEBUG` override.
 Role: laravel-backend (+ page) · Depends on: 6, 15, 21 · Covers: AC15, AC05, AC17 · Size: S
 Spec: B.9 (error pages bullet)
 
@@ -903,7 +912,8 @@ when debug is off.
 
 ### Phase 25 — Card patterns: HeroCard, StatTile, DataCard, DarkCard, SectionHeader
 
-Status: PENDING
+Status: DONE
+Evidence: HeroCard, StatTile, DataCard (ready/loading/empty/error), DarkCard, SectionHeader + styleguide cards section; `--radius-bar-top` token added; hero labels full `text-ink` (D5); `yarn types:check` ✅, `yarn build` ✅, hex and arbitrary-px greps clean, lang key sets identical; code-reviewer CHANGES_REQUIRED once (arbitrary 9px radius, hero label contrast) → fixed, re-verified by checks (no second review). Open non-blocking: CornerArrow forks IconButton; mockup metric drift (strip radius 22 vs 28, bar 26 vs 24 wide, numeral line-height); numeral uses `-sm` tokens, not `clamp()`; DataCard drops `footer` in non-ready states. Not viewed in a browser; the mockup comparison at 1600 px is still to do (Phase 30).
 Role: inertia-frontend · Depends on: 9, 10 · Covers: AC03, AC13 · Size: M
 Spec: B.3 (hero gradient, hatched bars, type) · B.4 (patterns)
 
@@ -928,7 +938,8 @@ mobile type scale below `md`. `yarn check` and `yarn types:check` pass.
 
 ### Phase 26 — Live patterns: LiveStepper, CountdownBar, ActivityRow
 
-Status: PENDING
+Status: DONE
+Evidence: LiveStepper (done/active/failed/upcoming, aria-current, 300 ms line, dark-tint StatusDisc variants), CountdownBar (one row, accent-on-dark ProgressBar tone, display-only 1 s tick that stops at end, invalid-date guards), ActivityRow (200 ms fade-in, invalid-time guard), `animate-fade-in` token, styleguide live section; `yarn types:check` ✅, `yarn build` ✅, hex/arbitrary-px greps clean, lang key sets identical (296); code-reviewer APPROVED after 1 correction round. Open non-blocking: ActivityRow fades the new disc in but not the old one out. Not viewed in a browser.
 Role: inertia-frontend · Depends on: 9 · Covers: AC03, AC13 · Size: S
 Spec: B.3 (motion) · B.4 (`LiveStepper`, `CountdownBar`, `ActivityRow`)
 
@@ -952,7 +963,8 @@ stops the animations. `yarn check` and `yarn types:check` pass.
 
 ### Phase 27 — Row patterns: CompanyLogo, QueueRow, JobRow
 
-Status: PENDING
+Status: DONE
+Evidence: CompanyLogo (hashed tint, sizes 44/52/56 per mockup), QueueRow (mockup `.qr` on the dark card: dark-2, radius 20, ETA min-w 64), JobRow (label+Checkbox, accent-soft/accent-line selected, 1.5 px border, stacking below md) + styleguide rows section; new tokens `dark-soft`, `radius-queue`, `text-queue-meta`, `text-queue-eta`, `border-row`; `yarn types:check` ✅, `yarn build` ✅, hex/arbitrary-px greps clean, lang parity ✅ (muted on tile 4.83:1, on accent-soft 4.80:1); code-reviewer CHANGES_REQUIRED once (QueueRow/logo sizes vs mockup) → fixed, re-verified by checks. Open non-blocking: stack Chip low-contrast on accent-soft rows (Chip decision from an earlier phase). Not viewed in a browser.
 Role: inertia-frontend · Depends on: 9, 11 · Covers: AC03, AC13 · Size: S
 Spec: B.4 (`CompanyLogo`, `QueueRow`, `JobRow`) · B.5 (JobRow stacking)
 
@@ -971,7 +983,8 @@ correct at 390 px. `yarn check` and `yarn types:check` pass.
 
 ### Phase 28 — BarChart (hand-rolled SVG)
 
-Status: PENDING
+Status: DONE
+Evidence: `patterns/bar-chart.tsx` (mockup geometry: viewBox 530x410, 5 px radius + 3 px cap, stubs, gradient today bar, dashed gridlines; guards for NaN/negative/empty), sr-only table, focusable bars with tooltip, Skeleton/EmptyState, `--color-bar-*` tokens, styleguide chart section; `yarn types:check` ✅, `yarn build` ✅, hex/arbitrary-px greps clean, lang parity ✅; code-reviewer APPROVED. Deviations: axis labels `muted` and today label `accent-deep` (contrast). Open non-blocking: tooltip not clamped at edges and no Esc dismissal; weak focus indicator (fill-tile only); `onMouseLeave` hides a keyboard-focused tooltip; data read twice by screen readers (bars + table); axis can show non-integer steps for small counts; 12 px axis text renders ~7 px at 390 px. Not viewed in a browser.
 Role: inertia-frontend · Depends on: 10, 13 · Covers: AC03, AC13 · Size: S
 Spec: B.4 (`BarChart`) · B.2 (no chart library)
 
@@ -992,7 +1005,8 @@ hex. `yarn check` and `yarn types:check` pass.
 
 ### Phase 29 — PlanGate, StickyActionBar, FilterBar
 
-Status: PENDING
+Status: DONE
+Evidence: PlanGate (locked → children `inert` + `aria-hidden`, absolute overlay sibling with `bg-scrim` + `backdrop-blur-xs` = 4 px default, Lock disc 46 px, title/feature/upgrade/see-plans via t(), `#` hrefs, optional `radius` prop), StickyActionBar (fixed on mobile w/ safe-area, static md+), FilterBar (horizontal scroll), styleguide gating section; `yarn types:check` ✅, `yarn build` ✅, hex/arbitrary-px greps clean, lang parity ✅; code-reviewer APPROVED. Open non-blocking: PlanGate with `locked` and empty `requiredPlans` renders children unlocked (fails open); muted text on scrim ~4.5–4.7:1; StickyActionBar needs page bottom spacing in consumers; FilterBar `overflow-x-auto` clips focus rings without `py-1`/`shrink-0` children. Not viewed in a browser (Tab skipping inert content unverified).
 Role: inertia-frontend · Depends on: 8, 12, 17 · Covers: AC12, AC03, AC13 · Size: S
 Spec: B.10 · B.4 (`StickyActionBar`, `FilterBar`) · B.5 (sticky bar)
 
@@ -1016,7 +1030,8 @@ keeps its size. `yarn check` and `yarn types:check` pass.
 
 ### Phase 30 — Demo dashboard composition + visual gate
 
-Status: PENDING
+Status: DONE (awaiting owner visual approval)
+Evidence: `pages/dashboard.tsx` (demo data only here) composed from HeroCard, 4 StatTiles, DarkCard (LiveStepper + CountdownBar + QueueRows), BarChart card, JobRow card, ActivityRow card; `features/dashboard/{dashboard-grid,live-sending-card,rich-text}.tsx`; six-item nav (D3 = A); 60+ `dashboard.*` keys (387 keys, identical sets); top bar adapted so nothing overlaps at 768–1600 (nav scrolls at 768). `yarn types:check` ✅, `yarn build` ✅, hex/arbitrary-px greps clean, `scrollWidth <= innerWidth` OK at 360/390/768/1024/1280/1440/1600 (Playwright from node, seeded client logged in once). Screenshots at 1600/1024/390 in the scratchpad `/private/tmp/claude-501/-Users-mvbassalobre-Projects-talent-labs/4d0a8d5b-244f-4f31-a8be-c1e11fcfc5ef/scratchpad/` (`dashboard-*.png`), to compare with `reference/dashboard-mockup.png`. code-reviewer CHANGES_REQUIRED once (top bar clipped at 1024) → fixed. Known differences: KPI tiles 2×2 until `desk` (1440); hash-derived logo tints (e.g. "KL" light, "CF" not black); faint tick-meter track; pending stepper steps show clock icons; disabled pills muted grey; type ~5–8% smaller than the mockup; hero numeral ink (D5); "12 minutes ago" vs "12 min ago"; greeting always `afternoon`; below `2xl` the logo is the mark only and below `xl` the language switcher is hidden (still in the user menu); BarChart text renders small at narrow widths; eyebrow wraps at 768. Screenshots at 1024 viewed; 390 not viewed. AC14 needs the owner's approval.
 Role: inertia-frontend · Depends on: 21, 25–29 · Covers: AC14, AC13, AC01 · Size: M
 Spec: B.13 · B.5 (card spans) · B.4 (`features/<screen>`)
 
@@ -1046,7 +1061,8 @@ for the owner's side-by-side approval.
 
 ### Phase 31 — PT/ES Laravel validation messages
 
-Status: PENDING
+Status: DONE
+Evidence: `php artisan lang:publish` wrote lang/en/{auth,pagination,passwords,validation}.php (nothing overwritten); hand-written lang/pt/validation.php and lang/es/validation.php with identical nested key sets and placeholders to en (scripted check), `attributes` empty; tinker: pt `required` → "O campo email é obrigatório.", es → "El campo email es obligatorio.", `__('auth.failed')` still from the JSON in pt/es; `php -l` ✅, pint ✅, `composer lint:check` only the pre-existing failure, phpstan (1G) 0 errors, `php artisan test --compact` 2 passed; code-reviewer APPROVED. Open non-blocking: pt/es have no pagination/passwords files (fall back to English).
 Role: laravel-backend · Depends on: 4 · Covers: B.8 (backend strings) · Size: S
 Spec: B.8 (last bullet)
 
@@ -1066,7 +1082,8 @@ that they stay English.
 
 ### Phase 32 — Verification and report
 
-Status: PENDING
+Status: DONE (manual ACs listed)
+Evidence: gate — `yarn types:check` ✅, `yarn build` ✅, `yarn run check` 0 errors (2 pre-existing warnings in `types/shared.ts`), `composer lint:check` only the pre-existing `ApplicationTemplateRenderer.php` failure, phpstan (1G) 0 errors, `php artisan test --compact` 2 passed. Greps: AC01 hex only `logo-mark.tsx`; AC10 only the display-only countdown `setInterval` + the forbidding comment; AC02 none; AC11 build has no DevToolbar/dev_toolbar/react-query-devtools; no `'user' => $request->user()`; lang JSONs identical; every literal `t()` key exists in en.json. ACs: 02, 04, 05, 06, 07 (login, wrong password, guest redirect, logout → `/`, throttle 7th blocked), 08 (locale order), 15 (404 pt branded), 17 (`/admin/login`, `/app/login` 200) verified; AC13 initially ❌ (`/dev/styleguide` 369 px at 360 — culprit `Tabs` root without `min-w-0`, fixed) and now OK at 360/390/768/1024/1280/1440/1600 on `/dashboard`, `/`, `/login`, `/dev/styleguide`; manual: AC03 (component-by-component audit), AC12 (PlanGate in browser), AC14 (owner visual approval), and the untested parts of AC08 (users.locale write), AC09 (exact `SharedProps` diff), AC10 (provider/apiFetch/useUserChannel wiring), AC11 (DevToolbar switching), AC15 (403/419/500/503 via handler were verified in Phase 24), AC16. Leftovers: stale `package-lock.json`, `public/favicon.ico` still the Laravel default, only 2 tests exist.
 Role: qa-tester · Depends on: 1–31 · Covers: AC01–AC17 · Size: S
 Spec: Acceptance criteria · Verification
 

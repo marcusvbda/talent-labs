@@ -31,12 +31,7 @@ export function MultiSelect<T>({
     const selected = options.filter((option) => value.includes(option.value));
 
     return (
-        <Listbox
-            multiple
-            value={value}
-            onChange={onChange}
-            disabled={disabled}
-        >
+        <Listbox multiple value={value} onChange={onChange} disabled={disabled}>
             <ListboxButton
                 {...aria}
                 className={cn(

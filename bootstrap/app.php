@@ -1,12 +1,16 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveClient;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
+use App\Support\I18n\LocaleResolver;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Inertia\ExceptionResponse;
+use Inertia\Inertia;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,10 +29,31 @@ return Application::configure(basePath: dirname(__DIR__))
         // Readable unencrypted so error pages rendered outside the web group can use it.
         $middleware->encryptCookies(except: ['locale']);
 
-        $middleware->redirectGuestsTo(fn () => route('filament.app.auth.login'));
+        $middleware->alias(['client' => EnsureActiveClient::class]);
+
+        $middleware->redirectGuestsTo(fn () => route('login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Branded Inertia error pages for the client app; Filament keeps its own.
+        Inertia::handleExceptionsUsing(function (ExceptionResponse $response) {
+            $request = $response->request;
+            $status = $response->statusCode();
+
+            if (config('app.debug')
+                || ! in_array($status, [403, 404, 419, 500, 503], true)
+                || $request->expectsJson()
+                || $request->hasHeader('X-Livewire')
+                || $request->is('admin', 'admin/*', 'app', 'app/*')) {
+                return null;
+            }
+
+            // The web group (SetLocale) may not have run, e.g. on unmatched routes.
+            app()->setLocale(LocaleResolver::resolve($request));
+
+            return $response->render('errors/error', ['status' => $status])->withSharedData();
+        });
     })->create();

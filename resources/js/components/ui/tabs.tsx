@@ -19,7 +19,7 @@ export function Tabs({
         <TabGroup
             selectedIndex={selectedIndex}
             onChange={onChange}
-            className={cn('flex flex-col gap-4', className)}
+            className={cn('flex min-w-0 flex-col gap-4', className)}
         >
             <TabList
                 aria-label={ariaLabel}

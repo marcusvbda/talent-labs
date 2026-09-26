@@ -1,17 +1,19 @@
 import { cn } from '@/lib/utils';
 
-export type MeterTone = 'accent' | 'ink' | 'on-dark';
+export type MeterTone = 'accent' | 'ink' | 'on-dark' | 'on-dark-accent';
 
 const TRACKS: Record<MeterTone, string> = {
     accent: 'bg-accent-soft',
     ink: 'bg-hairline',
     'on-dark': 'bg-dark-line',
+    'on-dark-accent': 'bg-dark-line',
 };
 
 const FILLS: Record<MeterTone, string> = {
     accent: 'bg-accent',
     ink: 'bg-ink',
     'on-dark': 'bg-white',
+    'on-dark-accent': 'bg-accent',
 };
 
 export function ProgressBar({
