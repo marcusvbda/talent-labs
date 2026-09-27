@@ -31,6 +31,10 @@ export const navItemState = (
 };
 
 export function NavPills({ items }: { items: NavPillItem[] }) {
+    if (items.length === 0) {
+        return null;
+    }
+
     return (
         <ul className="flex h-control-lg [scrollbar-width:none] items-center gap-1 overflow-x-auto rounded-full bg-card p-1.5 [&::-webkit-scrollbar]:hidden">
             {items.map((item) => {

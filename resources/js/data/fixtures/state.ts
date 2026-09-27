@@ -5,10 +5,10 @@ import {
     NOTIFICATIONS,
     PREFERENCES,
     PROFILES,
-} from "@/data/fixtures/catalog";
-import { getDevState } from "@/data/fixtures/dev-state";
-import { SEND_DURATION_MS } from "@/data/fixtures/send-steps";
-import { createFixtureStore } from "@/data/fixtures/store";
+} from '@/data/fixtures/catalog';
+import { getDevState } from '@/data/fixtures/dev-state';
+import { SEND_DURATION_MS } from '@/data/fixtures/send-steps';
+import { createFixtureStore } from '@/data/fixtures/store';
 import type {
     Account,
     AccountStatus,
@@ -26,67 +26,67 @@ import type {
     SendMode,
     SendStage,
     SubStep,
-} from "@/types/contracts";
+} from '@/types/contracts';
 
 // The client's own Gmail account (never a recipient address).
-const ACCOUNT_EMAIL = "ana.silva@example.test";
+const ACCOUNT_EMAIL = 'ana.silva@example.test';
 const EU_COUNTRIES = new Set([
-    "AT",
-    "BE",
-    "BG",
-    "HR",
-    "CY",
-    "CZ",
-    "DK",
-    "EE",
-    "FI",
-    "FR",
-    "DE",
-    "GR",
-    "HU",
-    "IE",
-    "IT",
-    "LV",
-    "LT",
-    "LU",
-    "MT",
-    "NL",
-    "PL",
-    "PT",
-    "RO",
-    "SK",
-    "SI",
-    "ES",
-    "SE",
-    "GB",
-    "NO",
-    "CH",
-    "IS",
-    "LI",
+    'AT',
+    'BE',
+    'BG',
+    'HR',
+    'CY',
+    'CZ',
+    'DK',
+    'EE',
+    'FI',
+    'FR',
+    'DE',
+    'GR',
+    'HU',
+    'IE',
+    'IT',
+    'LV',
+    'LT',
+    'LU',
+    'MT',
+    'NL',
+    'PL',
+    'PT',
+    'RO',
+    'SK',
+    'SI',
+    'ES',
+    'SE',
+    'GB',
+    'NO',
+    'CH',
+    'IS',
+    'LI',
 ]);
 
 export const regionForCountry = (country: string | null): RegionKey => {
-    const code = (country ?? "").toUpperCase();
+    const code = (country ?? '').toUpperCase();
 
-    if (code === "BR") {
-        return "br";
+    if (code === 'BR') {
+        return 'br';
     }
 
-    return EU_COUNTRIES.has(code) ? "eu" : "row";
+    return EU_COUNTRIES.has(code) ? 'eu' : 'row';
 };
 
 const SPACING = { minSeconds: 45, maxSeconds: 120 };
-const LANGUAGES: JobLanguage[] = ["en", "pt"];
+const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 
 const PLAN_CONFIG: Record<PlanKey, { dailyLimit: number; mode: SendMode }> = {
-    free: { dailyLimit: 25, mode: "auto" },
-    starter: { dailyLimit: 50, mode: "select" },
-    pro: { dailyLimit: 150, mode: "review" },
+    free: { dailyLimit: 25, mode: 'auto' },
+    starter: { dailyLimit: 50, mode: 'select' },
+    pro: { dailyLimit: 150, mode: 'review' },
 };
 const PLAN_NAMES: Record<PlanKey, string> = {
-    free: "Free",
-    starter: "Starter",
-    pro: "Pro",
+    free: 'Free',
+    starter: 'Starter',
+    pro: 'Pro',
 };
 
 export type StoredApplication = { item: ApplicationItem; jobId: number };
@@ -98,7 +98,7 @@ type FixtureData = {
     profiles: ApplicationProfile[];
     preferences: Preferences;
     notifications: NotificationItem[];
-    account: Omit<Account, "region">;
+    account: Omit<Account, 'region'>;
     onboarding: { basicsDone: boolean; preferencesSaved: boolean };
     sentToday: number;
     paused: boolean;
@@ -134,15 +134,15 @@ const initial: FixtureData = {
     preferences: { ...PREFERENCES },
     notifications: [...NOTIFICATIONS],
     account: {
-        name: "Ana Silva",
+        name: 'Ana Silva',
         email: ACCOUNT_EMAIL,
-        locale: "en",
-        timezone: "Europe/Berlin",
-        country: "DE",
+        locale: 'en',
+        timezone: 'Europe/Berlin',
+        country: 'DE',
     },
     onboarding: { basicsDone: false, preferencesSaved: false },
     sentToday: todayRows(APPLICATION_SEEDS).filter(
-        (row) => row.item.status === "sent",
+        (row) => row.item.status === 'sent',
     ).length,
     paused: false,
     sendingApplicationId: null,
@@ -151,10 +151,10 @@ const initial: FixtureData = {
     failNextSend: false,
     waitStartedAt: null,
     window: {
-        start: "09:00",
-        end: "18:00",
+        start: '09:00',
+        end: '18:00',
         weekdaysOnly: true,
-        timezone: "Europe/Berlin",
+        timezone: 'Europe/Berlin',
     },
 };
 
@@ -163,14 +163,17 @@ const store = createFixtureStore(initial);
 // ---- Matching ---------------------------------------------------------------
 
 const fold = (value: string): string =>
-    value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    value
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase();
 
 // Blank needles never match: an unnormalised draft must not count every job.
 const containsAny = (haystack: string, needles: string[]): boolean =>
     needles.some((needle) => {
         const folded = fold(needle).trim();
 
-        return folded !== "" && haystack.includes(folded);
+        return folded !== '' && haystack.includes(folded);
     });
 
 // Inside a field any value can match; between fields all must match. An empty
@@ -181,7 +184,7 @@ export function jobMatchesPreferences(
     prefs: Preferences,
 ): boolean {
     const title = fold(job.title);
-    const location = fold(job.location ?? "");
+    const location = fold(job.location ?? '');
     const stack = job.stack.map(fold);
     const locationMatch = containsAny(location, prefs.locations);
 
@@ -191,7 +194,7 @@ export function jobMatchesPreferences(
 
     if (
         prefs.seniorities.length > 0 &&
-        job.seniority !== "unknown" &&
+        job.seniority !== 'unknown' &&
         !prefs.seniorities.includes(job.seniority)
     ) {
         return false;
@@ -211,11 +214,11 @@ export function jobMatchesPreferences(
         return false;
     }
 
-    if (prefs.remoteMode === "remote_only") {
+    if (prefs.remoteMode === 'remote_only') {
         return job.isRemote === true;
     }
 
-    if (prefs.remoteMode === "remote_or_locations") {
+    if (prefs.remoteMode === 'remote_or_locations') {
         return job.isRemote === true || locationMatch;
     }
 
@@ -235,7 +238,7 @@ const activeLanguages = (): JobLanguage[] =>
         .map((profile) => profile.language);
 
 const gmailNeedsReauth = (): boolean =>
-    getDevState().gmail === "needs_reconnection";
+    getDevState().gmail === 'needs_reconnection';
 
 const quota = (): Quota => {
     const usedToday = store.get().sentToday;
@@ -256,14 +259,14 @@ const accountStatus = (): AccountStatus => {
     const data = store.get();
     const reauth = gmailNeedsReauth();
     const gmailState =
-        dev.gmail === "needs_reconnection"
-            ? "reauthorization_required"
+        dev.gmail === 'needs_reconnection'
+            ? 'reauthorization_required'
             : dev.gmail;
     const account = data.account;
     const forced = dev.onboardingComplete;
     const flags = {
         basics: forced || data.onboarding.basicsDone,
-        gmail: forced || dev.gmail === "connected",
+        gmail: forced || dev.gmail === 'connected',
         profile: forced || activeLanguages().length > 0,
         preferences: forced || data.onboarding.preferencesSaved,
     };
@@ -279,19 +282,19 @@ const accountStatus = (): AccountStatus => {
         quota: quota(),
         gmail: {
             state: gmailState,
-            accountEmail: dev.gmail === "disconnected" ? null : ACCOUNT_EMAIL,
+            accountEmail: dev.gmail === 'disconnected' ? null : ACCOUNT_EMAIL,
         },
         sending: {
             paused: data.paused || reauth,
-            autoPausedReason: reauth ? "reauthorization_required" : null,
+            autoPausedReason: reauth ? 'reauthorization_required' : null,
         },
         onboarding: {
             complete: done,
             steps: [
-                { key: "basics", done: flags.basics },
-                { key: "gmail", done: flags.gmail },
-                { key: "profile", done: flags.profile },
-                { key: "preferences", done: flags.preferences },
+                { key: 'basics', done: flags.basics },
+                { key: 'gmail', done: flags.gmail },
+                { key: 'profile', done: flags.profile },
+                { key: 'preferences', done: flags.preferences },
             ],
         },
         profiles: { activeLanguages: activeLanguages() },
@@ -306,18 +309,18 @@ const accountStatus = (): AccountStatus => {
 
 const insideWindow = (): boolean => {
     const win = store.get().window;
-    const parts = new Intl.DateTimeFormat("en-US", {
+    const parts = new Intl.DateTimeFormat('en-US', {
         timeZone: win.timezone,
-        weekday: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-        hourCycle: "h23",
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
     }).formatToParts(new Date());
     const part = (type: string) =>
-        parts.find((row) => row.type === type)?.value ?? "";
-    const clock = `${part("hour")}:${part("minute")}`;
+        parts.find((row) => row.type === type)?.value ?? '';
+    const clock = `${part('hour')}:${part('minute')}`;
 
-    if (win.weekdaysOnly && ["Sat", "Sun"].includes(part("weekday"))) {
+    if (win.weekdaysOnly && ['Sat', 'Sun'].includes(part('weekday'))) {
         return false;
     }
 
@@ -328,7 +331,7 @@ const queuedRows = (): ApplicationItem[] =>
     store
         .get()
         .applications.map((row) => row.item)
-        .filter((item) => item.status === "queued")
+        .filter((item) => item.status === 'queued')
         .sort(
             (a, b) =>
                 new Date(a.scheduledFor ?? a.queuedAt).getTime() -
@@ -336,7 +339,7 @@ const queuedRows = (): ApplicationItem[] =>
         );
 
 const sendingItem = (): ApplicationItem | null =>
-    store.get().applications.find((row) => row.item.status === "sending")
+    store.get().applications.find((row) => row.item.status === 'sending')
         ?.item ?? null;
 
 const liveSending = (): LiveSending => {
@@ -345,18 +348,18 @@ const liveSending = (): LiveSending => {
     const current = sendingItem();
     const max = limit();
     const used = data.sentToday;
-    let state: LiveSending["state"] = "idle";
+    let state: LiveSending['state'] = 'idle';
 
     if (data.paused || gmailNeedsReauth()) {
-        state = "paused";
+        state = 'paused';
     } else if (Math.max(0, max - used) === 0) {
-        state = "limit_reached";
-    } else if (!insideWindow()) {
-        state = "outside_window";
+        state = 'limit_reached';
     } else if (current) {
-        state = "sending";
+        state = 'sending';
     } else if (queue.length > 0) {
-        state = "waiting";
+        state = 'waiting';
+    } else if (!insideWindow()) {
+        state = 'outside_window';
     }
 
     const last = queue[queue.length - 1];
@@ -390,8 +393,8 @@ const takenJobIds = (): Set<number> => {
             .filter(
                 (row) =>
                     isToday(row.item.queuedAt) ||
-                    row.item.status === "queued" ||
-                    row.item.status === "sending",
+                    row.item.status === 'queued' ||
+                    row.item.status === 'sending',
             )
             .map((row) => row.jobId),
     );
@@ -439,7 +442,7 @@ const randomSpacingMs = (): number =>
         Math.random() * (SPACING.maxSeconds - SPACING.minSeconds)) *
     1000;
 
-function queueJobs(jobIds: number[], origin: "auto" | "manual"): QueueResult {
+function queueJobs(jobIds: number[], origin: 'auto' | 'manual'): QueueResult {
     const result: QueueResult = { queued: [], rejected: [], quota: quota() };
     const active = activeLanguages();
     let nextId = Math.max(0, ...store.get().applications.map((r) => r.item.id));
@@ -455,13 +458,13 @@ function queueJobs(jobIds: number[], origin: "auto" | "manual"): QueueResult {
         const job = data.jobs.find((row) => row.id === jobId);
         const inFlight = data.applications.filter(
             (row) =>
-                row.item.status === "queued" || row.item.status === "sending",
+                row.item.status === 'queued' || row.item.status === 'sending',
         ).length;
 
         if (!job) {
             result.rejected.push({
                 jobId,
-                reason: "This job is no longer available.",
+                reason: 'This job is no longer available.',
             });
             continue;
         }
@@ -477,7 +480,7 @@ function queueJobs(jobIds: number[], origin: "auto" | "manual"): QueueResult {
         const companyTaken = todayRows(data.applications).some(
             (row) =>
                 row.item.company.id === job.company.id &&
-                ["queued", "sending", "sent", "ambiguous"].includes(
+                ['queued', 'sending', 'sent', 'ambiguous'].includes(
                     row.item.status,
                 ),
         );
@@ -485,7 +488,7 @@ function queueJobs(jobIds: number[], origin: "auto" | "manual"): QueueResult {
         if (companyTaken) {
             result.rejected.push({
                 jobId,
-                reason: "You already applied to this company today.",
+                reason: 'You already applied to this company today.',
             });
             continue;
         }
@@ -493,7 +496,7 @@ function queueJobs(jobIds: number[], origin: "auto" | "manual"): QueueResult {
         if (!active.includes(job.language)) {
             result.rejected.push({
                 jobId,
-                reason: "You have no application profile in this language.",
+                reason: 'You have no application profile in this language.',
             });
             continue;
         }
@@ -511,7 +514,7 @@ function queueJobs(jobIds: number[], origin: "auto" | "manual"): QueueResult {
             title: job.title,
             language: job.language,
             origin,
-            status: "queued",
+            status: 'queued',
             stage: null,
             subStep: null,
             lastError: null,
@@ -559,15 +562,15 @@ function patchApplication(
 }
 
 function addNotification(
-    type: NotificationItem["type"],
-    data: NotificationItem["data"],
+    type: NotificationItem['type'],
+    data: NotificationItem['data'],
 ): NotificationItem {
     const next =
         Math.max(
             0,
             ...store
                 .get()
-                .notifications.map((row) => Number(row.id.replace(/\D/g, ""))),
+                .notifications.map((row) => Number(row.id.replace(/\D/g, ''))),
         ) + 1;
     const notification: NotificationItem = {
         id: `n-${next}`,
