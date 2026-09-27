@@ -72,7 +72,7 @@ export function savePreferences(input: Preferences): Preferences {
 
 export const zeroPreview = (): PreferencesPreview => ({
     matchCount: 0,
-    byLanguage: { en: 0, pt: 0, es: 0 },
+    byLanguage: { en: 0, pt: 0 },
 });
 
 // Counts the whole pool: ignores the language rule and today's applications.

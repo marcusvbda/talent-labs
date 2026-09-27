@@ -207,7 +207,7 @@ const historySeeds = (): ApplicationSeed[] => {
 
 // Jobs that must stay queueable in the demo: the preference-matching jobs
 // plus fresh "collected today" en/pt jobs. Their companies stay free today.
-const RESERVED_JOB_IDS = [1, 2, 3, 4, 5, 6, 7, 12, 13, 16, 24, 36, 44, 57, 58];
+const RESERVED_JOB_IDS = [1, 2, 3, 4, 5, 6, 7, 12, 13, 16, 24, 36, 44];
 
 // One job per company, for every company that is NOT reserved (44 - 11 = 33
 // distinct companies). Jobs from 21..60 are preferred over 1..20.
@@ -403,7 +403,7 @@ export const detailFor = (
         ...item,
         subject: fill(template.subject, values),
         body: fill(template.body, values),
-        cvFileName: item.language === 'es' ? null : CV_FILE_NAME,
+        cvFileName: item.language === 'pt' ? null : CV_FILE_NAME,
         timeline: timelineFor(item),
     };
 };

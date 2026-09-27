@@ -26,10 +26,18 @@ export function AppGrid({
     );
 }
 
-export function AppLayout({ children }: { children: ReactNode }) {
+export function AppLayout({
+    children,
+    nav: showNav = true,
+}: {
+    children: ReactNode;
+    /** false leaves only logo, bell and user menu (onboarding). */
+    nav?: boolean;
+}) {
     useFlashToasts();
     useRealtimeCache();
-    const nav = useMainNav();
+    const mainNav = useMainNav();
+    const nav = showNav ? mainNav : [];
     const plan = useFixturePlan();
 
     return (

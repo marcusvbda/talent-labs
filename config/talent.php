@@ -11,7 +11,7 @@ return [
         'use_fixtures' => (bool) env('VITE_USE_FIXTURES', false),
     ],
 
-    'locales' => ['en', 'pt', 'es'],
+    'locales' => ['en', 'pt'],
 
     'seed' => [
         'admin' => [

@@ -1,7 +1,14 @@
 import { usePage } from '@inertiajs/react';
 import type { NavPillItem } from '@/components/patterns/nav-pills';
 import { useT } from '@/i18n/i18n-provider';
-import { dashboard, plans, preferences, profiles } from '@/routes';
+import {
+    applications,
+    dashboard,
+    jobs,
+    plans,
+    preferences,
+    profiles,
+} from '@/routes';
 
 export function useMainNav(): NavPillItem[] {
     const { t } = useT();
@@ -18,11 +25,18 @@ export function useMainNav(): NavPillItem[] {
             href: dashboard().url,
             active: isActive(dashboard().url),
         },
-        ...(['jobs', 'applications'] as const).map((key) => ({
-            key,
-            label: t(`nav.${key}`),
-            disabled: true,
-        })),
+        {
+            key: 'jobs',
+            label: t('nav.jobs'),
+            href: jobs().url,
+            active: isActive(jobs().url),
+        },
+        {
+            key: 'applications',
+            label: t('nav.applications'),
+            href: applications().url,
+            active: isActive(applications().url),
+        },
         {
             key: 'profiles',
             label: t('nav.profiles'),

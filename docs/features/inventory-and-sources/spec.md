@@ -15,8 +15,7 @@ Last audit (2026-09-26, before `targeted-sourcing` phase 10): 670 postings,
 376 companies, only ~17% of postings reach a `verified` company (63
 companies). Each client can apply to a company **once, ever**, so a Free
 client (25/day) would exhaust that in days. Today all sources are global
-remote aggregators in English. The owner wants Brazilian and Spanish
-language jobs too.
+remote aggregators in English. The owner wants Brazilian language jobs too.
 
 Decided:
 
@@ -45,7 +44,7 @@ Command `reports:funnel {--days=30} {--user=}` printing a table (and
 
 - Per source: postings fetched, new, target-family %, with company, company
   with domain, company `verified`, postings with profile `done`, language
-  split (en/pt/es/other).
+  split (en/pt/other).
 - Global: companies by `outreach_status`, contacts by confidence, share of
   `mx_only` (port 25 health indicator: if > 80% of contacts are `mx_only`,
   print a warning "outbound port 25 is probably blocked").
@@ -70,7 +69,7 @@ Candidates to evaluate (nothing verified yet):
 - **ATS single-company adapters already in code** (Greenhouse, Lever,
   Ashby): add curated lists of companies (identifiers) hiring in Brazil /
   Spain / Portugal. They have high domain quality (company known).
-- **Brazilian / Spanish job boards with public feeds or APIs** — to be
+- **Brazilian job boards with public feeds or APIs** — to be
   identified in the research; Gupy has no stable public API (owner's
   earlier finding).
 - More global remote aggregators only if the funnel shows good verified

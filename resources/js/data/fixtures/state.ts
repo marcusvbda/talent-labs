@@ -76,7 +76,7 @@ export const regionForCountry = (country: string | null): RegionKey => {
 };
 
 const SPACING = { minSeconds: 45, maxSeconds: 120 };
-const LANGUAGES: JobLanguage[] = ['en', 'pt', 'es'];
+const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 
 const PLAN_CONFIG: Record<PlanKey, { dailyLimit: number; mode: SendMode }> = {
     free: { dailyLimit: 25, mode: 'auto' },

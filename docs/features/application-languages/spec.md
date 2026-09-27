@@ -11,11 +11,11 @@
 ## Part 0 — Context and decisions (owner, final)
 
 Today each client has one CV and one email template (`job_preferences.cv_path`,
-`email_subject`, `email_body`). With jobs in English, Portuguese and Spanish,
+`email_subject`, `email_body`). With jobs in English and Portuguese,
 that sends the wrong-language CV. Decisions:
 
-1. Each client has **one application profile per language** (`en`, `pt`,
-   `es`), each with its own **CV (PDF)**, **email subject**, **email body**
+1. Each client has **one application profile per language** (`en`, `pt`),
+   each with its own **CV (PDF)**, **email subject**, **email body**
    and **cover letter**. The client fills them in; nothing is generated.
 2. **Pool rule:** a job appears (and can be sent) only if the client has an
    **active and complete** profile in the job's language. The UI shows how
@@ -54,7 +54,7 @@ New create migration `application_profiles`:
 | ---------------- | ------------------------------------------------------------------------------ |
 | id               | bigint                                                                         |
 | user_id          | foreignId users, cascadeOnDelete                                               |
-| language         | string(8) (`en`/`pt`/`es`, backed enum `App\Enums\ApplicationLanguage`)        |
+| language         | string(8) (`en`/`pt`, backed enum `App\Enums\ApplicationLanguage`)             |
 | is_active        | boolean default true                                                           |
 | cv_path          | string nullable (private `local` disk, `cvs/{userId}/{language}/<random>.pdf`) |
 | cv_original_name | string nullable                                                                |
@@ -121,21 +121,6 @@ Atenciosamente,
 {{ client_name }}
 ```
 
-ES — subject `Candidatura: {{ job_title }}`, body:
-
-```
-Hola, equipo de {{ company }}:
-
-Me gustaría postularme a la posición de {{ job_title }} ({{ job_url }}).
-
-{{ cover_letter }}
-
-Adjunto mi currículum. Gracias por su tiempo.
-
-Saludos cordiales,
-{{ client_name }}
-```
-
 ### B.4 Pool, eligibility, queueing and sending
 
 - `MatchingJobPostings::forUser`: add `profile.language IN (<active complete
@@ -161,7 +146,7 @@ profile languages of the user>)`; if the user has none, the pool is empty.
 Under the `/internal` group (`client-core-wiring` B.6):
 
 - `GET /internal/profiles` → `ProfilesData`: created profiles (ordered en,
-  pt, es), `variables`, `unlockCounts` = per language, pool count using the
+  pt), `variables`, `unlockCounts` = per language, pool count using the
   saved preferences **ignoring** the language rule, limited to that language.
 - `POST /internal/profiles` `{ language }` → creates with the language's
   default subject/body, empty cover letter, active → `ApplicationProfile`

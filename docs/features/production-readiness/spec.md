@@ -90,7 +90,7 @@ already (`UserSeeder`); the first admin is created with a documented
   ("only to send the applications you choose or allow; we never read your
   inbox"), links to Privacy and Terms, contact email. No marketing design.
 - **Privacy policy** (`/privacy`) and **Terms** (`/terms`): Inertia pages
-  rendering Markdown files from `resources/content/{privacy,terms}.{en,pt,es}.md`.
+  rendering Markdown files from `resources/content/{privacy,terms}.{en,pt}.md`.
   The spec provides the **structure**; the owner provides the final text
   (ideally reviewed by a lawyer). Privacy must cover: data collected
   (account, CV files, templates, Gmail OAuth tokens, application records),
@@ -153,7 +153,7 @@ already (`UserSeeder`); the first admin is created with a documented
   sample yields `smtp_verified` contacts; `mx_only` share is not ~100%).
 - **AC03** Realtime works over `wss` on the production domain.
 - **AC04** Landing (with the "What it does" paragraph), Privacy and Terms are
-  public in EN/PT/ES and linked from the landing and the OAuth consent
+  public in EN/PT and linked from the landing and the OAuth consent
   screen.
 - **AC05** Opt-out: confirming the email link suppresses the domain; its
   jobs disappear from pools; queued applications to it fail at validation.

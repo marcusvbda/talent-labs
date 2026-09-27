@@ -84,7 +84,8 @@ Raw token: 40 random URL-safe chars (`Str::random(40)`), shown **once** in
 the admin after creation. Link: `route('register', ['invite' => $token])`.
 
 **job_posting_profiles**: add `language` string(8) nullable, indexed
-(`en`/`pt`/`es`/`other`; null = not extracted).
+(`en`/`pt`/`other`; null = not extracted). Postings in any other
+language (including Spanish) are stored as `other`.
 
 **applications**: add `language` string(8) nullable (the language used to
 send, filled from spec 5; until then the job's language). Stage columns
@@ -182,7 +183,7 @@ autoPausedReason: null }` until spec 6; onboarding steps: `basics` =
   country and timezone set, `gmail` = connected, `profile` = the legacy
   check `CanSendApplications` uses for CV + template (spec 5 switches it to
   profiles), `preferences` = a `job_preferences` row exists; `complete` =
-  all four; `profiles.activeLanguages` = `['en','pt','es']` filter of
+  all four; `profiles.activeLanguages` = `['en','pt']` filter of
   languages that have the legacy CV (spec 5 replaces); `region`, `country`,
   `timezone`; `unreadNotifications`.
 - `GET /internal/dashboard?period=today|week|month` → `DashboardData`
@@ -233,8 +234,9 @@ page for the URL filters), `applications` (first page) as props, used as
 
 ### B.7 Job language detection
 
-- `ExtractJobPostingProfile` schema gains `language` (enum `en`, `pt`, `es`,
-  `other`, required; "language the posting is written in"). Bump
+- `ExtractJobPostingProfile` schema gains `language` (enum `en`, `pt`,
+  `other`, required; "language the posting is written in"; postings in any
+  other language, including Spanish, are `other`). Bump
   `CACHE_SCHEMA_VERSION` to `posting-profile-v2`. `ExtractJobPostingProfileJob`
   persists it (unknown values → `other`).
 - `ExtractPostingProfiles` command: add `--missing-language` to re-extract

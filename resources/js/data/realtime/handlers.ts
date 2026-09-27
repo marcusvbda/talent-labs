@@ -40,6 +40,9 @@ export function applicationProgressed(
             },
     );
 
+    // Counters, the open detail and the tab a row now belongs to follow the status.
+    void qc.invalidateQueries({ queryKey: keys.applications.all() });
+
     qc.setQueriesData<DashboardData>(
         { queryKey: keys.dashboards() },
         (data) => {

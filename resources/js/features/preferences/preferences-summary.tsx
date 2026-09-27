@@ -10,13 +10,13 @@ import type {
     PreferencesPreview,
 } from '@/types/contracts';
 
-const LANGUAGES: JobLanguage[] = ['en', 'pt', 'es'];
+const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 
 const capitalize = (text: string, locale: string) =>
     text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
 
 // Builds the one-sentence summary on the client: "or" inside a field, a plain
-// list between fields. Each fragment is its own key so PT/ES can word it
+// list between fields. Each fragment is its own key so PT can word it
 // naturally.
 export function usePreferencesSentence(draft: Preferences): string {
     const { t, locale } = useT();
@@ -88,6 +88,7 @@ export const PreferencesSummary = ({
     blocked,
     saving,
     onSave,
+    actionLabel,
 }: {
     draft: Preferences;
     preview: PreferencesPreview | undefined;
@@ -96,6 +97,7 @@ export const PreferencesSummary = ({
     blocked: boolean;
     saving: boolean;
     onSave: () => void;
+    actionLabel?: string;
 }) => {
     const { t, plural } = useT();
     const format = useFormat();
@@ -173,7 +175,7 @@ export const PreferencesSummary = ({
                 disabled={blocked}
                 onClick={onSave}
             >
-                {t('preferences.save')}
+                {actionLabel ?? t('preferences.save')}
             </Button>
         </div>
     );

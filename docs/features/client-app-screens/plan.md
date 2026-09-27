@@ -1,8 +1,9 @@
 # Plan — client-app-screens — every client screen as a navigable prototype on typed fixtures
 
 Source spec: `docs/features/client-app-screens/spec.md` · SHA-256
-`2624433ba122f9a645d1819cbfdcdaf5327014cfcc6b203a8aab927982e704bb`
+`b944cae28490cc307ff11723fa793e30ed6578c4fb6a428eac7a06bc381f57f9`
 Product truth: `docs/features/client-app-screens/spec.md` (Part B)
+Spanish dropped by owner decision on 2026-09-27: i18n is EN/PT only; phases 1–20 were executed before the change and their Evidence lines mention ES as historical.
 Run phases with `/execute-phases docs/features/client-app-screens/plan.md <phases>` —
 one or a few per session. Phase status is updated in place in this file.
 
@@ -24,12 +25,12 @@ one or a few per session. Phase status is updated in place in this file.
 | 12    | S7 Plans page + `PlanGate` links                                              | inertia-frontend | 10                 | M    | DONE    |
 | 13    | S6 Preferences page                                                           | inertia-frontend | 9                  | M    | DONE    |
 | 14    | S5 Profiles page                                                              | inertia-frontend | 9                  | M    | DONE    |
-| 15    | S2 Jobs page: filters, detail sheet, selection, confirm modal                 | inertia-frontend | 7, 8, 12, 13, 14   | M    | PENDING |
-| 16    | S3 Review modal (Pro review mode)                                             | inertia-frontend | 8, 15              | M    | PENDING |
-| 17    | S4 Applications page + detail sheet                                           | inertia-frontend | 8, 11              | M    | PENDING |
-| 18    | S9 Onboarding, 4 steps                                                        | inertia-frontend | 2, 9, 10, 13, 14   | M    | PENDING |
-| 19    | S1 Dashboard part 1: header, hero, KPI tiles, chart                           | inertia-frontend | 6, 11, 15          | M    | PENDING |
-| 20    | S1 Dashboard part 2: live sending card                                        | inertia-frontend | 7, 11, 19          | M    | PENDING |
+| 15    | S2 Jobs page: filters, detail sheet, selection, confirm modal                 | inertia-frontend | 7, 8, 12, 13, 14   | M    | DONE    |
+| 16    | S3 Review modal (Pro review mode)                                             | inertia-frontend | 8, 15              | M    | DONE    |
+| 17    | S4 Applications page + detail sheet                                           | inertia-frontend | 8, 11              | M    | DONE    |
+| 18    | S9 Onboarding, 4 steps                                                        | inertia-frontend | 2, 9, 10, 13, 14   | M    | DONE    |
+| 19    | S1 Dashboard part 1: header, hero, KPI tiles, chart                           | inertia-frontend | 6, 11, 15          | M    | DONE    |
+| 20    | S1 Dashboard part 2: live sending card                                        | inertia-frontend | 7, 11, 19          | M    | DONE    |
 | 21    | S1 Dashboard part 3: matches, activity, setup card, Gmail banner              | inertia-frontend | 15, 16, 17, 18, 20 | M    | PENDING |
 | 22    | S8 Account page                                                               | inertia-frontend | 10                 | M    | PENDING |
 | 23    | S10 Auth pages: register, closed, forgot, reset                               | inertia-frontend | 10                 | M    | PENDING |
@@ -57,7 +58,7 @@ one or a few per session. Phase status is updated in place in this file.
 | Current dashboard              | `pages/dashboard.tsx` is a 491-line static composition on a `DEMO` constant (owner-approved visuals); rewritten to live data in phases 19–21                                                                                                                                                              |
 | `/internal/*` endpoints        | None exist. Spec B.3 accepts typed placeholders in `data/endpoints.ts`; in real mode these paths 404, which is expected until the backend specs                                                                                                                                                           |
 | `cover_letter` variable        | `ApplicationTemplateRenderer::ALLOWED_VARIABLES` has 5 variables and **no `cover_letter`**; the spec contract has 6 → D2                                                                                                                                                                                  |
-| Default templates              | Only `DEFAULT_SUBJECT` / `DEFAULT_BODY` in English exist (PHP constants); no PT/ES defaults → D3                                                                                                                                                                                                          |
+| Default templates              | Only `DEFAULT_SUBJECT` / `DEFAULT_BODY` in English exist (PHP constants); no PT defaults → D3                                                                                                                                                                                                             |
 | Seniority values               | `ExtractJobPostingProfile::SENIORITIES = intern, junior, mid, senior, lead, unknown` — matches the contract exactly                                                                                                                                                                                       |
 | Gmail state naming             | `DevState.gmail` is `connected \| needs_reconnection \| disconnected`; the contract is `connected \| reauthorization_required \| disconnected` → mapped in the fixture layer (Phase 5), `DevState` is not renamed                                                                                         |
 | `format.list`                  | Only `type: 'conjunction'`; spec B.8 needs disjunction ("or") for values inside a preference field → extended in Phase 13                                                                                                                                                                                 |
@@ -105,12 +106,12 @@ out of scope and untested against the real sending pipeline.
 Blocks: nothing (Phases 14, 18) · Options: **A (recommended)** — fixtures own
 `defaultTemplates: Record<JobLanguage, { subject; body }>`; EN is copied
 verbatim from `ApplicationTemplateRenderer::DEFAULT_SUBJECT` /
-`DEFAULT_BODY`, PT and ES are faithful translations of the same two strings
-(Brazilian PT, neutral ES), none of them containing `{{ cover_letter }}` —
-the client inserts it with the variable chips. **B** — all three languages
-start from the English default. **C** — the owner supplies the three pairs.
+`DEFAULT_BODY`, PT is a faithful translation of the same two strings
+(Brazilian PT), neither of them containing `{{ cover_letter }}` —
+the client inserts it with the variable chips. **B** — both languages
+start from the English default. **C** — the owner supplies the two pairs.
 Why: A keeps the prototype honest about what the backend will send for EN and
-still shows a PT/ES client a template in their language.
+still shows a PT client a template in their language.
 
 ## Global constraints (every phase)
 
@@ -150,8 +151,8 @@ still shows a PT/ES client a template in their language.
   template bodies keep `{{ job_url }}` as a token and show it as a
   non-editable "job link" chip.
 - **i18n:** every visible string via `t()` / `plural()`; every new key added
-  to `lang/en.json`, `lang/pt.json` and `lang/es.json` in the same phase, so
-  the three key sets always match. Brazilian Portuguese, neutral Spanish.
+  to `lang/en.json` and `lang/pt.json` in the same phase, so
+  the two key sets always match. Brazilian Portuguese.
   Numbers, currencies, dates and lists only through `lib/format.ts`.
 - **Styling:** existing tokens and kit components only, no raw hex, no
   arbitrary pixel values where a token exists, `cn()` for class merging.
@@ -181,7 +182,7 @@ still shows a PT/ES client a template in their language.
 | AC10 preferences rule banner, summary sentence, counter, location rule       | 13                                                     |
 | AC11 onboarding 4 steps, setup card and lock overlays                        | 2, 18, 21                                              |
 | AC12 register / closed / forgot / reset                                      | 23                                                     |
-| AC13 EN/PT/ES complete and identical key sets                                | every phase, verified in 26                            |
+| AC13 EN/PT complete and identical key sets                                   | every phase, verified in 26                            |
 | AC14 responsive at 360 / 768 / 1024 / 1440                                   | every screen phase, verified in 26                     |
 | AC15 kit reuse, new primitives on the styleguide, no raw hex, no polling     | 2, 25, 26                                              |
 
@@ -1050,7 +1051,8 @@ card, variable bar. 4. Preview card + dirty guard. 5. EN/PT/ES. 6. Responsive
 
 ### Phase 15 — S2 Jobs page: filters, detail sheet, selection, confirm modal
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn types:check` pass; `yarn build` pass; `composer types:check` pass; `yarn run check` / `composer lint:check` fail only on known baseline entries (D1-B) plus pre-existing unformatted `page-header.tsx` and `menu.tsx` (untouched); lang key sets identical (599 keys); no `/internal` literal outside `data/endpoints.ts`, no polling, no URL/address in UI; `code-reviewer` APPROVED. Shared kit change: `Modal` is now full-screen on mobile. Review-mode button is a no-op placeholder for Phase 16.
 Role: inertia-frontend · Depends on: 7, 8, 12, 13, 14 · Covers: AC02, AC03, AC04, AC05, AC07, AC08, AC09, AC13, AC14 · Size: M
 Spec: B.6 S2, B.6 S3 (confirm modal)
 
@@ -1135,7 +1137,8 @@ gate and banner. 6. EN/PT/ES. 7. Responsive + the three DevToolbar plans. 8. Gat
 
 ### Phase 16 — S3 Review modal (Pro review mode)
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn types:check` pass; `yarn build` pass; `yarn run check` fails only on known baseline/pre-existing unformatted files (none in scope); lang key sets identical (618 keys); no `/internal` literal outside `data/endpoints.ts`, no polling, no URL/address; `code-reviewer` APPROVED after 1 correction round (token protection anchored on the caret). Added `Modal` size `xl`. Early close clears the whole selection if at least one was queued (`useSelection` only exposes `clear()`).
 Role: inertia-frontend · Depends on: 8, 15 · Covers: AC03, AC04, AC05, AC08, AC13, AC14 · Size: M
 Spec: B.6 S3 (review modal)
 
@@ -1184,7 +1187,8 @@ navigation between drafts, validation. 3. Wire it into the Jobs sticky bar. 4. E
 
 ### Phase 17 — S4 Applications page + detail sheet
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn types:check` pass; `yarn build` pass; `composer types:check` pass; `yarn run check` / `composer lint:check` fail only on known baseline/pre-existing files (none in scope); lang key sets identical (653 keys); no `/internal` literal outside `data/endpoints.ts`, no polling, no URL/address; `code-reviewer` APPROVED. Verification of Phase 11 wiring found it insufficient (rows never moved between tabs, counts and open detail stayed stale), so `applicationProgressed` in `data/realtime/handlers.ts` now also invalidates `keys.applications.all()` (event-driven, not polling).
 Role: inertia-frontend · Depends on: 8, 11 · Covers: AC02, AC03, AC06, AC08, AC13, AC14 · Size: M
 Spec: B.6 S4
 
@@ -1240,7 +1244,8 @@ badge. 4. Detail sheet. 5. EN/PT/ES. 6. Responsive. 7. Gate (+ PHP gates).
 
 ### Phase 18 — S9 Onboarding, 4 steps
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn types:check` pass; `yarn build` pass; `composer types:check` pass; `yarn run check` / `composer lint:check` fail only on known baseline/pre-existing files (none in scope); lang key sets identical (684 keys); no `/internal` literal outside `data/endpoints.ts`, no polling; `code-reviewer` APPROVED. Gmail connect goes through `data/hooks/use-connect-gmail.ts` (fixtures flip `DevState.gmail`); `AppLayout` gained `nav?: boolean`. Open non-blocking: in real mode the profile step's chained save could overwrite server-prefilled template text; Create-profile button can be clicked twice between create success and refetch.
 Role: inertia-frontend · Depends on: 2, 9, 10, 13, 14 · Covers: AC02, AC03, AC11, AC13, AC14 · Size: M
 Spec: B.6 S9
 
@@ -1293,7 +1298,8 @@ four steps, reusing the profile and preference components. 4. EN/PT/ES. 5. Respo
 
 ### Phase 19 — S1 Dashboard part 1: header, hero, KPI tiles, chart
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn types:check` pass; `yarn build` pass; `yarn run check` fails only on known baseline/pre-existing files (none in scope); lang key sets identical (693 keys), `dashboard.mode` and `dashboard.today.title` removed and unreferenced; no `/internal` literal, only a display-only 1 s countdown timer; `BarChart` `limit` line + styleguide variant added; `code-reviewer` APPROVED. Not verified in a browser or pixel-compared with the mockup. Open non-blocking: hero stays a skeleton if the dashboard/status query errors (only the KPI card offers retry); period switch shows skeletons (no `keepPreviousData`).
 Role: inertia-frontend · Depends on: 6, 11, 15 · Covers: AC02, AC03, AC05, AC13, AC14 · Size: M
 Spec: B.6 S1 (header, row 1, chart card)
 
@@ -1366,7 +1372,8 @@ at 1440 px, then check 360 / 768 / 1024. 6. Gate.
 
 ### Phase 20 — S1 Dashboard part 2: live sending card
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn types:check` passes (after the Spanish removal cleanup of 2026-09-27); `yarn build` passes; no `dashboard.live.step|sub_step|pace|eta` key left in `lang/en.json` / `lang/pt.json` and none referenced; no polling (6 s failure hold is a cleaned-up `setTimeout`); `code-reviewer` APPROVED after 1 correction round (failed-step rendering). Not verified in a browser or pixel-compared with the mockup. Open non-blocking: the failed item reaches the card via the dashboard `activity` list (a single-item queue that fails goes straight to `idle`, so the failure is not shown); `limit_reached` falls back to `00:00` when `window` is null; no location on `ApplicationItem`, so the meta line is the company only.
 Role: inertia-frontend · Depends on: 7, 11, 19 · Covers: AC03, AC05, AC06, AC13, AC14 · Size: M
 Spec: B.6 S1 (live sending), B.2 (`LiveSending`), B.8
 
@@ -1479,10 +1486,10 @@ phase `DEMO` is gone.
 - `pages/dashboard.tsx` — composes the three, drops the last `DEMO` entries
   and the now-unused local demo helpers.
 - i18n: the new `dashboard.setup.*`, `dashboard.gmail.*`,
-  `dashboard.activity.*` keys in EN/PT/ES.
+  `dashboard.activity.*` keys in EN/PT.
 
 **Steps.** 1. Matches card on the shared selection hook + both modals. 2. Activity card. 3. Setup card + lock overlays. 4. Gmail banner. 5. Remove
-`DEMO`. 6. EN/PT/ES. 7. Visual check against the mockup, then 360 / 768 / 1024. 8. Gate.
+`DEMO`. 6. EN/PT. 7. Visual check against the mockup, then 360 / 768 / 1024. 8. Gate.
 
 **Done when.**
 
@@ -1531,9 +1538,9 @@ flows behind confirmation.
     - **Danger zone** (`features/account/danger-zone.tsx`): delete account
       behind a confirm `Modal` requiring the password, destructive styling,
       `account.delete.warning` explaining it cannot be undone.
-- i18n: `account.*` and `user_menu.account` in EN/PT/ES.
+- i18n: `account.*` and `user_menu.account` in EN/PT.
 
-**Steps.** 1. Route + user-menu entry. 2. Profile, language & region cards. 3. Gmail card. 4. Password card with the 422 path. 5. Data + danger zone. 6. EN/PT/ES. 7. Responsive. 8. Gate (+ PHP gates).
+**Steps.** 1. Route + user-menu entry. 2. Profile, language & region cards. 3. Gmail card. 4. Password card with the 422 path. 5. Data + danger zone. 6. EN/PT. 7. Responsive. 8. Gate (+ PHP gates).
 
 **Done when.**
 
@@ -1580,10 +1587,10 @@ Spec: B.5 (guest routes), B.6 S10
   link.
 - `pages/auth/login.tsx` — add the "Forgot password?" link
   (`auth.forgot.link`) to `password.request()`.
-- i18n: `auth.*` additions in EN/PT/ES.
+- i18n: `auth.*` additions in EN/PT.
 
 **Steps.** 1. Routes. 2. Register + closed. 3. Forgot + reset. 4. The login
-link. 5. EN/PT/ES. 6. Mobile check. 7. Gate (+ PHP gates).
+link. 5. EN/PT. 6. Mobile check. 7. Gate (+ PHP gates).
 
 **Done when.**
 
@@ -1627,14 +1634,14 @@ when they arrive over the channel.
   third), using the same `notifications.<type>` line.
 - i18n: `notifications.<type>` for the five types plus
   `notifications.title`, `notifications.mark_all`, `notifications.empty`,
-  in EN/PT/ES. Copy: "Your Gmail connection expired — reconnect to keep
+  in EN/PT. Copy: "Your Gmail connection expired — reconnect to keep
   sending.", "An application to :company could not be delivered.", "You
   reached today's limit of :count applications.", ":count new jobs match your
   preferences.", "Sending was paused automatically."
 - The popover never polls; new rows arrive through the channel only.
 
 **Steps.** 1. Popover + rows + mark all read. 2. Wire the bell and the unread
-dot. 3. Toast rules in the handlers. 4. EN/PT/ES. 5. Mobile (the popover
+dot. 3. Toast rules in the handlers. 4. EN/PT. 5. Mobile (the popover
 becomes a bottom `Sheet` under 768 px). 6. Gate.
 
 **Done when.**
@@ -1679,10 +1686,10 @@ Spec: B.6 S12
   `features/styleguide/overlays-section.tsx` (it is a new reusable pattern →
   AC15), with its `styleguide.*` labels.
 - i18n: `palette.*` (placeholder, the three group titles, the action labels,
-  the empty result line) in EN/PT/ES.
+  the empty result line) in EN/PT.
 
 **Steps.** 1. `use-palette.ts` + the shortcut. 2. The palette with the three
-groups and keyboard navigation. 3. Wire `TopBar`. 4. Styleguide entry. 5. EN/PT/ES. 6. Gate.
+groups and keyboard navigation. 3. Wire `TopBar`. 4. Styleguide entry. 5. EN/PT. 6. Gate.
 
 **Done when.**
 
@@ -1722,9 +1729,9 @@ something fails, report it — fixes are a follow-up phase decided by the owner.
     - `'/internal` outside `data/endpoints.ts` → must be empty.
     - `dashboard.live.step.` and `dashboard.mode"` in `lang/*.json` → must be
       empty (keys replaced in phases 19–20).
-- i18n check: the three `lang/*.json` files have **identical key sets**
+- i18n check: the two `lang/*.json` files have **identical key sets**
   (a small script or `python3 -c` diff) and no value is left in English in
-  `pt.json` / `es.json` for the keys this feature added.
+  `pt.json` for the keys this feature added.
 - AC walkthrough: go through AC01–AC15 in order and record, per AC, what was
   exercised and the result.
 - Spec smoke tests: queue from Jobs on Starter → watch the dashboard live

@@ -37,7 +37,7 @@ Decisions that bind this spec:
    (no `refetchInterval`, no `setInterval` fetching, no `->poll()`).
    Fixtures mode for the frontend-first phases (B.7).
 5. **No Inertia SSR Node process.** Server data arrives through Inertia props.
-6. **i18n from day 1:** English, Portuguese, Spanish (B.8). No hardcoded UI
+6. **i18n from day 1:** English and Portuguese. No hardcoded UI
    strings, including this spec's components.
 7. **Filament `/app` panel is NOT removed here.** It keeps working until
    `plans-and-sending-modes` removes it. New client routes must not collide
@@ -188,7 +188,7 @@ on-accent-white; sizes: lg 60, md 54, sm 44; states: default, hover,
 focus-visible ring, pressed, disabled, loading with spinner, icon-left/right),
 `IconButton` (circle 60 / 46; tile or white bg; optional notification dot),
 `Pill` (static label pill, e.g. "Today's sending"), `Chip` (stack chip,
-language tag black `EN/PT/ES`, plan chip accent-soft, delta chip up/down),
+language tag black `EN/PT`, plan chip accent-soft, delta chip up/down),
 `StatusDisc` (spinner/check/x/clock/icon; tints), `Card` (light / dark /
 hero-accent), `Segmented` (pill segmented control, keyboard accessible),
 `Tabs`, `Input`, `Textarea`, `TagsInput` (Enter/comma adds, Backspace
@@ -351,18 +351,17 @@ Files in `resources/js/data/`:
 
 ### B.8 i18n
 
-- Source files: `lang/en.json`, `lang/pt.json`, `lang/es.json` with **dotted
-  keys** (`"nav.dashboard": "Dashboard"`). English is complete; PT and ES must
-  be complete for every key this spec adds (natural Brazilian Portuguese and
-  neutral Spanish; product tone: calm, direct).
-- `HandleInertiaRequests` shares `locale`, `locales: ['en','pt','es']` and
+- Source files: `lang/en.json` and `lang/pt.json` with **dotted
+  keys** (`"nav.dashboard": "Dashboard"`). English is complete; PT must
+  be complete for every key this spec adds (natural Brazilian Portuguese; product tone: calm, direct).
+- `HandleInertiaRequests` shares `locale`, `locales: ['en','pt']` and
   `translations` (the current locale's JSON merged over English, so missing
   keys fall back to English). Cache the decoded files per locale.
 - Frontend: `i18n/i18n-provider.tsx` + `useT()` returning
   `t(key, params?)` with `:name` replacement and a `plural(key, count)`
   helper using keys `key.one` / `key.other`. Numbers, currencies, dates and
   relative times via `Intl` in `lib/format.ts` with the current locale
-  (`pt` → `pt-BR`, `es` → `es-ES`, `en` → `en-US`). Missing key in dev:
+  (`pt` → `pt-BR`, `en` → `en-US`). Missing key in dev:
   console warning and render the key.
 - Locale resolution (middleware `SetLocale`, added to the `web` group):
   authenticated user's `users.locale` → `locale` cookie → first supported
@@ -375,7 +374,7 @@ Files in `resources/js/data/`:
   specs; here it only exists.
 - Backend strings shown to the client (validation messages, flash, mails)
   use `__()` with the same keys. Laravel validation messages: add
-  `lang/pt/validation.php` and `lang/es/validation.php` only if
+  `lang/pt/validation.php` only if
   `php artisan lang:publish` is available without new packages; otherwise
   keep English validation and report.
 
@@ -428,7 +427,7 @@ Client routes live at the **root**, not under `/app` (Filament owns
         translations: Record<string, string>;
         flash: { success: string | null; error: string | null };
     };
-    type Locale = 'en' | 'pt' | 'es';
+    type Locale = 'en' | 'pt';
     ```
     Do not share the full `User` model (today `auth.user` shares the whole
     model; replace it with the whitelisted shape above).
@@ -503,8 +502,8 @@ at 1600, 1024 and 390 px and show them; otherwise ask the owner to check.
   returns to `/`. Unauthenticated `/dashboard` redirects to `/login`.
 - **AC08** `SetLocale` resolves user → cookie → Accept-Language → `en`;
   switching language in the top bar persists (`users.locale` when logged in,
-  cookie always) and re-renders all strings; `lang/en.json`, `pt.json`,
-  `es.json` contain the same key set.
+  cookie always) and re-renders all strings; `lang/en.json` and `pt.json`
+  contain the same key set.
 - **AC09** Shared props match the `SharedProps` type exactly; the full user
   model is no longer shared.
 - **AC10** `@tanstack/react-query` provider, `apiFetch` with CSRF, key

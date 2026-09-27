@@ -11,7 +11,6 @@ import {
 import { useState } from 'react';
 import { ActivityRow } from '@/components/patterns/activity-row';
 import type { ActivityStatus } from '@/components/patterns/activity-row';
-import { BarChart } from '@/components/patterns/bar-chart';
 import { DataCard } from '@/components/patterns/data-card';
 import { HeroCard } from '@/components/patterns/hero-card';
 import { PageHeader } from '@/components/patterns/page-header';
@@ -21,61 +20,34 @@ import { IconButton } from '@/components/ui/icon-button';
 import { LiveDot } from '@/components/ui/live-dot';
 import { Pill } from '@/components/ui/pill';
 import { Segmented } from '@/components/ui/segmented';
+import { useAccountStatus } from '@/data/hooks/use-account-status';
+import { useDashboard } from '@/data/hooks/use-dashboard';
+import { useLiveSending } from '@/data/hooks/use-live-sending';
 import { useFixturePlan } from '@/data/hooks/use-fixture-plan';
+import { ChartCard } from '@/features/dashboard/chart-card';
 import { DashboardGrid } from '@/features/dashboard/dashboard-grid';
-import { LiveSendingCard } from '@/features/dashboard/live-sending-card';
+import {
+    LiveSendingCard,
+    LiveSendingPlaceholder,
+} from '@/features/dashboard/live-sending-card';
 import { NewMatchesCard } from '@/features/dashboard/new-matches-card';
 import { RichText } from '@/features/dashboard/rich-text';
+import { useCountdown } from '@/features/dashboard/use-countdown';
 import { useT } from '@/i18n/i18n-provider';
 import { AppLayout } from '@/layouts/app-layout';
 import { useFormat } from '@/lib/format';
+import { jobs } from '@/routes';
+import type { DashboardPeriod } from '@/types/contracts';
 import type { Locale, SharedProps } from '@/types/shared';
 
-type Range = 'today' | 'week' | 'month';
-type ChartRange = 14 | 30;
-
 const MINUTE = 60_000;
-const DAY = 86_400_000;
+const METER_TICKS = 20;
 
 /** Demo numbers from the design mockup; replaced by real data in later phases. */
 const DEMO = {
-    plan: 'Starter',
     sent: 18,
     limit: 50,
     matches: 61,
-    queued: 12,
-    notDelivered: 1,
-    heroBars: [46, 41, 49, 36, 47, 18],
-    weekdayValues: [34, 41, 50, 46, 50, 43, 50, 38, 49, 42, 45, 40],
-    liveJob: {
-        company: 'Klarwerk',
-        title: 'Senior Backend Engineer, PHP / Laravel',
-        meta: 'Klarwerk · Berlin, Remote (EU)',
-        language: 'en' as Locale,
-    },
-    queue: [
-        {
-            company: 'Lumen Health',
-            title: 'Full-stack Engineer',
-            meta: 'Lumen Health · Lisbon',
-            language: 'en' as Locale,
-            eta: '0:42',
-        },
-        {
-            company: 'Estrela Pay',
-            title: 'Desenvolvedor Backend Sênior',
-            meta: 'Estrela Pay · São Paulo, Remoto',
-            language: 'pt' as Locale,
-            eta: '2:05',
-        },
-        {
-            company: 'Nuvia',
-            title: 'Ingeniero Backend (Go)',
-            meta: 'Nuvia · Madrid',
-            language: 'es' as Locale,
-            eta: '3:18',
-        },
-    ],
     jobs: [
         {
             id: 'cobalt',
@@ -111,7 +83,7 @@ const DEMO = {
             place: 'Madrid, Híbrido',
             minutesAgo: 180,
             stack: ['Node.js', 'React'],
-            language: 'es' as Locale,
+            language: 'pt' as Locale,
         },
     ],
     activity: [
@@ -154,28 +126,17 @@ const buildClock = () => {
 
     return {
         now,
-        startsAt: new Date(now - 18_000).toISOString(),
-        endsAt: new Date(now + 42_000).toISOString(),
     };
 };
 
-const buildChart = (now: number, days: number) => {
-    let cursor = 0;
+const greetingKey = (hour: number) =>
+    hour < 12
+        ? 'dashboard.greeting.morning'
+        : hour < 18
+          ? 'dashboard.greeting.afternoon'
+          : 'dashboard.greeting.evening';
 
-    return Array.from({ length: days }, (_, index) => {
-        const offset = days - 1 - index;
-        const date = new Date(now - offset * DAY);
-        const weekend = date.getDay() === 0 || date.getDay() === 6;
-        const isToday = offset === 0;
-        const value = isToday
-            ? DEMO.sent
-            : weekend
-              ? 0
-              : DEMO.weekdayValues[cursor++ % DEMO.weekdayValues.length];
-
-        return { label: String(date.getDate()), value, isToday };
-    });
-};
+const dayOfMonth = (date: string) => String(Number(date.slice(8, 10)));
 
 export default function Dashboard() {
     const { t } = useT();
@@ -183,42 +144,71 @@ export default function Dashboard() {
     const { auth } = usePage<SharedProps>().props;
     const plan = useFixturePlan() ?? 'free';
     const [clock] = useState(buildClock);
-    const [range, setRange] = useState<Range>('today');
-    const [chartRange, setChartRange] = useState<ChartRange>(14);
+    const [period, setPeriod] = useState<DashboardPeriod>('today');
     const [selected, setSelected] = useState<string[]>(['cobalt', 'estrela']);
+    const status = useAccountStatus();
+    const dashboard = useDashboard(period);
+    const sending = useLiveSending();
+    const nextSend = useCountdown(dashboard.data?.hero.nextSendAt ?? null);
 
     const name = auth.user?.name.trim().split(/\s+/)[0] ?? '';
-    const dayLabel = (offset: number) =>
-        String(new Date(clock.now - offset * DAY).getDate());
     const ago = (minutes: number) =>
         format.relativeTime(clock.now - minutes * MINUTE);
     const at = (minutes: number) =>
         new Date(clock.now - minutes * MINUTE).toISOString();
-    const chart = buildChart(clock.now, chartRange);
     const left = DEMO.limit - DEMO.sent;
+
+    const quota = status.data?.quota;
+    const data = dashboard.data;
+    const heroLoading = !data || !status.data;
+    const date = format.date(clock.now, {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+    });
+    const eyebrow = status.data
+        ? `${date} · ${t(`dashboard.mode.${status.data.plan.mode}`)}`
+        : date;
+    const delta = (current: number, previous: number) => ({
+        direction: current >= previous ? ('up' as const) : ('down' as const),
+        label: format.number(Math.abs(current - previous)),
+        context: t(
+            period === 'today'
+                ? 'dashboard.stat.vs_yesterday'
+                : 'dashboard.stat.vs_previous',
+        ),
+    });
+    const filled =
+        quota && quota.limit > 0
+            ? Math.min(
+                  METER_TICKS,
+                  Math.round((quota.usedToday / quota.limit) * METER_TICKS),
+              )
+            : 0;
 
     return (
         <AppLayout>
             <Head title={t('dashboard.title')} />
             <PageHeader
-                eyebrow={`${format.date(clock.now, {
-                    weekday: 'long',
-                    month: 'short',
-                    day: 'numeric',
-                })} · ${t('dashboard.mode')}`}
-                title={t('dashboard.greeting.afternoon', { name })}
+                eyebrow={eyebrow}
+                title={t(greetingKey(new Date().getHours()), { name })}
                 summary={
-                    <RichText
-                        id="dashboard.summary"
-                        values={{ sent: DEMO.sent, matches: DEMO.matches }}
-                    />
+                    data ? (
+                        <RichText
+                            id="dashboard.summary"
+                            values={{
+                                sent: data.hero.sentToday,
+                                matches: data.matches.total,
+                            }}
+                        />
+                    ) : undefined
                 }
                 actions={
                     <>
-                        <Segmented<Range>
+                        <Segmented<DashboardPeriod>
                             className="bg-card"
-                            value={range}
-                            onChange={setRange}
+                            value={period}
+                            onChange={setPeriod}
                             ariaLabel={t('dashboard.range.label')}
                             options={[
                                 {
@@ -235,7 +225,7 @@ export default function Dashboard() {
                                 },
                             ]}
                         />
-                        <Button size="lg" iconLeft={Plus}>
+                        <Button size="lg" iconLeft={Plus} href={jobs().url}>
                             {t('dashboard.browse')}
                         </Button>
                     </>
@@ -246,36 +236,47 @@ export default function Dashboard() {
                     <HeroCard
                         label={t('dashboard.hero.label')}
                         icon={Send}
-                        value={String(DEMO.sent)}
-                        suffix={`/ ${DEMO.limit}`}
-                        bars={DEMO.heroBars}
+                        loading={heroLoading}
+                        value={String(data?.hero.sentToday ?? 0)}
+                        suffix={`/ ${quota?.limit ?? 0}`}
+                        bars={[
+                            ...(data?.hero.lastDays.map((day) => day.count) ??
+                                []),
+                            data?.hero.sentToday ?? 0,
+                        ]}
                         barLabels={[
-                            ...[5, 4, 3, 2, 1].map(dayLabel),
+                            ...(data?.hero.lastDays.map((day) =>
+                                dayOfMonth(day.date),
+                            ) ?? []),
                             t('dashboard.hero.now'),
                         ]}
                         caption={t('dashboard.hero.caption', {
-                            left,
-                            plan: DEMO.plan,
+                            left: quota?.remaining ?? 0,
+                            plan: status.data?.plan.name ?? '',
                         })}
                         stats={[
                             {
                                 label: t('dashboard.hero.queued'),
-                                value: String(DEMO.queued),
+                                value: format.number(data?.hero.queued ?? 0),
                             },
                             {
                                 label: t('dashboard.hero.not_delivered'),
-                                value: String(DEMO.notDelivered),
+                                value: format.number(
+                                    data?.hero.failedToday ?? 0,
+                                ),
                             },
                             {
                                 label: t('dashboard.hero.next_send'),
-                                value: '0:42',
+                                value: nextSend ?? t('dashboard.hero.no_next'),
                             },
                         ]}
                     />
                 }
                 kpi={
                     <DataCard
-                        title={t('dashboard.today.title')}
+                        title={t(`dashboard.period.${period}`)}
+                        state={dashboard.isError ? 'error' : 'ready'}
+                        onRetry={() => void dashboard.refetch()}
                         actions={
                             <IconButton
                                 icon={SlidersHorizontal}
@@ -289,120 +290,86 @@ export default function Dashboard() {
                                 label={t('dashboard.stat.collected')}
                                 icon={Layers}
                                 tint="orange"
-                                value="214"
-                                delta={{
-                                    direction: 'up',
-                                    label: '38',
-                                    context: t('dashboard.stat.vs_yesterday'),
-                                }}
+                                loading={!data}
+                                value={format.number(
+                                    data?.kpis.collected.value ?? 0,
+                                )}
+                                delta={
+                                    data
+                                        ? delta(
+                                              data.kpis.collected.value,
+                                              data.kpis.collected.previous,
+                                          )
+                                        : undefined
+                                }
                             />
                             <StatTile
                                 label={t('dashboard.stat.sent_week')}
                                 icon={Send}
                                 tint="neutral"
-                                value="199"
-                                delta={{
-                                    direction: 'down',
-                                    label: '22',
-                                    context: t('dashboard.stat.vs_previous'),
-                                }}
+                                loading={!data}
+                                value={format.number(
+                                    data?.kpis.sent.value ?? 0,
+                                )}
+                                delta={
+                                    data
+                                        ? delta(
+                                              data.kpis.sent.value,
+                                              data.kpis.sent.previous,
+                                          )
+                                        : undefined
+                                }
                             />
                             <StatTile
                                 label={t('dashboard.stat.total')}
                                 icon={Check}
                                 tint="green"
-                                value="420"
-                                context={t('dashboard.stat.since', {
-                                    date: format.date(clock.now - 11 * DAY, {
-                                        month: 'short',
-                                        day: 'numeric',
-                                    }),
-                                })}
+                                loading={!data}
+                                value={format.number(data?.kpis.totalSent ?? 0)}
+                                context={
+                                    data?.kpis.firstSentAt
+                                        ? t('dashboard.stat.since', {
+                                              date: format.date(
+                                                  data.kpis.firstSentAt,
+                                                  {
+                                                      month: 'short',
+                                                      day: 'numeric',
+                                                  },
+                                              ),
+                                          })
+                                        : undefined
+                                }
                             />
                             <StatTile
                                 label={t('dashboard.stat.limit')}
                                 icon={Clock}
                                 tint="orange"
-                                value={String(DEMO.sent)}
-                                unit={`/ ${DEMO.limit}`}
+                                loading={!quota}
+                                value={format.number(quota?.usedToday ?? 0)}
+                                unit={`/ ${format.number(quota?.limit ?? 0)}`}
                                 context={t('dashboard.stat.left', {
-                                    count: left,
+                                    count: quota?.remaining ?? 0,
                                 })}
-                                meter={{ total: 36, filled: 13 }}
+                                meter={{ total: METER_TICKS, filled }}
                             />
                         </div>
                     </DataCard>
                 }
                 live={
-                    <LiveSendingCard
-                        {...DEMO.liveJob}
-                        position={19}
-                        limit={DEMO.limit}
-                        activeStep={2}
-                        startsAt={clock.startsAt}
-                        endsAt={clock.endsAt}
-                        spacing={{ min: 45, max: 120 }}
-                        queue={DEMO.queue}
-                        queuedCount={DEMO.queued}
-                        minutes={17}
-                    />
-                }
-                chart={
-                    <DataCard
-                        title={t('dashboard.chart.title')}
-                        subtitle={t('dashboard.chart.subtitle', {
-                            days: chartRange,
-                        })}
-                        actions={
-                            <Segmented<ChartRange>
-                                value={chartRange}
-                                onChange={setChartRange}
-                                ariaLabel={t('dashboard.chart.range')}
-                                options={[
-                                    {
-                                        value: 14,
-                                        label: t('dashboard.chart.range_14'),
-                                    },
-                                    {
-                                        value: 30,
-                                        label: t('dashboard.chart.range_30'),
-                                    },
-                                ]}
-                            />
-                        }
-                        className="flex flex-col"
-                    >
-                        <p className="mb-4 flex items-baseline gap-2.5">
-                            <span className="text-numeral-lg-sm md:text-numeral-lg">
-                                42
-                            </span>
-                            <span className="text-body text-muted">
-                                {t('dashboard.chart.average')}
-                            </span>
-                        </p>
-                        <BarChart
-                            data={chart}
-                            title={t('dashboard.chart.title')}
+                    sending.data ? (
+                        <LiveSendingCard
+                            sending={sending.data}
+                            mode={status.data?.plan.mode ?? 'select'}
+                            activity={data?.activity ?? []}
                         />
-                        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-4 text-label-sm text-muted">
-                            <span className="flex items-center gap-4">
-                                <span className="flex items-center gap-2">
-                                    <i className="size-2.5 rounded-full bg-bar-cap" />
-                                    {t('dashboard.chart.legend_sent')}
-                                </span>
-                                <span className="flex items-center gap-2">
-                                    <i className="size-2.5 rounded-full bg-accent" />
-                                    {t('dashboard.chart.legend_today')}
-                                </span>
-                            </span>
-                            <span>
-                                {t('dashboard.chart.limit', {
-                                    limit: DEMO.limit,
-                                })}
-                            </span>
-                        </div>
-                    </DataCard>
+                    ) : (
+                        <LiveSendingPlaceholder
+                            isError={sending.isError}
+                            onRetry={() => void sending.refetch()}
+                        />
+                    )
                 }
+                chart={<ChartCard />}
                 matches={
                     <NewMatchesCard
                         plan={plan}

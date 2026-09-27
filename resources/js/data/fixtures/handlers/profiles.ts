@@ -9,7 +9,7 @@ import type {
     TemplatePreview,
 } from '@/types/contracts';
 
-const LANGUAGES: JobLanguage[] = ['en', 'pt', 'es'];
+const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 const MAX_SUBJECT = 200;
 const MAX_BODY = 5000;
 const MAX_COVER_LETTER = 5000;
@@ -71,7 +71,7 @@ export function recomputeProfile(
 
 export function profilesData(): ProfilesData {
     const { profiles, jobs } = fixtureState.get();
-    const unlockCounts: Record<JobLanguage, number> = { en: 0, pt: 0, es: 0 };
+    const unlockCounts: Record<JobLanguage, number> = { en: 0, pt: 0 };
 
     jobs.forEach((job) => {
         unlockCounts[job.language] += 1;

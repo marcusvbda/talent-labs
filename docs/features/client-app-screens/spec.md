@@ -38,8 +38,8 @@
   (`validating_recipient → adapting_template → attaching_cv → sending →
 sent`), narrated with real sub-steps. Fixtures simulate them with the same
   timing model the backend will use.
-- Hard rules from `CLAUDE.md` apply. All strings through `t()` with EN, PT
-  and ES complete. Never polling.
+- Hard rules from `CLAUDE.md` apply. All strings through `t()` with EN and PT
+  complete. Never polling.
 
 ## Part B — Product spec
 
@@ -59,8 +59,8 @@ Create this file exactly (additions allowed, renames not). Dates are ISO
 ```ts
 export type ISODateTime = string;
 export type ISODate = string; // YYYY-MM-DD in the user's timezone
-export type Locale = 'en' | 'pt' | 'es';
-export type JobLanguage = 'en' | 'pt' | 'es';
+export type Locale = 'en' | 'pt';
+export type JobLanguage = 'en' | 'pt';
 export type PlanKey = 'free' | 'starter' | 'pro';
 export type SendMode = 'auto' | 'select' | 'review';
 export type RegionKey = 'br' | 'eu' | 'row';
@@ -425,14 +425,14 @@ plain link.
   LATAM), Ribeira Tech (Coimbra), Faro Data (Remote), Helix Bio (Munich),
   Tinta Media (Buenos Aires), Vértice (Curitiba), Moraga Systems (Bilbao),
   Kiln (Remote US).
-- **Jobs:** 60 jobs, ~55% EN / 30% PT / 15% ES, realistic titles per language
+- **Jobs:** 60 jobs, ~65% EN / 35% PT, realistic titles per language
   ("Senior Backend Engineer, PHP / Laravel", "Desenvolvedor Full-stack Pleno",
-  "Ingeniero Backend (Go)"), seniority mix, stack arrays, one-sentence
+  "Engenheiro Backend (Go)"), seniority mix, stack arrays, one-sentence
   summaries in the job's language, 20 of them collected today.
 - **Applications:** 420 total sent over 30 days with realistic per-day counts
   (weekend dips), today 18 sent + 12 queued + 1 failed, a few `ambiguous`,
   failure reasons as client-safe sentences.
-- **Profiles:** EN complete, PT complete, ES not created (so ES jobs are
+- **Profiles:** EN complete, PT not created (so PT jobs are
   "locked by language" with a count).
 - **Plan:** from DevToolbar (default Starter). Quota and modes follow it.
 - **In-memory store** so mutations are visible: queueing moves jobs out of
@@ -544,8 +544,8 @@ retry), responsive per foundation B.5, all copy translated.
   multi-select, Remote select, Stack tags. Filters are reflected in the URL
   query string (shareable, back/forward works).
 - "Locked by language" notice when `summary.lockedByLanguage` has counts:
-  "<count> Spanish jobs are hidden because you have no Spanish application
-  profile." + "Create Spanish profile" → Profiles.
+  "<count> Portuguese jobs are hidden because you have no Portuguese application
+  profile." + "Create Portuguese profile" → Profiles.
 - List of `JobRow`s, infinite list with a "Load more" button (no automatic
   scroll loading), click on a row body opens the **Job detail** `Sheet`
   (right drawer desktop, full-screen mobile): company, title, location and
@@ -597,7 +597,7 @@ to avoid a duplicate"). Rows update live.
 
 - Header: title "Application profiles", summary "A job is only sent with a
   profile in its language. You have <n> active languages." Action: "Add
-  language" menu (EN/PT/ES not yet created).
+  language" menu (EN/PT not yet created).
 - Language `Tabs` with a status dot (complete / incomplete / inactive).
 - Per tab, two columns (stacked on mobile):
     - Left: **CV** `FileDrop` (PDF only, max 5 MB, shows name/size/date,
@@ -615,7 +615,7 @@ to avoid a duplicate"). Rows update live.
       <language> match your preferences"; "Missing: CV, subject" warning list
       when incomplete.
 - Empty state (no profiles): "Create your first application profile" with
-  the three language options and the counts each would unlock.
+  the two language options and the counts each would unlock.
 
 **S6 Preferences** (`pages/preferences.tsx`):
 
@@ -711,13 +711,12 @@ timer that only updates the display; it never fetches.
 
 ### B.8 i18n
 
-Every string of this spec in `lang/en.json`, `pt.json`, `es.json` (same key
+Every string of this spec in `lang/en.json` and `pt.json` (same key
 set). Includes: nav, page titles, all labels, states, stage and sub-step
 names (`sending.stage.*`, `sending.sub.*`), notification texts, plan mode
 descriptions, seniority/remote labels, summary sentence fragments
 (`preferences.summary.*` with list formatting via `Intl.ListFormat`, "or"
-type for values inside a field), error messages. Portuguese is Brazilian,
-Spanish is neutral.
+type for values inside a field), error messages. Portuguese is Brazilian.
 
 ## Acceptance criteria
 
@@ -755,7 +754,7 @@ Spanish is neutral.
   Dashboard shows the Setup card and the locked overlays.
 - **AC12** Register with a valid fixture invite shows the form; an invalid
   one lands on Closed; forgot/reset pages show their success states.
-- **AC13** All strings translated in EN/PT/ES (same key set in the 3
+- **AC13** All strings translated in EN/PT (same key set in the 2
   files); switching language changes every screen, including numbers,
   currencies and dates.
 - **AC14** Responsive: every screen works at 360, 768, 1024, 1440 px with

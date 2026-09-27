@@ -11,12 +11,13 @@ import { useT } from '@/i18n/i18n-provider';
 import { cn } from '@/lib/utils';
 import { IconButton } from './icon-button';
 
-type ModalSize = 'sm' | 'md' | 'lg';
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const SIZES: Record<ModalSize, string> = {
     sm: 'md:max-w-sm',
     md: 'md:max-w-lg',
     lg: 'md:max-w-2xl',
+    xl: 'md:max-w-4xl',
 };
 
 export function Modal({
@@ -44,11 +45,11 @@ export function Modal({
                 transition
                 className="fixed inset-0 bg-scrim transition duration-150 data-closed:opacity-0"
             />
-            <div className="fixed inset-0 grid place-items-center overflow-y-auto p-4">
+            <div className="fixed inset-0 grid place-items-center overflow-y-auto md:p-4">
                 <DialogPanel
                     transition
                     className={cn(
-                        'flex max-h-full w-full flex-col gap-6 rounded-card bg-card p-card shadow-shell transition duration-150 data-closed:scale-95 data-closed:opacity-0',
+                        'flex h-dvh max-h-dvh w-full flex-col gap-6 bg-card p-card shadow-shell transition duration-150 data-closed:scale-95 data-closed:opacity-0 max-md:pt-[max(var(--spacing-card),env(safe-area-inset-top))] max-md:pb-[max(var(--spacing-card),env(safe-area-inset-bottom))] md:h-auto md:max-h-full md:rounded-card',
                         SIZES[size],
                     )}
                 >
@@ -70,7 +71,9 @@ export function Modal({
                         />
                     </div>
                     {children ? (
-                        <div className="overflow-y-auto">{children}</div>
+                        <div className="overflow-y-auto max-md:flex-1">
+                            {children}
+                        </div>
                     ) : null}
                     {footer ? (
                         <div className="flex flex-wrap justify-end gap-3">

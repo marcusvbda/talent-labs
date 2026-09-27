@@ -59,7 +59,7 @@ export const formatRelativeTime = (
     }).format(Math.trunc(seconds / size), unit);
 };
 
-// 'unit' joins with plain commas in EN (no "and"); PT/ES still add e/y.
+// 'unit' joins with plain commas in EN (no "and"); PT still adds e.
 type ListType = 'conjunction' | 'disjunction' | 'unit';
 
 export const formatList = (

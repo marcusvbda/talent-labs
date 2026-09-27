@@ -83,7 +83,7 @@ export function RowsSection() {
                         title={t('styleguide.rows.title_three')}
                         meta={meta}
                         stack={stack}
-                        language="es"
+                        language="pt"
                         disabled
                     />
                 </div>

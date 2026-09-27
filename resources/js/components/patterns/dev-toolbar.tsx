@@ -16,7 +16,7 @@ import { PLAN_KEYS } from '@/types/plans';
 import type { Locale } from '@/types/shared';
 
 const STATES: DevState['state'][] = ['normal', 'loading', 'empty', 'error'];
-const LOCALES: Locale[] = ['en', 'pt', 'es'];
+const LOCALES: Locale[] = ['en', 'pt'];
 const GMAIL: DevState['gmail'][] = [
     'connected',
     'needs_reconnection',

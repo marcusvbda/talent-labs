@@ -21,7 +21,7 @@ export type ChangePasswordInput = {
     passwordConfirmation: string;
 };
 
-const LOCALES: string[] = ['en', 'pt', 'es'];
+const LOCALES: string[] = ['en', 'pt'];
 
 const validTimezone = (timeZone: string): boolean => {
     try {

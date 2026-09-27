@@ -73,7 +73,6 @@ export function IndicatorsSection() {
                 </Chip>
                 <Chip variant="language">EN</Chip>
                 <Chip variant="language">PT</Chip>
-                <Chip variant="language">ES</Chip>
                 <Chip variant="plan">
                     {t('styleguide.indicators.sample_plan')}
                 </Chip>

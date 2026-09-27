@@ -32,7 +32,7 @@ import type {
     ProfilesData,
 } from '@/types/contracts';
 
-const LANGUAGES: JobLanguage[] = ['en', 'pt', 'es'];
+const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 const PREVIEW_DEBOUNCE_MS = 500;
 
 type Pending =

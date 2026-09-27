@@ -46,12 +46,14 @@ export function BarChart({
     data,
     title,
     valueFormatter,
+    limit,
     loading = false,
     empty = false,
 }: {
     data: BarChartDatum[];
     title: string;
     valueFormatter?: (value: number) => string;
+    limit?: number;
     loading?: boolean;
     empty?: boolean;
 }) {
@@ -84,7 +86,8 @@ export function BarChart({
 
     const fmt = valueFormatter ?? ((value: number) => format.number(value));
     const values = data.map((d) => safeValue(d.value));
-    const max = niceMax(Math.max(...values));
+    const limitValue = limit === undefined ? null : safeValue(limit);
+    const max = niceMax(Math.max(...values, limitValue ?? 0));
     const slot = (WIDTH - LEFT) / data.length;
     const barWidth = Math.min(MAX_BAR_WIDTH, slot * BAR_SLOT_RATIO);
     const y = (v: number) => BASE - (v / max) * (BASE - TOP);
@@ -154,6 +157,17 @@ export function BarChart({
                         </text>
                     </g>
                 ))}
+                {limitValue !== null && limitValue > 0 && (
+                    <line
+                        x1={LEFT}
+                        x2={WIDTH}
+                        y1={y(limitValue)}
+                        y2={y(limitValue)}
+                        strokeWidth={1.5}
+                        strokeDasharray="6 5"
+                        className="stroke-accent-line"
+                    />
+                )}
                 {data.map((d, i) => {
                     const v = values[i];
                     const cx = LEFT + slot * i + slot / 2;
@@ -275,6 +289,12 @@ export function BarChart({
                             <td>{fmt(values[i])}</td>
                         </tr>
                     ))}
+                    {limitValue !== null && limitValue > 0 && (
+                        <tr>
+                            <th scope="row">{t('chart.table.limit')}</th>
+                            <td>{fmt(limitValue)}</td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
         </div>

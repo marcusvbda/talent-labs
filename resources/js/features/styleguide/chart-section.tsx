@@ -30,6 +30,18 @@ export function ChartSection() {
                 </div>
                 <div className="flex flex-col gap-3">
                     <h3 className="text-label-sm text-muted">
+                        {t('styleguide.chart.limit')}
+                    </h3>
+                    <Card tone="light">
+                        <BarChart
+                            title={t('styleguide.chart.sample_title')}
+                            data={SAMPLE}
+                            limit={50}
+                        />
+                    </Card>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <h3 className="text-label-sm text-muted">
                         {t('styleguide.chart.loading')}
                     </h3>
                     <Card tone="light">

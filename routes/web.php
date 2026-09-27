@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'landing')->name('home');
 
 Route::inertia('/dashboard', 'dashboard')->middleware(['auth', 'client'])->name('dashboard');
+Route::inertia('/onboarding', 'onboarding')->middleware(['auth', 'client'])->name('onboarding');
+
+Route::inertia('/jobs', 'jobs')->middleware(['auth', 'client'])->name('jobs');
+Route::inertia('/applications', 'applications')->middleware(['auth', 'client'])->name('applications');
 
 Route::inertia('/profiles', 'profiles')->middleware(['auth', 'client'])->name('profiles');
 

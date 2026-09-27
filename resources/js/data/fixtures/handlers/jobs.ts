@@ -9,7 +9,7 @@ import type {
 
 export const JOBS_PAGE_SIZE = 12;
 
-const LANGUAGES: JobLanguage[] = ['en', 'pt', 'es'];
+const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 
 const fold = (value: string): string =>
     value
