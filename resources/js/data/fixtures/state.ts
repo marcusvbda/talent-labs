@@ -1,0 +1,520 @@
+import {
+    APPLICATION_SEEDS,
+    COMPANIES,
+    JOBS,
+    NOTIFICATIONS,
+    PREFERENCES,
+    PROFILES,
+} from '@/data/fixtures/catalog';
+import { getDevState } from '@/data/fixtures/dev-state';
+import { SEND_DURATION_MS } from '@/data/fixtures/send-steps';
+import { createFixtureStore } from '@/data/fixtures/store';
+import type {
+    AccountStatus,
+    ApplicationItem,
+    ApplicationProfile,
+    JobDetail,
+    JobLanguage,
+    LiveSending,
+    NotificationItem,
+    PlanKey,
+    Preferences,
+    Quota,
+    QueueResult,
+    SendMode,
+    SendStage,
+    SubStep,
+} from '@/types/contracts';
+
+// The client's own Gmail account (never a recipient address).
+const ACCOUNT_EMAIL = 'ana.silva@example.test';
+const SPACING = { minSeconds: 45, maxSeconds: 120 };
+const LANGUAGES: JobLanguage[] = ['en', 'pt', 'es'];
+
+const PLAN_CONFIG: Record<PlanKey, { dailyLimit: number; mode: SendMode }> = {
+    free: { dailyLimit: 25, mode: 'auto' },
+    starter: { dailyLimit: 50, mode: 'select' },
+    pro: { dailyLimit: 150, mode: 'review' },
+};
+const PLAN_NAMES: Record<PlanKey, string> = {
+    free: 'Free',
+    starter: 'Starter',
+    pro: 'Pro',
+};
+
+export type StoredApplication = { item: ApplicationItem; jobId: number };
+
+type FixtureData = {
+    companies: typeof COMPANIES;
+    jobs: JobDetail[];
+    applications: StoredApplication[];
+    profiles: ApplicationProfile[];
+    preferences: Preferences;
+    notifications: NotificationItem[];
+    sentToday: number;
+    paused: boolean;
+    sendingApplicationId: number | null;
+    currentStage: SendStage | null;
+    currentSubStep: SubStep | null;
+    failNextSend: boolean;
+    waitStartedAt: string | null; // when the current wait for the queue head began
+    // NOTE: the window is only a LABEL. The simulated engine still sends when
+    // the owner presses "Simulate send" outside of it (e.g. at night).
+    window: {
+        start: string;
+        end: string;
+        weekdaysOnly: boolean;
+        timezone: string;
+    };
+};
+
+const isToday = (iso: string): boolean =>
+    new Date(iso).toDateString() === new Date().toDateString();
+
+const todayRows = (rows: StoredApplication[]) =>
+    rows.filter((row) => isToday(row.item.queuedAt));
+
+const initial: FixtureData = {
+    companies: [...COMPANIES],
+    jobs: [...JOBS],
+    applications: APPLICATION_SEEDS.map((seed) => ({
+        item: { ...seed.item },
+        jobId: seed.jobId,
+    })),
+    profiles: PROFILES.map((profile) => ({ ...profile })),
+    preferences: { ...PREFERENCES },
+    notifications: [...NOTIFICATIONS],
+    sentToday: todayRows(APPLICATION_SEEDS).filter(
+        (row) => row.item.status === 'sent',
+    ).length,
+    paused: false,
+    sendingApplicationId: null,
+    currentStage: null,
+    currentSubStep: null,
+    failNextSend: false,
+    waitStartedAt: null,
+    window: {
+        start: '09:00',
+        end: '18:00',
+        weekdaysOnly: true,
+        timezone: 'Europe/Berlin',
+    },
+};
+
+const store = createFixtureStore(initial);
+
+// ---- Matching ---------------------------------------------------------------
+
+const fold = (value: string): string =>
+    value
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase();
+
+const containsAny = (haystack: string, needles: string[]): boolean =>
+    needles.some((needle) => haystack.includes(fold(needle)));
+
+export function jobMatchesPreferences(
+    job: JobDetail,
+    prefs: Preferences,
+): boolean {
+    const title = fold(job.title);
+    const location = fold(job.location ?? '');
+    const stack = job.stack.map(fold);
+    const locationMatch = containsAny(location, prefs.locations);
+
+    if (!containsAny(title, prefs.titles)) {
+        return false;
+    }
+
+    if (!prefs.seniorities.includes(job.seniority)) {
+        return false;
+    }
+
+    if (!prefs.stack.some((item) => stack.includes(fold(item)))) {
+        return false;
+    }
+
+    if (containsAny(title, prefs.excludeWords)) {
+        return false;
+    }
+
+    if (prefs.remoteMode === 'remote_only') {
+        return job.isRemote === true;
+    }
+
+    if (prefs.remoteMode === 'remote_or_locations') {
+        return job.isRemote === true || locationMatch;
+    }
+
+    return locationMatch;
+}
+
+// ---- Selectors ------------------------------------------------------------------
+
+const planConfig = (plan: PlanKey) => PLAN_CONFIG[plan];
+
+const limit = (): number => planConfig(getDevState().plan).dailyLimit;
+
+const activeLanguages = (): JobLanguage[] =>
+    store
+        .get()
+        .profiles.filter((profile) => profile.active && profile.complete)
+        .map((profile) => profile.language);
+
+const gmailNeedsReauth = (): boolean =>
+    getDevState().gmail === 'needs_reconnection';
+
+const quota = (): Quota => {
+    const usedToday = store.get().sentToday;
+    const tomorrow = new Date();
+    tomorrow.setHours(24, 0, 0, 0);
+
+    return {
+        usedToday,
+        limit: limit(),
+        remaining: Math.max(0, limit() - usedToday),
+        resetsAt: tomorrow.toISOString(),
+    };
+};
+
+const accountStatus = (): AccountStatus => {
+    const dev = getDevState();
+    const config = planConfig(dev.plan);
+    const data = store.get();
+    const reauth = gmailNeedsReauth();
+    const gmailState =
+        dev.gmail === 'needs_reconnection'
+            ? 'reauthorization_required'
+            : dev.gmail;
+    const done = dev.onboardingComplete;
+
+    return {
+        plan: {
+            key: dev.plan,
+            name: PLAN_NAMES[dev.plan],
+            mode: config.mode,
+            dailyLimit: config.dailyLimit,
+        },
+        quota: quota(),
+        gmail: {
+            state: gmailState,
+            accountEmail: dev.gmail === 'disconnected' ? null : ACCOUNT_EMAIL,
+        },
+        sending: {
+            paused: data.paused || reauth,
+            autoPausedReason: reauth ? 'reauthorization_required' : null,
+        },
+        onboarding: {
+            complete: done,
+            steps: [
+                { key: 'basics', done: true },
+                { key: 'gmail', done },
+                { key: 'profile', done },
+                { key: 'preferences', done },
+            ],
+        },
+        profiles: { activeLanguages: activeLanguages() },
+        region: 'eu',
+        country: 'DE',
+        timezone: 'Europe/Berlin',
+        unreadNotifications: data.notifications.filter(
+            (row) => row.readAt === null,
+        ).length,
+    };
+};
+
+const insideWindow = (): boolean => {
+    const win = store.get().window;
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: win.timezone,
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(new Date());
+    const part = (type: string) =>
+        parts.find((row) => row.type === type)?.value ?? '';
+    const clock = `${part('hour')}:${part('minute')}`;
+
+    if (win.weekdaysOnly && ['Sat', 'Sun'].includes(part('weekday'))) {
+        return false;
+    }
+
+    return clock >= win.start && clock < win.end;
+};
+
+const queuedRows = (): ApplicationItem[] =>
+    store
+        .get()
+        .applications.map((row) => row.item)
+        .filter((item) => item.status === 'queued')
+        .sort(
+            (a, b) =>
+                new Date(a.scheduledFor ?? a.queuedAt).getTime() -
+                new Date(b.scheduledFor ?? b.queuedAt).getTime(),
+        );
+
+const sendingItem = (): ApplicationItem | null =>
+    store.get().applications.find((row) => row.item.status === 'sending')
+        ?.item ?? null;
+
+const liveSending = (): LiveSending => {
+    const data = store.get();
+    const queue = queuedRows();
+    const current = sendingItem();
+    const max = limit();
+    const used = data.sentToday;
+    let state: LiveSending['state'] = 'idle';
+
+    if (data.paused || gmailNeedsReauth()) {
+        state = 'paused';
+    } else if (Math.max(0, max - used) === 0) {
+        state = 'limit_reached';
+    } else if (!insideWindow()) {
+        state = 'outside_window';
+    } else if (current) {
+        state = 'sending';
+    } else if (queue.length > 0) {
+        state = 'waiting';
+    }
+
+    const last = queue[queue.length - 1];
+
+    return {
+        state,
+        current,
+        // Set whenever the daily limit is above zero, clamped to it.
+        progress:
+            max > 0 ? { index: Math.min(used + 1, max), total: max } : null,
+        queue: queue.slice(0, 3),
+        queuedCount: queue.length,
+        nextSendAt: queue[0]?.scheduledFor ?? null,
+        waitStartedAt: queue.length > 0 ? data.waitStartedAt : null,
+        estimatedFinishAt: last?.scheduledFor
+            ? new Date(
+                  new Date(last.scheduledFor).getTime() + SEND_DURATION_MS,
+              ).toISOString()
+            : null,
+        spacing: SPACING,
+        window: { ...data.window },
+    };
+};
+
+// Jobs the client already applied to today (any status) or that are in flight.
+const takenJobIds = (): Set<number> => {
+    const rows = store.get().applications;
+
+    return new Set(
+        rows
+            .filter(
+                (row) =>
+                    isToday(row.item.queuedAt) ||
+                    row.item.status === 'queued' ||
+                    row.item.status === 'sending',
+            )
+            .map((row) => row.jobId),
+    );
+};
+
+// Jobs the preferences match and that are not taken today, newest first.
+const preferenceMatches = (): JobDetail[] => {
+    const data = store.get();
+    const taken = takenJobIds();
+
+    return data.jobs
+        .filter(
+            (job) =>
+                !taken.has(job.id) &&
+                jobMatchesPreferences(job, data.preferences),
+        )
+        .sort(
+            (a, b) =>
+                new Date(b.firstSeenAt).getTime() -
+                new Date(a.firstSeenAt).getTime(),
+        );
+};
+
+const matches = (): JobDetail[] => {
+    const active = activeLanguages();
+
+    return preferenceMatches().filter((job) => active.includes(job.language));
+};
+
+const lockedByLanguage = (): { language: JobLanguage; count: number }[] => {
+    const active = activeLanguages();
+
+    return LANGUAGES.map((language) => ({
+        language,
+        count: preferenceMatches().filter(
+            (job) => job.language === language && !active.includes(language),
+        ).length,
+    })).filter((row) => row.count > 0);
+};
+
+// ---- Mutations --------------------------------------------------------------------
+
+const randomSpacingMs = (): number =>
+    (SPACING.minSeconds +
+        Math.random() * (SPACING.maxSeconds - SPACING.minSeconds)) *
+    1000;
+
+function queueJobs(jobIds: number[], origin: 'auto' | 'manual'): QueueResult {
+    const result: QueueResult = { queued: [], rejected: [], quota: quota() };
+    const active = activeLanguages();
+    let nextId = Math.max(0, ...store.get().applications.map((r) => r.item.id));
+    let slot = Math.max(
+        Date.now(),
+        ...queuedRows().map((item) =>
+            new Date(item.scheduledFor ?? item.queuedAt).getTime(),
+        ),
+    );
+
+    for (const jobId of jobIds) {
+        const data = store.get();
+        const job = data.jobs.find((row) => row.id === jobId);
+        const inFlight = data.applications.filter(
+            (row) =>
+                row.item.status === 'queued' || row.item.status === 'sending',
+        ).length;
+
+        if (!job) {
+            result.rejected.push({
+                jobId,
+                reason: 'This job is no longer available.',
+            });
+            continue;
+        }
+
+        if (data.sentToday + inFlight >= limit()) {
+            result.rejected.push({
+                jobId,
+                reason: "You have reached today's limit.",
+            });
+            continue;
+        }
+
+        const companyTaken = todayRows(data.applications).some(
+            (row) =>
+                row.item.company.id === job.company.id &&
+                ['queued', 'sending', 'sent', 'ambiguous'].includes(
+                    row.item.status,
+                ),
+        );
+
+        if (companyTaken) {
+            result.rejected.push({
+                jobId,
+                reason: 'You already applied to this company today.',
+            });
+            continue;
+        }
+
+        if (!active.includes(job.language)) {
+            result.rejected.push({
+                jobId,
+                reason: 'You have no application profile in this language.',
+            });
+            continue;
+        }
+
+        nextId += 1;
+        slot += randomSpacingMs();
+
+        const item: ApplicationItem = {
+            id: nextId,
+            company: {
+                id: job.company.id,
+                name: job.company.name,
+                initials: job.company.initials,
+            },
+            title: job.title,
+            language: job.language,
+            origin,
+            status: 'queued',
+            stage: null,
+            subStep: null,
+            lastError: null,
+            queuedAt: new Date().toISOString(),
+            scheduledFor: new Date(slot).toISOString(),
+            sentAt: null,
+        };
+
+        store.set((s) => ({
+            ...s,
+            applications: [...s.applications, { item, jobId }],
+        }));
+        result.queued.push({
+            jobId,
+            applicationId: item.id,
+            scheduledFor: item.scheduledFor as string,
+        });
+    }
+
+    result.quota = quota();
+
+    return result;
+}
+
+function patchApplication(
+    id: number,
+    patch: Partial<ApplicationItem>,
+): ApplicationItem | null {
+    let updated: ApplicationItem | null = null;
+
+    store.set((s) => ({
+        ...s,
+        applications: s.applications.map((row) => {
+            if (row.item.id !== id) {
+                return row;
+            }
+
+            updated = { ...row.item, ...patch };
+
+            return { ...row, item: updated };
+        }),
+    }));
+
+    return updated;
+}
+
+function addNotification(
+    type: NotificationItem['type'],
+    data: NotificationItem['data'],
+): NotificationItem {
+    const next =
+        Math.max(
+            0,
+            ...store
+                .get()
+                .notifications.map((row) => Number(row.id.replace(/\D/g, ''))),
+        ) + 1;
+    const notification: NotificationItem = {
+        id: `n-${next}`,
+        type,
+        data,
+        readAt: null,
+        createdAt: new Date().toISOString(),
+    };
+
+    store.set((s) => ({
+        ...s,
+        notifications: [notification, ...s.notifications],
+    }));
+
+    return notification;
+}
+
+export const fixtureState = {
+    ...store,
+    planConfig,
+    quota,
+    accountStatus,
+    liveSending,
+    matches,
+    lockedByLanguage,
+    queue: queueJobs,
+    queuedItems: queuedRows,
+    patchApplication,
+    addNotification,
+};

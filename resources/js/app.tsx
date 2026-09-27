@@ -3,6 +3,7 @@ import { configureEcho } from '@laravel/echo-react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { lazy, Suspense } from 'react';
 import { Toaster } from '@/components/ui/toast';
+import { bootFixtures } from '@/data/boot-fixtures';
 import { queryClient } from '@/data/query-client';
 import { I18nProvider } from '@/i18n/i18n-provider';
 import type { SharedProps } from '@/types/shared';
@@ -22,6 +23,8 @@ const ReactQueryDevtools = import.meta.env.DEV
 const DevToolbar = import.meta.env.DEV
     ? lazy(() => import('@/components/patterns/dev-toolbar'))
     : null;
+
+bootFixtures();
 
 let brand = '';
 

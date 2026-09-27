@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 export function PageHeader({
     eyebrow,
@@ -27,7 +27,7 @@ export function PageHeader({
                 ) : null}
             </div>
             {actions ? (
-                <div className="flex shrink-0 items-center gap-3.5 max-md:[&>*]:w-full">
+                <div className="flex shrink-0 items-center gap-3.5 flex-col md:flex-row">
                     {actions}
                 </div>
             ) : null}

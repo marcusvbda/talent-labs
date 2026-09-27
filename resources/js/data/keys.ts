@@ -1,16 +1,49 @@
-type Filters = Record<string, unknown>;
+import type {
+    ApplicationFilters,
+    ChartData,
+    DashboardPeriod,
+    JobFilters,
+    Preferences,
+    RegionKey,
+} from '@/types/contracts';
 
+// Every key starts with its group name so invalidating `keys.jobs.all()`
+// matches every jobs query.
 export const keys = {
-    dashboard: () => ['dashboard'] as const,
+    account: {
+        status: () => ['account', 'status'] as const,
+        self: () => ['account', 'self'] as const,
+    },
+    dashboard: (period: DashboardPeriod) => ['dashboard', period] as const,
+    chart: (range: ChartData['range']) => ['chart', range] as const,
+    dashboards: () => ['dashboard'] as const,
+    charts: () => ['chart'] as const,
+    sending: () => ['sending'] as const,
     jobs: {
         all: () => ['jobs'] as const,
-        list: (filters: Filters) => ['jobs', 'list', filters] as const,
+        list: (filters: JobFilters) => {
+            const { cursor: _cursor, ...rest } = filters;
+
+            return ['jobs', 'list', rest] as const;
+        },
+        detail: (id: number | string) => ['jobs', 'detail', id] as const,
     },
     applications: {
         all: () => ['applications'] as const,
-        list: (filters: Filters) => ['applications', 'list', filters] as const,
+        list: (filters: ApplicationFilters) => {
+            const { cursor: _cursor, ...rest } = filters;
+
+            return ['applications', 'list', rest] as const;
+        },
+        detail: (id: number | string) =>
+            ['applications', 'detail', id] as const,
     },
-    account: {
-        status: () => ['account', 'status'] as const,
+    preferences: {
+        current: () => ['preferences', 'current'] as const,
+        preview: (draft: Preferences) =>
+            ['preferences', 'preview', draft] as const,
     },
+    profiles: () => ['profiles'] as const,
+    plans: (region?: RegionKey) => ['plans', region ?? null] as const,
+    notifications: () => ['notifications'] as const,
 };

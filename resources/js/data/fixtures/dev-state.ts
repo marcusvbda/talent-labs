@@ -57,6 +57,9 @@ const subscribe = (listener: () => void) => {
     };
 };
 
+// For non-React code (the fixture engine).
+export const subscribeDevState = subscribe;
+
 export const useDevState = (): DevState =>
     useSyncExternalStore(subscribe, getDevState, getDevState);
 

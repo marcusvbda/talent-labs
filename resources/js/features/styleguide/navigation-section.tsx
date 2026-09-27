@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { LanguageSwitcher } from '@/components/patterns/language-switcher';
 import { NavPills } from '@/components/patterns/nav-pills';
 import { UserMenu } from '@/components/patterns/user-menu';
+import { Stepper } from '@/components/ui/stepper';
 import { useT } from '@/i18n/i18n-provider';
 import { StyleguideSection } from './styleguide-section';
 
@@ -16,6 +18,17 @@ const Group = ({ title, children }: { title: string; children: ReactNode }) => (
 
 export function NavigationSection() {
     const { t } = useT();
+    const [current, setCurrent] = useState(1);
+    const steps = [
+        'step_profile',
+        'step_preferences',
+        'step_sources',
+        'step_review',
+    ].map((key, index) => ({
+        key,
+        label: t(`styleguide.navigation.${key}`),
+        done: index < current,
+    }));
 
     return (
         <StyleguideSection
@@ -43,6 +56,16 @@ export function NavigationSection() {
                         },
                     ]}
                 />
+            </Group>
+            <Group title={t('styleguide.navigation.stepper')}>
+                <div className="min-w-0 flex-1">
+                    <Stepper
+                        steps={steps}
+                        currentIndex={current}
+                        onStepChange={setCurrent}
+                        ariaLabel={t('styleguide.navigation.stepper_label')}
+                    />
+                </div>
             </Group>
             <Group title={t('styleguide.navigation.language')}>
                 <LanguageSwitcher />

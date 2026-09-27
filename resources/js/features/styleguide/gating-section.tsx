@@ -1,7 +1,9 @@
 import { Briefcase } from 'lucide-react';
 import { FilterBar } from '@/components/patterns/filter-bar';
+import { LockOverlay } from '@/components/patterns/lock-overlay';
 import { PlanGate } from '@/components/patterns/plan-gate';
 import { StatTile } from '@/components/patterns/stat-tile';
+import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
 import { useT } from '@/i18n/i18n-provider';
 import { StyleguideSection } from './styleguide-section';
@@ -45,6 +47,23 @@ export function GatingSection() {
                         {tile}
                     </PlanGate>
                 </div>
+            </div>
+            <div className="flex flex-col gap-3">
+                <h3 className="text-label font-medium">
+                    {t('styleguide.gating.lock_overlay')}
+                </h3>
+                <LockOverlay
+                    locked
+                    title={t('styleguide.gating.lock_title')}
+                    description={t('styleguide.gating.lock_description')}
+                    actions={
+                        <Button variant="primary-ink" size="sm" href="#gating">
+                            {t('styleguide.gating.lock_action')}
+                        </Button>
+                    }
+                >
+                    {tile}
+                </LockOverlay>
             </div>
             <div className="flex flex-col gap-3">
                 <h3 className="text-label font-medium">

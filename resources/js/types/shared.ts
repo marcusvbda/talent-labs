@@ -1,4 +1,6 @@
-export type Locale = 'en' | 'pt' | 'es';
+import type { Locale } from './contracts';
+
+export type { Locale } from './contracts';
 
 export type SharedUser = {
     id: number;

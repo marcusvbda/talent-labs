@@ -1,16 +1,10 @@
-import { Lock } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { LockOverlay } from '@/components/patterns/lock-overlay';
+import type { LockOverlayRadius } from '@/components/patterns/lock-overlay';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/i18n/i18n-provider';
 import { useFormat } from '@/lib/format';
-import { cn } from '@/lib/utils';
 import type { PlanKey } from '@/types/plans';
-
-const RADII = {
-    tile: 'rounded-tile',
-    card: 'rounded-card',
-    'card-sm': 'rounded-card-sm',
-} as const;
 
 export function PlanGate({
     locked,
@@ -22,7 +16,7 @@ export function PlanGate({
     locked: boolean;
     requiredPlans: PlanKey[];
     featureKey: string;
-    radius?: keyof typeof RADII;
+    radius?: LockOverlayRadius;
     children: ReactNode;
 }) {
     const { t } = useT();
@@ -32,35 +26,18 @@ export function PlanGate({
         return <>{children}</>;
     }
 
-    const title = t('plan_gate.title', {
-        plans: format.list(requiredPlans.map((p) => t(`plans.${p}.name`))),
-    });
-
-    // Both layers share one grid cell, so the overlay can grow the card
-    // instead of overflowing it.
     return (
-        <div className="grid">
-            <div
-                inert
-                aria-hidden="true"
-                className="col-start-1 row-start-1 min-w-0"
-            >
-                {children}
-            </div>
-            <div
-                role="group"
-                aria-label={title}
-                className={cn(
-                    'col-start-1 row-start-1 flex min-w-0 flex-col items-center justify-center gap-2 bg-scrim p-4 text-center backdrop-blur-xs',
-                    RADII[radius],
-                )}
-            >
-                <span className="flex size-control-sm shrink-0 items-center justify-center rounded-full bg-ink text-white">
-                    <Lock aria-hidden="true" size={20} strokeWidth={1.8} />
-                </span>
-                <p className="text-label font-medium">{title}</p>
-                <p className="text-label-sm text-muted">{t(featureKey)}</p>
-                <div className="flex flex-wrap items-center justify-center gap-2">
+        <LockOverlay
+            locked
+            radius={radius}
+            title={t('plan_gate.title', {
+                plans: format.list(
+                    requiredPlans.map((p) => t(`plans.${p}.name`)),
+                ),
+            })}
+            description={t(featureKey)}
+            actions={
+                <>
                     <Button variant="primary-ink" size="sm" href="#">
                         {t('plan_gate.upgrade', {
                             plan: t(`plans.${requiredPlans[0]}.name`),
@@ -69,8 +46,10 @@ export function PlanGate({
                     <Button variant="ghost" size="sm" href="#">
                         {t('plan_gate.see_plans')}
                     </Button>
-                </div>
-            </div>
-        </div>
+                </>
+            }
+        >
+            {children}
+        </LockOverlay>
     );
 }
