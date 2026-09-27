@@ -16,6 +16,7 @@ import {
 } from '@/data/hooks/use-pause-sending';
 import { useFailureHold } from '@/features/dashboard/use-failure-hold';
 import { useT } from '@/i18n/i18n-provider';
+import { intlLocale } from '@/i18n/locale';
 import { useFormat } from '@/lib/format';
 import { jobs, plans } from '@/routes';
 import type {
@@ -172,6 +173,50 @@ const CurrentPanel = ({
     );
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** How many days from now until the window's next eligible day (0 = today). */
+const daysUntilNextWindow = (
+    win: NonNullable<LiveSending['window']>,
+): number => {
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: win.timezone,
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(now);
+    const part = (type: string) =>
+        parts.find((row) => row.type === type)?.value ?? '';
+    const isWeekend = (weekday: string) => ['Sat', 'Sun'].includes(weekday);
+
+    const resumesLaterToday =
+        (!win.weekdaysOnly || !isWeekend(part('weekday'))) &&
+        `${part('hour')}:${part('minute')}` < win.start;
+
+    if (resumesLaterToday) {
+        return 0;
+    }
+
+    let daysAhead = 1;
+
+    while (daysAhead <= 7) {
+        const weekday = new Intl.DateTimeFormat('en-US', {
+            timeZone: win.timezone,
+            weekday: 'short',
+        }).format(new Date(now.getTime() + daysAhead * DAY_MS));
+
+        if (!win.weekdaysOnly || !isWeekend(weekday)) {
+            break;
+        }
+
+        daysAhead += 1;
+    }
+
+    return daysAhead;
+};
+
 export function LiveSendingCard({
     sending,
     mode,
@@ -182,7 +227,7 @@ export function LiveSendingCard({
     /** Recently settled applications, used to show why a send failed. */
     activity: ApplicationItem[];
 }) {
-    const { t, plural } = useT();
+    const { t, plural, locale } = useT();
     const format = useFormat();
     const action = useHeaderAction(sending);
     const { state } = sending;
@@ -196,6 +241,29 @@ export function LiveSendingCard({
         date.setHours(hours ?? 0, minutes ?? 0, 0, 0);
 
         return format.date(date, { hour: '2-digit', minute: '2-digit' });
+    };
+    const windowResumeMessage = (win: LiveSending['window']): string => {
+        if (!win) {
+            return t('dashboard.live.window', { time: clock('00:00') });
+        }
+
+        const time = clock(win.start);
+        const daysAhead = daysUntilNextWindow(win);
+
+        if (daysAhead === 0) {
+            return t('dashboard.live.window', { time });
+        }
+
+        if (daysAhead === 1) {
+            return t('dashboard.live.window_tomorrow', { time });
+        }
+
+        const weekday = new Intl.DateTimeFormat(intlLocale(locale), {
+            timeZone: win.timezone,
+            weekday: 'long',
+        }).format(new Date(Date.now() + daysAhead * DAY_MS));
+
+        return t('dashboard.live.window_weekday', { weekday, time });
     };
 
     return (
@@ -323,11 +391,7 @@ export function LiveSendingCard({
                 </Empty>
             )}
             {state === 'outside_window' && (
-                <Empty
-                    title={t('dashboard.live.window', {
-                        time: clock(sending.window?.start ?? '00:00'),
-                    })}
-                />
+                <Empty title={windowResumeMessage(sending.window)} />
             )}
         </DarkCard>
     );

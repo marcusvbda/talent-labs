@@ -449,6 +449,8 @@
     "dashboard.live.limit": "Daily limit reached, sending resumes tomorrow at :time",
     "dashboard.live.upgrade": "Upgrade plan",
     "dashboard.live.window": "Sending resumes at :time",
+    "dashboard.live.window_tomorrow": "Sending resumes tomorrow at :time",
+    "dashboard.live.window_weekday": "Sending resumes :weekday at :time",
     "dashboard.chart.title": "Sends per day",
     "dashboard.chart.subtitle": "Last :days days · weekends are off",
     "dashboard.chart.range": "Chart range",

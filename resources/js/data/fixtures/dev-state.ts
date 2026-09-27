@@ -64,7 +64,9 @@ export const useDevState = (): DevState =>
     useSyncExternalStore(subscribe, getDevState, getDevState);
 
 // Console access, e.g. setDevState({ state: 'error' }). Dev builds only.
-if (import.meta.env.DEV) {
+// Guarded for SSR (Inertia's Vite SSR warmup runs this module in Node, where
+// there is no `window`).
+if (import.meta.env.DEV && typeof window !== 'undefined') {
     Object.assign(window, {
         setDevState,
         __devState: { get: getDevState, set: setDevState },

@@ -1,17 +1,17 @@
-import { Menu, Search } from 'lucide-react';
-import { useState } from 'react';
-import { LanguageSwitcher } from '@/components/patterns/language-switcher';
-import { Logo } from '@/components/patterns/logo';
-import { MobileNav } from '@/components/patterns/mobile-nav';
-import { NavPills } from '@/components/patterns/nav-pills';
-import type { NavPillItem } from '@/components/patterns/nav-pills';
-import { UserMenu } from '@/components/patterns/user-menu';
-import { IconButton } from '@/components/ui/icon-button';
-import { Kbd } from '@/components/ui/kbd';
-import { NotificationsPopover } from '@/features/notifications/notifications-popover';
-import { usePalette } from '@/features/palette/use-palette';
-import { useT } from '@/i18n/i18n-provider';
-import type { PlanKey } from '@/types/plans';
+import { Menu, Search } from "lucide-react";
+import { useState } from "react";
+import { LanguageSwitcher } from "@/components/patterns/language-switcher";
+import { Logo } from "@/components/patterns/logo";
+import { MobileNav } from "@/components/patterns/mobile-nav";
+import { NavPills } from "@/components/patterns/nav-pills";
+import type { NavPillItem } from "@/components/patterns/nav-pills";
+import { UserMenu } from "@/components/patterns/user-menu";
+import { IconButton } from "@/components/ui/icon-button";
+import { Kbd } from "@/components/ui/kbd";
+import { NotificationsPopover } from "@/features/notifications/notifications-popover";
+import { usePalette } from "@/features/palette/use-palette";
+import { useT } from "@/i18n/i18n-provider";
+import type { PlanKey } from "@/types/plans";
 
 export function TopBar({
     nav,
@@ -37,17 +37,17 @@ export function TopBar({
             <button
                 type="button"
                 onClick={() => palette.setOpen(true)}
-                className="hidden h-control-lg w-41 shrink-0 items-center gap-2.5 rounded-full bg-card px-5.5 text-label text-faint transition-colors hover:bg-tile focus-visible:focus-ring 2xl:flex"
+                className="hidden h-control-lg w-56 shrink-0 items-center gap-2.5 rounded-full bg-card px-5.5 text-label text-faint transition-colors hover:bg-tile focus-visible:focus-ring 2xl:flex"
             >
                 <Search aria-hidden="true" size={20} strokeWidth={1.8} />
                 <span className="min-w-0 flex-1 truncate text-left">
-                    {t('topbar.search')}
+                    {t("topbar.search")}
                 </span>
                 <Kbd>⌘K</Kbd>
             </button>
             <IconButton
                 icon={Search}
-                label={t('topbar.search')}
+                label={t("topbar.search")}
                 size={60}
                 bg="white"
                 className="hidden md:inline-grid 2xl:hidden"
@@ -60,7 +60,7 @@ export function TopBar({
             <UserMenu plan={plan} />
             <IconButton
                 icon={Menu}
-                label={t('topbar.menu')}
+                label={t("topbar.menu")}
                 size={60}
                 bg="white"
                 className="md:hidden"

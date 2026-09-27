@@ -449,6 +449,8 @@
     "dashboard.live.limit": "Limite diário atingido, o envio retoma amanhã às :time",
     "dashboard.live.upgrade": "Melhorar plano",
     "dashboard.live.window": "O envio retoma às :time",
+    "dashboard.live.window_tomorrow": "O envio retoma amanhã às :time",
+    "dashboard.live.window_weekday": "O envio retoma :weekday às :time",
     "dashboard.chart.title": "Envios por dia",
     "dashboard.chart.subtitle": "Últimos :days dias · fins de semana desligados",
     "dashboard.chart.range": "Período do gráfico",
