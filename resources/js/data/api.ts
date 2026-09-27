@@ -33,7 +33,10 @@ export async function apiFetch<T>(url: string, init: ApiInit = {}): Promise<T> {
         'X-Requested-With': 'XMLHttpRequest',
     };
 
-    if (hasBody) {
+    const isForm = init.body instanceof FormData;
+
+    // A FormData body is sent as-is: the browser sets the multipart boundary.
+    if (hasBody && !isForm) {
         headers['Content-Type'] = 'application/json';
     }
 
@@ -47,7 +50,11 @@ export async function apiFetch<T>(url: string, init: ApiInit = {}): Promise<T> {
         method: (init.method ?? 'get').toUpperCase(),
         credentials: 'same-origin',
         headers,
-        body: hasBody ? JSON.stringify(init.body) : undefined,
+        body: !hasBody
+            ? undefined
+            : isForm
+              ? (init.body as FormData)
+              : JSON.stringify(init.body),
         signal: init.signal,
     });
 

@@ -10,6 +10,12 @@ Route::inertia('/', 'landing')->name('home');
 
 Route::inertia('/dashboard', 'dashboard')->middleware(['auth', 'client'])->name('dashboard');
 
+Route::inertia('/profiles', 'profiles')->middleware(['auth', 'client'])->name('profiles');
+
+Route::inertia('/preferences', 'preferences')->middleware(['auth', 'client'])->name('preferences');
+
+Route::inertia('/plans', 'plans')->middleware(['auth', 'client'])->name('plans');
+
 Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware('guest')->group(function (): void {

@@ -4,6 +4,7 @@ import type { LockOverlayRadius } from '@/components/patterns/lock-overlay';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/i18n/i18n-provider';
 import { useFormat } from '@/lib/format';
+import { plans } from '@/routes';
 import type { PlanKey } from '@/types/plans';
 
 export function PlanGate({
@@ -38,12 +39,12 @@ export function PlanGate({
             description={t(featureKey)}
             actions={
                 <>
-                    <Button variant="primary-ink" size="sm" href="#">
+                    <Button variant="primary-ink" size="sm" href={plans().url}>
                         {t('plan_gate.upgrade', {
                             plan: t(`plans.${requiredPlans[0]}.name`),
                         })}
                     </Button>
-                    <Button variant="ghost" size="sm" href="#">
+                    <Button variant="ghost" size="sm" href={plans().url}>
                         {t('plan_gate.see_plans')}
                     </Button>
                 </>

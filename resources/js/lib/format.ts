@@ -59,10 +59,17 @@ export const formatRelativeTime = (
     }).format(Math.trunc(seconds / size), unit);
 };
 
-export const formatList = (locale: Locale, items: string[]): string =>
+// 'unit' joins with plain commas in EN (no "and"); PT/ES still add e/y.
+type ListType = 'conjunction' | 'disjunction' | 'unit';
+
+export const formatList = (
+    locale: Locale,
+    items: string[],
+    type: ListType = 'conjunction',
+): string =>
     new Intl.ListFormat(intlLocale(locale), {
         style: 'long',
-        type: 'conjunction',
+        type,
     }).format(items);
 
 export function useFormat() {
@@ -76,6 +83,7 @@ export function useFormat() {
         date: (value: DateInput, opts?: Intl.DateTimeFormatOptions) =>
             formatDate(locale, value, opts),
         relativeTime: (value: DateInput) => formatRelativeTime(locale, value),
-        list: (items: string[]) => formatList(locale, items),
+        list: (items: string[], type?: ListType) =>
+            formatList(locale, items, type),
     };
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { TopBar } from '@/components/patterns/top-bar';
+import { useRealtimeCache } from '@/data/realtime/use-realtime-cache';
 import { useFixturePlan } from '@/data/hooks/use-fixture-plan';
 import { useMainNav } from '@/lib/navigation';
 import { useFlashToasts } from '@/lib/use-flash-toasts';
@@ -27,6 +28,7 @@ export function AppGrid({
 
 export function AppLayout({ children }: { children: ReactNode }) {
     useFlashToasts();
+    useRealtimeCache();
     const nav = useMainNav();
     const plan = useFixturePlan();
 

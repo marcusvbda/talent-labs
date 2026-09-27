@@ -10,6 +10,7 @@ import { getDevState } from '@/data/fixtures/dev-state';
 import { SEND_DURATION_MS } from '@/data/fixtures/send-steps';
 import { createFixtureStore } from '@/data/fixtures/store';
 import type {
+    Account,
     AccountStatus,
     ApplicationItem,
     ApplicationProfile,
@@ -21,6 +22,7 @@ import type {
     Preferences,
     Quota,
     QueueResult,
+    RegionKey,
     SendMode,
     SendStage,
     SubStep,
@@ -28,6 +30,51 @@ import type {
 
 // The client's own Gmail account (never a recipient address).
 const ACCOUNT_EMAIL = 'ana.silva@example.test';
+const EU_COUNTRIES = new Set([
+    'AT',
+    'BE',
+    'BG',
+    'HR',
+    'CY',
+    'CZ',
+    'DK',
+    'EE',
+    'FI',
+    'FR',
+    'DE',
+    'GR',
+    'HU',
+    'IE',
+    'IT',
+    'LV',
+    'LT',
+    'LU',
+    'MT',
+    'NL',
+    'PL',
+    'PT',
+    'RO',
+    'SK',
+    'SI',
+    'ES',
+    'SE',
+    'GB',
+    'NO',
+    'CH',
+    'IS',
+    'LI',
+]);
+
+export const regionForCountry = (country: string | null): RegionKey => {
+    const code = (country ?? '').toUpperCase();
+
+    if (code === 'BR') {
+        return 'br';
+    }
+
+    return EU_COUNTRIES.has(code) ? 'eu' : 'row';
+};
+
 const SPACING = { minSeconds: 45, maxSeconds: 120 };
 const LANGUAGES: JobLanguage[] = ['en', 'pt', 'es'];
 
@@ -51,6 +98,8 @@ type FixtureData = {
     profiles: ApplicationProfile[];
     preferences: Preferences;
     notifications: NotificationItem[];
+    account: Omit<Account, 'region'>;
+    onboarding: { basicsDone: boolean; preferencesSaved: boolean };
     sentToday: number;
     paused: boolean;
     sendingApplicationId: number | null;
@@ -84,6 +133,14 @@ const initial: FixtureData = {
     profiles: PROFILES.map((profile) => ({ ...profile })),
     preferences: { ...PREFERENCES },
     notifications: [...NOTIFICATIONS],
+    account: {
+        name: 'Ana Silva',
+        email: ACCOUNT_EMAIL,
+        locale: 'en',
+        timezone: 'Europe/Berlin',
+        country: 'DE',
+    },
+    onboarding: { basicsDone: false, preferencesSaved: false },
     sentToday: todayRows(APPLICATION_SEEDS).filter(
         (row) => row.item.status === 'sent',
     ).length,
@@ -111,9 +168,17 @@ const fold = (value: string): string =>
         .replace(/[̀-ͯ]/g, '')
         .toLowerCase();
 
+// Blank needles never match: an unnormalised draft must not count every job.
 const containsAny = (haystack: string, needles: string[]): boolean =>
-    needles.some((needle) => haystack.includes(fold(needle)));
+    needles.some((needle) => {
+        const folded = fold(needle).trim();
 
+        return folded !== '' && haystack.includes(folded);
+    });
+
+// Inside a field any value can match; between fields all must match. An empty
+// list is "no constraint", and a job with an unclear level always passes the
+// seniority rule.
 export function jobMatchesPreferences(
     job: JobDetail,
     prefs: Preferences,
@@ -123,19 +188,29 @@ export function jobMatchesPreferences(
     const stack = job.stack.map(fold);
     const locationMatch = containsAny(location, prefs.locations);
 
-    if (!containsAny(title, prefs.titles)) {
+    if (prefs.titles.length > 0 && !containsAny(title, prefs.titles)) {
         return false;
     }
 
-    if (!prefs.seniorities.includes(job.seniority)) {
+    if (
+        prefs.seniorities.length > 0 &&
+        job.seniority !== 'unknown' &&
+        !prefs.seniorities.includes(job.seniority)
+    ) {
         return false;
     }
 
-    if (!prefs.stack.some((item) => stack.includes(fold(item)))) {
+    if (
+        prefs.stack.length > 0 &&
+        !prefs.stack.some((item) => stack.includes(fold(item)))
+    ) {
         return false;
     }
 
-    if (containsAny(title, prefs.excludeWords)) {
+    if (
+        containsAny(title, prefs.excludeWords) ||
+        stack.some((entry) => containsAny(entry, prefs.excludeWords))
+    ) {
         return false;
     }
 
@@ -187,7 +262,15 @@ const accountStatus = (): AccountStatus => {
         dev.gmail === 'needs_reconnection'
             ? 'reauthorization_required'
             : dev.gmail;
-    const done = dev.onboardingComplete;
+    const account = data.account;
+    const forced = dev.onboardingComplete;
+    const flags = {
+        basics: forced || data.onboarding.basicsDone,
+        gmail: forced || dev.gmail === 'connected',
+        profile: forced || activeLanguages().length > 0,
+        preferences: forced || data.onboarding.preferencesSaved,
+    };
+    const done = Object.values(flags).every(Boolean);
 
     return {
         plan: {
@@ -208,16 +291,16 @@ const accountStatus = (): AccountStatus => {
         onboarding: {
             complete: done,
             steps: [
-                { key: 'basics', done: true },
-                { key: 'gmail', done },
-                { key: 'profile', done },
-                { key: 'preferences', done },
+                { key: 'basics', done: flags.basics },
+                { key: 'gmail', done: flags.gmail },
+                { key: 'profile', done: flags.profile },
+                { key: 'preferences', done: flags.preferences },
             ],
         },
         profiles: { activeLanguages: activeLanguages() },
-        region: 'eu',
-        country: 'DE',
-        timezone: 'Europe/Berlin',
+        region: regionForCountry(account.country),
+        country: account.country,
+        timezone: account.timezone,
         unreadNotifications: data.notifications.filter(
             (row) => row.readAt === null,
         ).length,
@@ -505,8 +588,15 @@ function addNotification(
     return notification;
 }
 
+const account = (): Account => {
+    const data = store.get().account;
+
+    return { ...data, region: regionForCountry(data.country) };
+};
+
 export const fixtureState = {
     ...store,
+    account,
     planConfig,
     quota,
     accountStatus,

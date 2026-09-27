@@ -3,6 +3,7 @@ import type {
     ChartData,
     DashboardPeriod,
     JobFilters,
+    JobLanguage,
     Preferences,
     RegionKey,
 } from '@/types/contracts';
@@ -42,8 +43,17 @@ export const keys = {
         current: () => ['preferences', 'current'] as const,
         preview: (draft: Preferences) =>
             ['preferences', 'preview', draft] as const,
+        previews: () => ['preferences', 'preview'] as const,
     },
     profiles: () => ['profiles'] as const,
+    profilesPreview: (input: {
+        language: JobLanguage;
+        subject: string;
+        body: string;
+        coverLetter: string;
+    }) => ['profiles', 'preview', input] as const,
+    plansAll: () => ['plans'] as const,
     plans: (region?: RegionKey) => ['plans', region ?? null] as const,
     notifications: () => ['notifications'] as const,
+    invite: (code: string) => ['invite', code] as const,
 };
