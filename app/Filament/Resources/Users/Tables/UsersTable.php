@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Users\Tables;
 
 use App\Actions\Users\AdminGuard;
 use App\Enums\ConnectedIntegrationStatus;
+use App\Enums\PlanKey;
 use App\Enums\UserStatus;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -40,6 +41,10 @@ class UsersTable
                     ->badge()
                     ->sortable(),
 
+                TextColumn::make('plan_key')
+                    ->badge()
+                    ->sortable(),
+
                 TextColumn::make('gmailIntegration.status')
                     ->label('Gmail')
                     ->badge()
@@ -62,6 +67,9 @@ class UsersTable
             ->filters([
                 SelectFilter::make('status')
                     ->options(UserStatus::class),
+
+                SelectFilter::make('plan_key')
+                    ->options(PlanKey::class),
             ])
             ->recordActions([
                 Action::make('block')

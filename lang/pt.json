@@ -275,13 +275,6 @@
     "auth.register.password": "Senha",
     "auth.register.password_confirmation": "Confirme a senha",
     "auth.register.submit": "Criar conta",
-    "auth.register.success_title": "Conta criada",
-    "auth.register.success_body": "Você já pode entrar com sua nova conta.",
-    "auth.register.errors.name_required": "Informe seu nome.",
-    "auth.register.errors.email_required": "Informe seu e-mail.",
-    "auth.register.errors.email_invalid": "Informe um e-mail válido.",
-    "auth.register.errors.password_length": "A senha deve ter pelo menos 8 caracteres.",
-    "auth.register.errors.password_mismatch": "As senhas não coincidem.",
     "auth.closed.title": "As inscrições estão fechadas por enquanto.",
     "auth.closed.body": "Estamos em beta fechado com um pequeno grupo de testadores.",
     "auth.closed.login_link": "Ir para o login",
@@ -802,5 +795,13 @@
     "account.delete.confirm_title": "Excluir sua conta?",
     "account.delete.password_label": "Confirme sua senha",
     "account.delete.confirm": "Excluir conta",
-    "account.delete.done": "Conta excluída"
+    "account.delete.done": "Conta excluída",
+    "mail.reset.subject": "Redefina sua senha do :brand",
+    "mail.reset.greeting": "Olá, :name,",
+    "mail.reset.body": "Recebemos uma solicitação para redefinir a senha da sua conta no :brand. Clique no botão abaixo para escolher uma nova.",
+    "mail.reset.button": "Redefinir senha",
+    "mail.reset.fallback": "Se o botão não funcionar, copie e cole este link no seu navegador:",
+    "mail.reset.expiry": "Este link expira em :minutes minutos.",
+    "mail.reset.ignore": "Se você não solicitou a redefinição de senha, pode ignorar este e-mail com segurança.",
+    "auth.register.invite_locked_hint": "Este convite está vinculado a este e-mail."
 }

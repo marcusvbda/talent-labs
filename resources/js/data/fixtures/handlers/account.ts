@@ -145,11 +145,3 @@ export function markAllNotificationsRead(): Record<string, never> {
 
     return {};
 }
-
-// The invite code is a fixture stand-in for the real invite lookup.
-export const checkInvite = (
-    invite: string,
-): { valid: true; email: string | null } | { valid: false } =>
-    invite.startsWith('ok')
-        ? { valid: true, email: 'tester@example.test' }
-        : { valid: false };

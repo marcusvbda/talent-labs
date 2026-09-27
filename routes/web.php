@@ -1,7 +1,13 @@
 <?php
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Client\Internal\AccountStatusController;
+use App\Http\Controllers\Client\Internal\JobsController;
+use App\Http\Controllers\Client\Internal\OnboardingBasicsController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +28,15 @@ Route::inertia('/plans', 'plans')->middleware(['auth', 'client'])->name('plans')
 
 Route::inertia('/account', 'account')->middleware(['auth', 'client'])->name('account');
 
+Route::middleware(['auth', 'client', 'throttle:120,1'])
+    ->prefix('internal')->name('internal.')
+    ->group(function (): void {
+        Route::get('/account/status', AccountStatusController::class)->name('account.status');
+        Route::put('/onboarding/basics', OnboardingBasicsController::class)->name('onboarding.basics');
+        Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
+        Route::get('/jobs/{id}', [JobsController::class, 'show'])->whereNumber('id')->name('jobs.show');
+    });
+
 Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware('guest')->group(function (): void {
@@ -30,10 +45,19 @@ Route::middleware('guest')->group(function (): void {
         ->middleware('throttle:6,1')
         ->name('login.store');
 
-    Route::inertia('/register', 'auth/register')->name('register');
+    Route::get('/register', [RegisterController::class, 'create'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('register.store');
     Route::inertia('/register/closed', 'auth/closed')->name('register.closed');
-    Route::inertia('/forgot-password', 'auth/forgot-password')->name('password.request');
-    Route::inertia('/reset-password/{token}', 'auth/reset-password')->name('password.reset');
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('password.email');
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('password.update');
 });
 
 Route::post('/logout', LogoutController::class)->middleware('auth')->name('logout');

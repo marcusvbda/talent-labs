@@ -184,6 +184,12 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'email' => [
+            'invite_mismatch' => 'This invitation is bound to a different email address.',
+        ],
+        'invite' => [
+            'unusable' => 'This invitation link is no longer valid.',
+        ],
     ],
 
     /*

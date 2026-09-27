@@ -3,10 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\PlanKey;
+use App\Enums\Region;
 use App\Enums\UserStatus;
+use App\Notifications\Client\ResetPassword;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Collection;
@@ -28,6 +32,9 @@ use Illuminate\Support\Carbon;
  * @property UserStatus $status
  * @property string $locale
  * @property string|null $timezone
+ * @property string|null $country
+ * @property Region $region
+ * @property PlanKey $plan_key
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read JobPreference|null $jobPreference
@@ -35,9 +42,9 @@ use Illuminate\Support\Carbon;
  * @property-read ConnectedIntegration|null $gmailIntegration
  * @property-read Collection<int, Application> $applications
  */
-#[Fillable(['name', 'email', 'password', 'is_admin', 'status', 'locale', 'timezone'])]
+#[Fillable(['name', 'email', 'password', 'is_admin', 'status', 'locale', 'timezone', 'country', 'region', 'plan_key'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasLocalePreference
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -54,6 +61,8 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'status' => UserStatus::class,
+            'region' => Region::class,
+            'plan_key' => PlanKey::class,
         ];
     }
 
@@ -96,6 +105,21 @@ class User extends Authenticatable implements FilamentUser
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
+    }
+
+    public function preferredLocale(): ?string
+    {
+        return $this->locale;
+    }
+
+    /**
+     * Untyped to stay compatible with the CanResetPassword contract signature.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new ResetPassword($token));
     }
 
     public function isActive(): bool

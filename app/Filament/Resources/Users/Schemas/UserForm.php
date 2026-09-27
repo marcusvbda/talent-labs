@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Enums\PlanKey;
 use App\Enums\UserStatus;
 use App\Models\User;
+use App\Support\RegionResolver;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class UserForm
@@ -39,6 +42,48 @@ class UserForm
                 Select::make('status')
                     ->options(UserStatus::class)
                     ->default(UserStatus::Active)
+                    ->required(),
+
+                Select::make('plan_key')
+                    ->options(PlanKey::class)
+                    ->default(PlanKey::Free)
+                    ->required(),
+
+                Select::make('country')
+                    ->options(function (): array {
+                        /** @var array<string, array{currency: string, countries: list<string>}> $regions */
+                        $regions = config('talent.regions');
+
+                        $countries = collect($regions)
+                            ->flatMap(fn (array $region): array => $region['countries'])
+                            ->unique()
+                            ->sort()
+                            ->values();
+
+                        return $countries->combine($countries)->all();
+                    })
+                    ->searchable()
+                    ->placeholder('Select a country')
+                    ->live()
+                    ->afterStateUpdated(function (Set $set, ?string $state): void {
+                        $set('region', RegionResolver::fromCountry($state)->getLabel());
+                    }),
+
+                TextInput::make('region')
+                    ->label('Region (derived)')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->formatStateUsing(fn (?string $state, ?User $record): ?string => filled($state)
+                        ? $state
+                        : $record?->region?->getLabel()),
+
+                Select::make('locale')
+                    ->options(function (): array {
+                        /** @var list<string> $locales */
+                        $locales = config('talent.locales');
+
+                        return collect($locales)->mapWithKeys(fn (string $locale): array => [$locale => strtoupper($locale)])->all();
+                    })
                     ->required(),
             ]);
     }

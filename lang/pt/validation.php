@@ -178,6 +178,12 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'email' => [
+            'invite_mismatch' => 'Este convite está vinculado a outro endereço de e-mail.',
+        ],
+        'invite' => [
+            'unusable' => 'Este link de convite não é mais válido.',
+        ],
     ],
 
     /*

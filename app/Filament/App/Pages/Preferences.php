@@ -6,11 +6,12 @@ use App\Actions\DisconnectConnectedIntegration;
 use App\Enums\ConnectedIntegrationStatus;
 use App\Models\ConnectedIntegration;
 use App\Models\JobPreference;
-use App\Outreach\OutreachLimits;
+use App\Models\User;
 use App\Outreach\Queries\MatchingJobPostings;
 use App\Outreach\Support\ApplicationTemplateRenderer;
 use App\Outreach\Support\ClientSafeText;
 use App\Outreach\Support\StackNormalizer;
+use App\Plans\PlanCatalog;
 use BackedEnum;
 use Closure;
 use Filament\Actions\Action;
@@ -74,6 +75,14 @@ class Preferences extends Page
             ->where('user_id', auth()->id())
             ->where('plugin_key', 'gmail')
             ->first();
+    }
+
+    private function dailyLimit(): int
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        return app(PlanCatalog::class)->for($user)->dailyLimit;
     }
 
     private function gmailStatus(): ?ConnectedIntegrationStatus
@@ -158,7 +167,7 @@ class Preferences extends Page
                             $this->reconnectGmailAction(),
                             $this->disconnectGmailAction(),
                         ]),
-                        Text::make('Emails are sent from your own Gmail account, up to '.OutreachLimits::DAILY_SEND_LIMIT.' per day.')->color('gray'),
+                        Text::make(fn (): string => 'Emails are sent from your own Gmail account, up to '.$this->dailyLimit().' per day.')->color('gray'),
                         Text::make('Applications leave from your address, so spam reports affect your own Gmail account.')->color('gray'),
                     ]),
                 Section::make('CV')

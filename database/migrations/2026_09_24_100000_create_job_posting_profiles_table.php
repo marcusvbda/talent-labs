@@ -22,6 +22,7 @@ return new class extends Migration
             $table->jsonb('stack')->default(new Expression("'[]'"));
             $table->jsonb('locations')->default(new Expression("'[]'"));
             $table->boolean('is_remote')->nullable();
+            $table->string('language', 8)->nullable()->index();
             $table->string('summary', 300)->nullable();
             $table->timestamp('extracted_at')->nullable();
             $table->timestamps();

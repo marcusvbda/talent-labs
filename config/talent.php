@@ -45,4 +45,28 @@ return [
             'devops', 'qa', 'support', 'customer_service', 'product',
         ],
     ],
+
+    'plans' => [
+        'default' => env('PLAN_DEFAULT', 'free'),
+        'catalog' => [
+            'free' => ['name' => 'Free', 'mode' => 'auto', 'daily_limit' => (int) env('PLAN_FREE_DAILY_LIMIT', 10)],
+            'starter' => ['name' => 'Starter', 'mode' => 'select', 'daily_limit' => (int) env('PLAN_STARTER_DAILY_LIMIT', 50)],
+            'pro' => ['name' => 'Pro', 'mode' => 'review', 'daily_limit' => (int) env('PLAN_PRO_DAILY_LIMIT', 150)],
+        ],
+    ],
+
+    'regions' => [
+        'br' => ['currency' => 'BRL', 'countries' => ['BR']],
+        // EU-27 + IS, LI, NO, CH, GB.
+        'eu' => ['currency' => 'EUR', 'countries' => [
+            'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV',
+            'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'IS', 'LI', 'NO', 'CH', 'GB',
+        ]],
+        // Default for every country not listed above.
+        'row' => ['currency' => 'USD', 'countries' => []],
+    ],
+
+    'invitations' => [
+        'default_expiry_days' => (int) env('INVITE_EXPIRY_DAYS', 14),
+    ],
 ];

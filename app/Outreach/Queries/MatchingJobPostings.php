@@ -23,7 +23,9 @@ final class MatchingJobPostings
      * applied to that company yet. Only postings whose role family is one of the target
      * families (talent.collection.target_role_families) are in the pool, so a company verified
      * through a dev posting never surfaces its non-target (e.g. sales) postings. Each filled preference narrows the pool; with no
-     * filters at all the whole pool is returned, unfiltered.
+     * filters at all the whole pool is returned, unfiltered. Postings with no language, or a
+     * language other than en/pt, are never in a client's pool because no application profile
+     * can match them.
      *
      * @return Builder<JobPosting>
      */
@@ -35,6 +37,7 @@ final class MatchingJobPostings
             ->join('companies', 'companies.id', '=', 'job_postings.company_id')
             ->where('companies.outreach_status', OutreachStatus::Verified->value)
             ->where('job_posting_profiles.status', ProfileStatus::Done->value)
+            ->whereIn('job_posting_profiles.language', ['en', 'pt'])
             ->whereIn('job_postings.role_family', config('talent.collection.target_role_families'))
             ->whereExists(function ($contacts): void {
                 $contacts->select(DB::raw(1))

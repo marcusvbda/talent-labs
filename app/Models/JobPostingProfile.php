@@ -18,13 +18,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property list<string> $stack
  * @property list<string> $locations
  * @property bool|null $is_remote
+ * @property string|null $language
  * @property string|null $summary
  * @property CarbonImmutable|null $extracted_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read JobPosting $jobPosting
  */
-#[Fillable(['job_posting_id', 'status', 'schema_version', 'normalized_title', 'seniority', 'stack', 'locations', 'is_remote', 'summary', 'extracted_at'])]
+#[Fillable(['job_posting_id', 'status', 'schema_version', 'normalized_title', 'seniority', 'stack', 'locations', 'is_remote', 'language', 'summary', 'extracted_at'])]
 class JobPostingProfile extends Model
 {
     /**

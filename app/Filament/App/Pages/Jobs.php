@@ -8,10 +8,10 @@ use App\Models\User;
 use App\Outreach\Actions\CanSendApplications;
 use App\Outreach\Actions\QueueApplication;
 use App\Outreach\Data\SendEligibility;
-use App\Outreach\OutreachLimits;
 use App\Outreach\Queries\MatchingJobPostings;
 use App\Outreach\Support\ApplicationTemplateRenderer;
 use App\Outreach\Support\ClientSafeText;
+use App\Plans\PlanCatalog;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -60,9 +60,17 @@ class Jobs extends Page implements HasTable
         return $this->eligibility ??= app(CanSendApplications::class)->check($user);
     }
 
-    private static function overLimitMessage(int $companies, int $remaining): string
+    protected function dailyLimit(): int
     {
-        return "You selected {$companies} companies but can send only {$remaining} more today (daily limit ".OutreachLimits::DAILY_SEND_LIMIT.'). Deselect some jobs to continue.';
+        /** @var User $user */
+        $user = auth()->user();
+
+        return app(PlanCatalog::class)->for($user)->dailyLimit;
+    }
+
+    private static function overLimitMessage(int $companies, int $remaining, int $limit): string
+    {
+        return "You selected {$companies} companies but can send only {$remaining} more today (daily limit {$limit}). Deselect some jobs to continue.";
     }
 
     /**
@@ -196,8 +204,8 @@ class Jobs extends Page implements HasTable
                     'attachment' => $user->jobPreference?->cv_original_name ?: 'CV',
                     'subject' => $subject,
                     'remaining' => $remaining,
-                    'limit' => OutreachLimits::DAILY_SEND_LIMIT,
-                    'overLimit' => $postings->count() > $remaining ? self::overLimitMessage($postings->count(), $remaining) : null,
+                    'limit' => $this->dailyLimit(),
+                    'overLimit' => $postings->count() > $remaining ? self::overLimitMessage($postings->count(), $remaining, $this->dailyLimit()) : null,
                 ]);
             })
             ->action(function (Collection $records): void {
@@ -217,7 +225,7 @@ class Jobs extends Page implements HasTable
 
                 if ($postings->count() > $eligibility->remaining) {
                     Notification::make()
-                        ->title(self::overLimitMessage($postings->count(), $eligibility->remaining))
+                        ->title(self::overLimitMessage($postings->count(), $eligibility->remaining, $this->dailyLimit()))
                         ->danger()
                         ->send();
 

@@ -13,16 +13,16 @@ few per session. Phase status is updated in place in this file.
 
 | Phase | Title                                                          | Role             | Depends on | Size | Status  |
 | ----- | -------------------------------------------------------------- | ---------------- | ---------- | ---- | ------- |
-| 1     | Plans + regions: dependency, config, enums, catalog            | laravel-backend  | none       | M    | PENDING |
-| 2     | User columns, seeder, `PlanCatalog` replaces the constant      | laravel-backend  | 1          | M    | PENDING |
-| 3     | Job language detection + pool rule + `applications.language`   | laravel-backend  | none       | M    | PENDING |
-| 4     | `invitations` table, model, token helper                       | laravel-backend  | 1          | S    | PENDING |
-| 5     | Admin: `InvitationResource` + `UserResource` fields            | filament-admin   | 2, 4       | M    | PENDING |
-| 6     | Register + Closed backend (single-use invite)                  | laravel-backend  | 2, 4       | M    | PENDING |
-| 7     | Password reset backend + branded localized mail                | laravel-backend  | 1          | M    | PENDING |
-| 8     | Auth pages submit for real (register, forgot, reset)           | inertia-frontend | 6, 7       | M    | PENDING |
-| 9     | `/internal` group + `AccountStatus` + onboarding basics        | laravel-backend  | 2, 3       | M    | PENDING |
-| 10    | Jobs endpoints (list + detail)                                 | laravel-backend  | 3, 9       | M    | PENDING |
+| 1     | Plans + regions: dependency, config, enums, catalog            | laravel-backend  | none       | M    | DONE |
+| 2     | User columns, seeder, `PlanCatalog` replaces the constant      | laravel-backend  | 1          | M    | DONE |
+| 3     | Job language detection + pool rule + `applications.language`   | laravel-backend  | none       | M    | DONE |
+| 4     | `invitations` table, model, token helper                       | laravel-backend  | 1          | S    | DONE |
+| 5     | Admin: `InvitationResource` + `UserResource` fields            | filament-admin   | 2, 4       | M    | DONE |
+| 6     | Register + Closed backend (single-use invite)                  | laravel-backend  | 2, 4       | M    | DONE |
+| 7     | Password reset backend + branded localized mail                | laravel-backend  | 1          | M    | DONE |
+| 8     | Auth pages submit for real (register, forgot, reset)           | inertia-frontend | 6, 7       | M    | DONE |
+| 9     | `/internal` group + `AccountStatus` + onboarding basics        | laravel-backend  | 2, 3       | M    | DONE |
+| 10    | Jobs endpoints (list + detail)                                 | laravel-backend  | 3, 9       | M    | DONE |
 | 11    | Applications endpoints + client-safe errors and body           | laravel-backend  | 9          | M    | PENDING |
 | 12    | Dashboard + chart endpoints                                    | laravel-backend  | 10, 11     | M    | PENDING |
 | 13    | Notifications + account read/update/password                   | laravel-backend  | 9          | M    | PENDING |
@@ -37,44 +37,44 @@ few per session. Phase status is updated in place in this file.
 
 ## Audit — 2026-09-27
 
-| Check | Result |
-| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Framework versions | Laravel 13.33.0, PHP 8.4.3, Filament ^5.0, Inertia ^3.0, React 19, Tailwind 4, Reverb ^1.0, Wayfinder ^0.1.14. PHPStan level 7. |
-| `resend/resend-php` | **Not installed** (`vendor/resend` absent). Needed by the `resend` transport. |
-| Laravel `resend` mail transport | Present — `MailManager` line 323 builds `Resend::client($config['key'] ?? config('services.resend.key'))`; `config/mail.php` has the `resend` mailer. |
-| `.env` / `.env.example` mail keys | `MAIL_MAILER`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `RESEND_API_KEY` already present in both (commit `f0697a3`). `config/services.php` already maps `resend.key`. |
-| `.env` keys still missing | `PLAN_DEFAULT`, `PLAN_FREE_DAILY_LIMIT`, `PLAN_STARTER_DAILY_LIMIT`, `PLAN_PRO_DAILY_LIMIT`, `INVITE_EXPIRY_DAYS` (append only). |
-| `migrate:status` | 16 migrations, all Ran, batch 1. No `alter` migrations exist — the create-migration convention holds. |
-| `users` table | Has `locale`, `timezone`. **Missing** `country`, `region`, `plan_key`. |
-| `job_posting_profiles` | **Missing** `language`. Has `status`, `schema_version`, `normalized_title`, `seniority`, `stack` (jsonb + gin), `locations`, `is_remote`, `summary(300)`. |
-| `applications` | **Missing** `language`. Has `recipient_email`, `subject`, `body`, `origin`, `status`, `attempts`, `last_error`, `queued_at`, `scheduled_for`, `sent_at`; unique `(user_id, company_id)`. |
-| `invitations` table | **Does not exist.** |
-| `notifications` table | Exists (uuid id, type, morphs, json data, read_at, timestamps) — reuse as the spec says. |
-| `config/talent.php` | Has `brand`, `client.use_fixtures`, `locales`, `seed`, `outreach`, `contacts`, `collection`. **Missing** `plans`, `regions`, `invitations`. |
-| `App\Enums` | 14 enums; **no** `PlanKey`, **no** `Region`. `ApplicationStatus::countedTowardsQuota()` exists. |
-| `App\Plans\*`, `App\Support\RegionResolver` | **Do not exist.** |
-| `OutreachLimits::DAILY_SEND_LIMIT` | Exists (25). Referenced in 4 places: `CanSendApplications` (×2), `Filament/App/Pages/Jobs.php` (×2), `Filament/App/Pages/Preferences.php` (×1). |
-| `App\Http\Resources`, `App\Http\Controllers\Client`, `App\Events`, `App\Notifications` | **None of these directories exist.** Everything in B.6/B.8 is new code. |
-| `routes/web.php` | Client pages are prop-less `Route::inertia(...)`. No `/internal` group. Guest routes exist as `Route::inertia` placeholders for register/closed/forgot/reset. |
-| `routes/channels.php` + `/broadcasting/auth` | `App.Models.User.{id}` private channel exists; `withRouting(channels: ...)` is set in `bootstrap/app.php`, so `/broadcasting/auth` is registered with `web`+`auth`. |
-| Realtime frontend | `useUserChannel` already picks Echo vs dev emitter by `VITE_USE_FIXTURES`; `useRealtimeCache` already maps all five events including `jobs.collected`. **Missing:** subscription to the public `jobs` channel. `laravel-echo` + `pusher-js` + `@laravel/echo-react` installed. |
-| Frontend data layer | `endpoints.ts` holds typed placeholders for every `/internal/*` path; every hook already has a `real` function. `source.ts` is `fromSource({real, fixture})` with no per-hook gate. `define-query.ts` provides `initialDataFrom`. |
-| `useApplicationCounts` | Hits `GET /internal/applications/counts` (`{all, in_progress, sent, attention}`) — **not listed in spec B.6**. See **D1**. |
-| `useInviteCheck` | Exists, `real` rejects with 501. Spec B.5 replaces it with the `invite` prop on `GET /register`, so the hook becomes dead code. |
-| Gmail connect links | `gmail-card.tsx` and `step-gmail.tsx` pass `?redirect=<url>`; B.9 requires `?return=account                                                                                                                                                                                                                                       | onboarding`. `ConnectedIntegrationOAuthController::returnUrl()`hardcodes the Filament`/app` Preferences URL. |
-| `ConnectedIntegrationTokenManager::markReauthorizationRequired` | Already sends a Filament database notification pointing at `/app` Preferences. B.8 adds a `App\Notifications\Client\GmailReauthorizationRequired` on top. |
-| `MatchingJobPostings::forUser` | Single source of truth for the pool (verified company, profile Done, target role family, smtp-verified priority contact, no prior application, preference filters). **Missing** the language rule. |
-| Known `last_error` values | `Client account is not active.`, `Company is no longer verified for outreach.`, `Recipient is not a verified contact of this company.`, `Gmail is not connected.`, `CV file is missing.`, `Worker stopped mid-send.`, `Sending failed.`, and `class_basename($e).': '.Str::limit($e->getMessage(), 180)` for anything unexpected. |
-| `ClientSafeText::redact` | Exists (emails → `[email]`, links/bare domains → `[link]`). No `{{ job_url }}` token replacement yet. |
-| i18n | `lang/en.json` and `lang/pt.json` both 802 keys, already covering `auth.*`, `account.*`, `notifications.*` from spec 2. `lang/en/{auth,passwords,validation,pagination}.php` exist; **`lang/pt` only has `validation.php`**. |
-| Tests | Only `tests/{Unit,Feature}/ExampleTest.php` + `Pest.php`. Nothing to regress; no new tests are written (CLAUDE.md). |
-| Verification commands that exist | `composer lint:check`, `composer types:check`, `composer test`, `vendor/bin/pint --dirty --format agent`, `yarn run check`, `yarn run types:check`, `php artisan test`. No `yarn lint`, no `yarn test`. |
-| **`yarn check` is a trap** | Yarn Classic shadows it with its own integrity check ("success Folder in sync") and never runs `vp check`. The spec's Verification section says `yarn check`; the command that actually runs the gate is **`yarn run check`** (and `yarn run types:check`). Every phase in this plan uses the `yarn run …` form. |
-| Frontend formatting baseline | `yarn run check` already fails on four files before this plan starts — `resources/js/components/patterns/{page-header,top-bar}.tsx`, `resources/js/components/ui/menu.tsx`, `resources/js/data/fixtures/state.ts`. Pre-existing, unrelated to this spec, and **out of scope**: no phase fixes them. Phase 21 must report them separately so they are not read as a regression. `vp check --fix <paths>` fixes a single path if the owner wants them cleaned. |
-| Uncommitted owner work (2026-09-27) | Besides the deleted `client-app-screens/plan.md`, the working tree has the owner's own in-progress edits to `lang/{en,pt}.json`, `resources/js/components/patterns/top-bar.tsx`, `resources/js/data/fixtures/dev-state.ts` and `resources/js/features/dashboard/live-sending-card.tsx`. Nothing in this plan was derived from them; phases touching `lang/*.json` (7, 8, 11, 16) must merge rather than overwrite. |
-| `vp` formatter scope | `fmt` in `vite.config.ts` covers `docs/**/*.md` (print width 80, tab width 4) and ignores `resources/views/mail/*` — relevant to Phase 7's mail Blade view, which the formatter will leave alone. |
-| Filament realtime convention | `->socket(channel: 'x', event: 'XUpdated')` used in 9 tables; `RealtimeEvent::dispatch` from model `booted()`; `BroadcastsRealtime` trait wraps it in try/catch. No `->poll()` anywhere. |
-| Git working tree | `docs/features/client-app-screens/plan.md` is deleted but not committed. Git stays read-only — nothing in this plan touches it. |
+| Check                                                                                  | Result                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Framework versions                                                                     | Laravel 13.33.0, PHP 8.4.3, Filament ^5.0, Inertia ^3.0, React 19, Tailwind 4, Reverb ^1.0, Wayfinder ^0.1.14. PHPStan level 7.                                                                                                                                                                                                                                                                                                                              |
+| `resend/resend-php`                                                                    | **Not installed** (`vendor/resend` absent). Needed by the `resend` transport.                                                                                                                                                                                                                                                                                                                                                                                |
+| Laravel `resend` mail transport                                                        | Present — `MailManager` line 323 builds `Resend::client($config['key'] ?? config('services.resend.key'))`; `config/mail.php` has the `resend` mailer.                                                                                                                                                                                                                                                                                                        |
+| `.env` / `.env.example` mail keys                                                      | `MAIL_MAILER`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `RESEND_API_KEY` already present in both (commit `f0697a3`). `config/services.php` already maps `resend.key`.                                                                                                                                                                                                                                                                                          |
+| `.env` keys still missing                                                              | `PLAN_DEFAULT`, `PLAN_FREE_DAILY_LIMIT`, `PLAN_STARTER_DAILY_LIMIT`, `PLAN_PRO_DAILY_LIMIT`, `INVITE_EXPIRY_DAYS` (append only).                                                                                                                                                                                                                                                                                                                             |
+| `migrate:status`                                                                       | 16 migrations, all Ran, batch 1. No `alter` migrations exist — the create-migration convention holds.                                                                                                                                                                                                                                                                                                                                                        |
+| `users` table                                                                          | Has `locale`, `timezone`. **Missing** `country`, `region`, `plan_key`.                                                                                                                                                                                                                                                                                                                                                                                       |
+| `job_posting_profiles`                                                                 | **Missing** `language`. Has `status`, `schema_version`, `normalized_title`, `seniority`, `stack` (jsonb + gin), `locations`, `is_remote`, `summary(300)`.                                                                                                                                                                                                                                                                                                    |
+| `applications`                                                                         | **Missing** `language`. Has `recipient_email`, `subject`, `body`, `origin`, `status`, `attempts`, `last_error`, `queued_at`, `scheduled_for`, `sent_at`; unique `(user_id, company_id)`.                                                                                                                                                                                                                                                                     |
+| `invitations` table                                                                    | **Does not exist.**                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `notifications` table                                                                  | Exists (uuid id, type, morphs, json data, read_at, timestamps) — reuse as the spec says.                                                                                                                                                                                                                                                                                                                                                                     |
+| `config/talent.php`                                                                    | Has `brand`, `client.use_fixtures`, `locales`, `seed`, `outreach`, `contacts`, `collection`. **Missing** `plans`, `regions`, `invitations`.                                                                                                                                                                                                                                                                                                                  |
+| `App\Enums`                                                                            | 14 enums; **no** `PlanKey`, **no** `Region`. `ApplicationStatus::countedTowardsQuota()` exists.                                                                                                                                                                                                                                                                                                                                                              |
+| `App\Plans\*`, `App\Support\RegionResolver`                                            | **Do not exist.**                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `OutreachLimits::DAILY_SEND_LIMIT`                                                     | Exists (25). Referenced in 4 places: `CanSendApplications` (×2), `Filament/App/Pages/Jobs.php` (×2), `Filament/App/Pages/Preferences.php` (×1).                                                                                                                                                                                                                                                                                                              |
+| `App\Http\Resources`, `App\Http\Controllers\Client`, `App\Events`, `App\Notifications` | **None of these directories exist.** Everything in B.6/B.8 is new code.                                                                                                                                                                                                                                                                                                                                                                                      |
+| `routes/web.php`                                                                       | Client pages are prop-less `Route::inertia(...)`. No `/internal` group. Guest routes exist as `Route::inertia` placeholders for register/closed/forgot/reset.                                                                                                                                                                                                                                                                                                |
+| `routes/channels.php` + `/broadcasting/auth`                                           | `App.Models.User.{id}` private channel exists; `withRouting(channels: ...)` is set in `bootstrap/app.php`, so `/broadcasting/auth` is registered with `web`+`auth`.                                                                                                                                                                                                                                                                                          |
+| Realtime frontend                                                                      | `useUserChannel` already picks Echo vs dev emitter by `VITE_USE_FIXTURES`; `useRealtimeCache` already maps all five events including `jobs.collected`. **Missing:** subscription to the public `jobs` channel. `laravel-echo` + `pusher-js` + `@laravel/echo-react` installed.                                                                                                                                                                               |
+| Frontend data layer                                                                    | `endpoints.ts` holds typed placeholders for every `/internal/*` path; every hook already has a `real` function. `source.ts` is `fromSource({real, fixture})` with no per-hook gate. `define-query.ts` provides `initialDataFrom`.                                                                                                                                                                                                                            |
+| `useApplicationCounts`                                                                 | Hits `GET /internal/applications/counts` (`{all, in_progress, sent, attention}`) — **not listed in spec B.6**. See **D1**.                                                                                                                                                                                                                                                                                                                                   |
+| `useInviteCheck`                                                                       | Exists, `real` rejects with 501. Spec B.5 replaces it with the `invite` prop on `GET /register`, so the hook becomes dead code.                                                                                                                                                                                                                                                                                                                              |
+| Gmail connect links                                                                    | `gmail-card.tsx` and `step-gmail.tsx` pass `?redirect=<url>`; B.9 requires `?return=account                                                                                                                                                                                                                                                                                                                                                                  | onboarding`. `ConnectedIntegrationOAuthController::returnUrl()`hardcodes the Filament`/app` Preferences URL. |
+| `ConnectedIntegrationTokenManager::markReauthorizationRequired`                        | Already sends a Filament database notification pointing at `/app` Preferences. B.8 adds a `App\Notifications\Client\GmailReauthorizationRequired` on top.                                                                                                                                                                                                                                                                                                    |
+| `MatchingJobPostings::forUser`                                                         | Single source of truth for the pool (verified company, profile Done, target role family, smtp-verified priority contact, no prior application, preference filters). **Missing** the language rule.                                                                                                                                                                                                                                                           |
+| Known `last_error` values                                                              | `Client account is not active.`, `Company is no longer verified for outreach.`, `Recipient is not a verified contact of this company.`, `Gmail is not connected.`, `CV file is missing.`, `Worker stopped mid-send.`, `Sending failed.`, and `class_basename($e).': '.Str::limit($e->getMessage(), 180)` for anything unexpected.                                                                                                                            |
+| `ClientSafeText::redact`                                                               | Exists (emails → `[email]`, links/bare domains → `[link]`). No `{{ job_url }}` token replacement yet.                                                                                                                                                                                                                                                                                                                                                        |
+| i18n                                                                                   | `lang/en.json` and `lang/pt.json` both 802 keys, already covering `auth.*`, `account.*`, `notifications.*` from spec 2. `lang/en/{auth,passwords,validation,pagination}.php` exist; **`lang/pt` only has `validation.php`**.                                                                                                                                                                                                                                 |
+| Tests                                                                                  | Only `tests/{Unit,Feature}/ExampleTest.php` + `Pest.php`. Nothing to regress; no new tests are written (CLAUDE.md).                                                                                                                                                                                                                                                                                                                                          |
+| Verification commands that exist                                                       | `composer lint:check`, `composer types:check`, `composer test`, `vendor/bin/pint --dirty --format agent`, `yarn run check`, `yarn run types:check`, `php artisan test`. No `yarn lint`, no `yarn test`.                                                                                                                                                                                                                                                      |
+| **`yarn check` is a trap**                                                             | Yarn Classic shadows it with its own integrity check ("success Folder in sync") and never runs `vp check`. The spec's Verification section says `yarn check`; the command that actually runs the gate is **`yarn run check`** (and `yarn run types:check`). Every phase in this plan uses the `yarn run …` form.                                                                                                                                             |
+| Frontend formatting baseline                                                           | `yarn run check` already fails on four files before this plan starts — `resources/js/components/patterns/{page-header,top-bar}.tsx`, `resources/js/components/ui/menu.tsx`, `resources/js/data/fixtures/state.ts`. Pre-existing, unrelated to this spec, and **out of scope**: no phase fixes them. Phase 21 must report them separately so they are not read as a regression. `vp check --fix <paths>` fixes a single path if the owner wants them cleaned. |
+| Uncommitted owner work (2026-09-27)                                                    | Besides the deleted `client-app-screens/plan.md`, the working tree has the owner's own in-progress edits to `lang/{en,pt}.json`, `resources/js/components/patterns/top-bar.tsx`, `resources/js/data/fixtures/dev-state.ts` and `resources/js/features/dashboard/live-sending-card.tsx`. Nothing in this plan was derived from them; phases touching `lang/*.json` (7, 8, 11, 16) must merge rather than overwrite.                                           |
+| `vp` formatter scope                                                                   | `fmt` in `vite.config.ts` covers `docs/**/*.md` (print width 80, tab width 4) and ignores `resources/views/mail/*` — relevant to Phase 7's mail Blade view, which the formatter will leave alone.                                                                                                                                                                                                                                                            |
+| Filament realtime convention                                                           | `->socket(channel: 'x', event: 'XUpdated')` used in 9 tables; `RealtimeEvent::dispatch` from model `booted()`; `BroadcastsRealtime` trait wraps it in try/catch. No `->poll()` anywhere.                                                                                                                                                                                                                                                                     |
+| Git working tree                                                                       | `docs/features/client-app-screens/plan.md` is deleted but not committed. Git stays read-only — nothing in this plan touches it.                                                                                                                                                                                                                                                                                                                              |
 
 ## Owner decisions
 
@@ -157,7 +157,18 @@ so in the phase message if you want **B**.
 
 ### Phase 1 — Plans and regions become data
 
-Status: PENDING
+Status: DONE
+Evidence: Added `PlanKey`/`Region` enums, `App\Plans\Plan`/`PlanCatalog`
+(singleton), `App\Support\RegionResolver`, `config/talent.php` `plans` /
+`regions` / `invitations` blocks, `.env.example` keys (appended), and
+`composer require resend/resend-php`. `vendor/bin/pint --dirty --format agent`,
+`composer lint:check`, `composer types:check` all pass. Tinker-verified:
+`talent.plans.catalog.starter.daily_limit` = 50, `talent.invitations.default_expiry_days`
+= 14, `RegionResolver::fromCountry('pt')` = Eu, `('BR')` = Br, `(null)` = Row.
+`code-reviewer`: APPROVED, no blocking findings (only noise: composer
+post-update hook touched `boost.json`/`.claude/skills/*`, and an unrelated
+Pint whitespace fix in `ApplicationTemplateRenderer.php` needed for
+`lint:check` to pass).
 Role: laravel-backend · Depends on: none · Covers: AC07 · Size: M
 Spec: Part 0.5, B.2, B.4
 
@@ -247,7 +258,23 @@ prices and `GET /internal/plans` (out of scope).
 
 ### Phase 2 — User plan, country and region; the catalog drives the daily limit
 
-Status: PENDING
+Status: DONE
+Evidence: users create migration gains `country`/`region`/`plan_key`;
+`User` fillable/casts/phpdoc updated; `OutreachLimits::DAILY_SEND_LIMIT`
+removed; `CanSendApplications` now injects `PlanCatalog`; `Jobs.php`/
+`Preferences.php` resolve the limit from the plan; `UserSeeder` sets
+country/region (via `RegionResolver`)/locale/timezone/plan_key per user.
+`grep -rn "DAILY_SEND_LIMIT"` returns nothing. `pint`/`lint:check` pass,
+`types:check` passes with `--memory-limit=1G` (128M default crashes
+PHPStan on this machine, pre-existing/environmental, not a code issue).
+Seeder idempotency verified on a scratch SQLite DB (live Postgres `users`
+table still needs the owner's `migrate:fresh --seed` for the new columns
+to exist — reported, not worked around). `code-reviewer`: APPROVED (an
+earlier CHANGES_REQUIRED verdict was a false positive caused by reviewing
+Phase 7's concurrent, uncommitted edits to the same `User.php` file as if
+they were Phase 2's; re-reviewed together with Phase 7 and confirmed
+clean). Non-blocking: pre-existing `email_verified_at` not in `User`'s
+Fillable (silently dropped by the seeder), unrelated to this phase.
 Role: laravel-backend · Depends on: 1 · Covers: AC07 · Size: M
 Spec: B.3 (users), B.4 (replace constant), B.10
 
@@ -315,7 +342,19 @@ Spec: B.3 (users), B.4 (replace constant), B.10
 
 ### Phase 3 — Job language detection and the language pool rule
 
-Status: PENDING
+Status: DONE
+Evidence: `job_posting_profiles`/`applications` migrations gain `language`;
+models updated (fillable+phpdoc); `ExtractJobPostingProfile` bumped to
+`CACHE_SCHEMA_VERSION = 'posting-profile-v2'`, added `LANGUAGES` const,
+schema field, exact instructions sentence; `ExtractJobPostingProfileJob::persist()`
+writes language with `other` fallback; `ExtractPostingProfiles` gained
+`--missing-language`; `MatchingJobPostings::forUser()` filters the pool to
+`en`/`pt`. `pint`/`lint:check` pass; `types:check` passes with
+`--memory-limit=1G`. `CACHE_SCHEMA_VERSION` and generated SQL verified via
+tinker; live command run blocked by missing DB columns pending the
+owner's `migrate:fresh --seed` (expected per this repo's create-migration
+convention — reported, not worked around). `code-reviewer`: APPROVED, no
+findings, including the instructions sentence verified byte-for-byte.
 Role: laravel-backend · Depends on: none · Covers: AC08 · Size: M
 Spec: B.3 (`job_posting_profiles`, `applications`), B.7
 
@@ -333,12 +372,8 @@ postings whose language is unknown or not `en`/`pt` never reach a client.
   `$table->string('language', 8)->nullable();` after `origin`.
 - **`App\Models\Application`**: add `language` to `#[Fillable]` and
   `@property string|null $language` to the phpdoc.
-- **`App\Ai\Agents\ExtractJobPostingProfile`**:
-    - `public const CACHE_SCHEMA_VERSION = 'posting-profile-v2';`
-    - `public const LANGUAGES = ['en', 'pt', 'other'];`
-    - `schema()` gains
-      `'language' => $schema->string()->enum(self::LANGUAGES)->required(),`
-    - `instructions()` gains one sentence, verbatim: `language: the language the
+- **`App\Ai\Agents\ExtractJobPostingProfile`**: - `public const CACHE_SCHEMA_VERSION = 'posting-profile-v2';` - `public const LANGUAGES = ['en', 'pt', 'other'];` - `schema()` gains
+  `'language' => $schema->string()->enum(self::LANGUAGES)->required(),` - `instructions()` gains one sentence, verbatim: `language: the language the
 posting is written in — "en" for English, "pt" for Portuguese, "other" for
 anything else (including Spanish).`
 - **`App\Ai\Jobs\ExtractJobPostingProfileJob::persist()`**: write
@@ -391,7 +426,15 @@ language rule (spec 5), `applications.language` being filled on send
 
 ### Phase 4 — `invitations`: table, model, token helper
 
-Status: PENDING
+Status: DONE
+Evidence: Added `2026_09_27_100000_create_invitations_table.php`,
+`App\Models\Invitation` (fillable, casts, relations, `isUsed`/`isRevoked`/
+`isExpired`/`isUsable`/`planKeyOrDefault`, `#[Scope] usable()`),
+`App\Invitations\InvitationTokens` (`generate`/`hash`/`find`/`link`).
+`php artisan migrate` created the table. `pint`/`composer lint:check` pass.
+Tinker-verified hash length, `find()` null-safety, `generate()` length,
+`planKeyOrDefault()` fallback, `usable()` scope SQL, unique index on
+`token_hash`. `code-reviewer`: APPROVED, no findings.
 Role: laravel-backend · Depends on: 1 · Covers: AC01, AC03 · Size: S
 Spec: B.3 (`invitations`), B.5
 
@@ -464,7 +507,21 @@ status, plus the helper that mints and looks up tokens.
 
 ### Phase 5 — Admin: `InvitationResource` and the new `UserResource` fields
 
-Status: PENDING
+Status: DONE
+Evidence: Added `InvitationResource` (list-only, `Access` nav group),
+`InvitationsTable` (note/email/plan_key/status/creator/created_at columns,
+plan_key + status filters, Revoke record action, `->socket('invitations',
+'InvitationsUpdated')`), `ListInvitations` (create header action minting
+a token via `InvitationTokens`, persisting only the hash, showing the raw
+link once through a dedicated one-time modal action — copyable, correct
+label/helper text). `Invitation` model gained `BroadcastsRealtime` +
+`booted()` mirroring `Application`. `UserForm` gained plan_key/country
+(derives region live)/region(disabled)/locale fields; `UsersTable` gained
+a plan_key badge column + filter, existing logic untouched. `pint`/
+`lint:check` pass; `types:check` passes with `--memory-limit=1G`. No
+`->poll()` anywhere. `code-reviewer`: APPROVED, no blocking findings (two
+informational-only notes: no duplicate-invitation-email validation, plain
+string `plan_key` column — both fine per contract).
 Role: filament-admin · Depends on: 2, 4 · Covers: AC01 · Size: M
 Spec: B.5 (admin bullet)
 
@@ -557,7 +614,24 @@ email is sent — the admin shares the link manually).
 
 ### Phase 6 — Register and Closed, backed by single-use invitations
 
-Status: PENDING
+Status: DONE
+Evidence: Added `RegisterRequest` (name/email/password/invite/timezone
+rules, `after()` check for unusable invite / email mismatch, custom
+`failedValidation()` sending an unusable invite straight to
+`register.closed`), `RegisterController` (`create`/`store`, `lockForUpdate`
++ `isUsable()` recheck inside `DB::transaction`, creates the user with
+plan/locale/timezone/region from the invitation, marks invitation used,
+logs in and redirects to `onboarding`). Register routes replaced in
+`routes/web.php`; `custom.email.invite_mismatch`/`custom.invite.unusable`
+added to both `lang/{en,pt}/validation.php`. `pint`/`lint:check` pass;
+`types:check` clean on the phase's own files (unrelated errors seen mid-run
+belonged to concurrently-in-progress Phase 5, since resolved). Live
+verification via a rolled-back DB transaction script: all invite states
+(missing/unknown/used/revoked/expired) → Closed; usable invite renders
+`{email}` only; successful POST creates exactly one correctly-attributed
+user and marks the invitation used; a second POST with the same token →
+Closed with no new user; a losing concurrent `store()` call also → Closed.
+`code-reviewer`: APPROVED, no blocking findings.
 Role: laravel-backend · Depends on: 2, 4 · Covers: AC02, AC03 · Size: M
 Spec: B.5 (Register, Store, Closed)
 
@@ -643,7 +717,21 @@ wires it), password reset (Phase 7).
 
 ### Phase 7 — Password reset: broker routes and a branded, localized mail
 
-Status: PENDING
+Status: DONE
+Evidence: Added `ForgotPasswordController`, `ResetPasswordController`,
+`App\Notifications\Client\ResetPassword`, `mail.client.reset-password`
+Blade view, `lang/pt/{auth,passwords}.php`, `mail.reset.*` keys in both
+JSON lang files (additive, key counts equal at 811), guest routes wired.
+`User` implements `HasLocalePreference`/`preferredLocale()` and overrides
+`sendPasswordResetNotification()` (untyped `$token` matches the parent
+trait's contravariance requirement). `pint`/`lint:check`/`types:check`
+pass (types:check needs `--memory-limit=1G` on this machine — environmental).
+Scratch-script verified: no-enumeration flash on forgot-password for both
+known/unknown emails, localized subject/button (pt vs en), bad-token
+error, valid reset redirects to `/login` with success flash and updates
+the password hash. `code-reviewer`: APPROVED, no findings (including the
+two documented, judged-correct deviations: `:brand` placeholder syntax
+matching this codebase's convention, and the untyped `$token` parameter).
 Role: laravel-backend · Depends on: 1 · Covers: AC04 · Size: M
 Spec: B.5 (Password reset), Part 0.3
 
@@ -739,7 +827,19 @@ no other transactional mail is added.
 
 ### Phase 8 — Auth pages submit for real
 
-Status: PENDING
+Status: DONE
+Evidence: `register.tsx`, `forgot-password.tsx`, `reset-password.tsx`
+rewritten to submit via Inertia `<Form>` against the real Wayfinder
+actions, mirroring `login.tsx`; deleted `use-invite-check.ts`, `keys.invite`,
+the dead `checkInvite` fixture handler; pruned dead `auth.register.*` keys
+and added `auth.register.invite_locked_hint` to both lang JSON files
+(surgical diff, key counts equal at 805). `grep` confirms no stray
+references remain. `yarn run types:check` passes clean; `yarn run check`
+only flags pre-existing/out-of-scope files, none touched by this phase.
+`code-reviewer`: APPROVED, no blocking findings (two informational notes:
+leaving the now-unused `InviteCheck` TS type in place is fine/non-blocking;
+the `mail.reset.*` lines visible in the same lang-file diff belong to
+already-approved Phase 7, not scope creep here).
 Role: inertia-frontend · Depends on: 6, 7 · Covers: AC02, AC03, AC04 · Size: M
 Spec: B.5 (last bullet), `client-app-screens` B.6 auth screens
 
@@ -818,7 +918,23 @@ endpoints with Inertia `<Form>`, exactly like the existing Login page.
 
 ### Phase 9 — The `/internal` group, `AccountStatus` and onboarding basics
 
-Status: PENDING
+Status: DONE
+Evidence: Added the `/internal` route group (`auth`,`client`,`throttle:120,1`),
+`JsonResource::withoutWrapping()` in `AppServiceProvider::boot()`,
+`hasCv()`/`hasValidTemplate()` made public on `CanSendApplications`,
+`App\Client\AccountStatusPresenter`, `AccountStatusResource`,
+`AccountStatusController`, `OnboardingBasicsController` +
+`UpdateOnboardingBasicsRequest`. `pint`/`lint:check` pass; `types:check`
+passes with `--memory-limit=1G`. Verified via a rolled-back DB transaction
+(temporarily adding Phase 2's pending columns inside the same transaction
+since the local DB awaits the owner's `migrate:fresh`): `GET
+/internal/account/status` returns exactly the 10 contract keys, no `data`
+wrapper; unauthenticated → 302/401; blocked user → existing
+`EnsureActiveClient` behaviour; `PUT /internal/onboarding/basics` stores
+region=eu for country=PT and returns fresh `AccountStatus`; invalid
+payload → 422. `code-reviewer`: APPROVED, no blocking findings (one
+informational note: `CanSendApplications::check()`'s `PlanCatalog` wiring
+visible in this diff belongs to already-DONE Phase 2, not new here).
 Role: laravel-backend · Depends on: 2, 3 · Covers: AC05, AC09 · Size: M
 Spec: B.6 (group, `account/status`, `onboarding/basics`)
 
@@ -916,7 +1032,18 @@ deliberate.
 
 ### Phase 10 — Jobs endpoints
 
-Status: PENDING
+Status: DONE
+Evidence: Added `JobPoolQuery` (builds on `MatchingJobPostings::forUser()`,
+adds q/language/seniority/remote/today/stack filters and a
+`whereNotExists` one-row-per-company constraint), `JobCardResource`/
+`JobDetailResource`, `JobFiltersRequest`, `JobsController` (`index`/`show`)
+and the two `/internal/jobs*` routes. `pint`/`lint:check`/`types:check`
+pass. Verified via a rolled-back DB transaction with 25 seeded
+companies/postings: cursor pagination (20/page, correct `nextCursor`),
+every filter (language/today/remote/seniority/stack/q) narrows correctly,
+no card ever has `language` other than en/pt, `GET .../{id}` 404s for
+postings outside the pool (including older per-company postings, by
+design). Leak grep clean. `code-reviewer`: APPROVED, no findings.
 Role: laravel-backend · Depends on: 3, 9 · Covers: AC05, AC06, AC09 · Size: M
 Spec: B.6 (jobs bullet), contracts `JobCard`, `JobDetail`, `JobsPage`
 
@@ -1015,18 +1142,18 @@ token.
   `public static function for(?string $lastError): ?string`. Null/blank →
   null. Maps the known `last_error` values written by
   `SendApplicationEmail` (match on prefix, case-sensitive):
-    | `last_error` starts with                                                | translation key                  | English                              |
-    | ----------------------------------------------------------------------- | -------------------------------- | ------------------------------------ |
-    | `Gmail is not connected.`                                               | `applications.error.gmail`       | Your Gmail account is not connected. |
-    | `CV file is missing.`                                                   | `applications.error.cv`          | Your CV file could not be read.      |
-    | `Recipient is not a verified contact`                                   | `applications.error.recipient`   | We could not confirm the recipient.  |
-    | `Company is no longer verified`                                         | `applications.error.company`     | This company is no longer available. |
-    | `Client account is not active.`                                         | `applications.error.account`     | Your account is not active.          |
-    | `Worker stopped mid-send.`                                              | `applications.error.unconfirmed` | We could not confirm delivery.       |
-    | `ConnectionException`, `RequestException`, `TransportException`         | `applications.error.unconfirmed` | We could not confirm delivery.       |
-    | anything else                                                           | `applications.error.default`     | Sending failed.                      |
-    | Raw `last_error` text is never returned, and the class never echoes the |
-    | input. Add all eight keys to `lang/en.json` and `lang/pt.json`.         |
+  | `last_error` starts with | translation key | English |
+  | ----------------------------------------------------------------------- | -------------------------------- | ------------------------------------ |
+  | `Gmail is not connected.` | `applications.error.gmail` | Your Gmail account is not connected. |
+  | `CV file is missing.` | `applications.error.cv` | Your CV file could not be read. |
+  | `Recipient is not a verified contact` | `applications.error.recipient` | We could not confirm the recipient. |
+  | `Company is no longer verified` | `applications.error.company` | This company is no longer available. |
+  | `Client account is not active.` | `applications.error.account` | Your account is not active. |
+  | `Worker stopped mid-send.` | `applications.error.unconfirmed` | We could not confirm delivery. |
+  | `ConnectionException`, `RequestException`, `TransportException` | `applications.error.unconfirmed` | We could not confirm delivery. |
+  | anything else | `applications.error.default` | Sending failed. |
+  | Raw `last_error` text is never returned, and the class never echoes the |
+  | input. Add all eight keys to `lang/en.json` and `lang/pt.json`. |
 - **`App\Outreach\Support\ClientSafeText`** gains
   `public static function tokenizeJobUrl(string $text, ?string $jobUrl): string`:
   when `$jobUrl` is filled, replace every literal occurrence of it with
@@ -1477,14 +1604,14 @@ write.
   `App\Events\Client\`, with `broadcastAs()` returning the contract name and
   `broadcastWith()` building the payload with the **same resources** as the
   HTTP endpoints (no parallel serialisation):
-    | Class                                                                        | Channel                                      | `broadcastAs`            | `broadcastWith`                                |
-    | ---------------------------------------------------------------------------- | -------------------------------------------- | ------------------------ | ---------------------------------------------- |
-    | `ApplicationProgressed`                                                      | `PrivateChannel('App.Models.User.'.$userId)` | `application.progressed` | `['application' => ApplicationItemResource]`   |
-    | `AccountStatusUpdated`                                                       | `PrivateChannel('App.Models.User.'.$userId)` | `account.updated`        | `['status' => AccountStatusResource]`          |
-    | `NotificationCreated`                                                        | `PrivateChannel('App.Models.User.'.$userId)` | `notification.created`   | `['notification' => NotificationResource]`     |
-    | `JobsCollected`                                                              | `Channel('jobs')` (**public**)               | `jobs.collected`         | `['collectionRunId' => int, 'newJobs' => int]` |
-    | `JobsCollected`'s payload is ids and counts only — never a title, company or |
-    | URL.                                                                         |
+  | Class | Channel | `broadcastAs` | `broadcastWith` |
+  | ---------------------------------------------------------------------------- | -------------------------------------------- | ------------------------ | ---------------------------------------------- |
+  | `ApplicationProgressed` | `PrivateChannel('App.Models.User.'.$userId)` | `application.progressed` | `['application' => ApplicationItemResource]` |
+  | `AccountStatusUpdated` | `PrivateChannel('App.Models.User.'.$userId)` | `account.updated` | `['status' => AccountStatusResource]` |
+  | `NotificationCreated` | `PrivateChannel('App.Models.User.'.$userId)` | `notification.created` | `['notification' => NotificationResource]` |
+  | `JobsCollected` | `Channel('jobs')` (**public**) | `jobs.collected` | `['collectionRunId' => int, 'newJobs' => int]` |
+  | `JobsCollected`'s payload is ids and counts only — never a title, company or |
+  | URL. |
 - **Dispatching is best-effort.** Add
   `App\Events\Client\Concerns\DispatchesClientEvent` (or reuse the shape of
   `BroadcastsRealtime`): a static helper that wraps

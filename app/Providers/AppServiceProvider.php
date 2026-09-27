@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Contracts\OAuthIntegrationPlugin;
 use App\Outreach\Contracts\SendsGmailMessages;
 use App\Outreach\Support\GmailApiMessageSender;
+use App\Plans\PlanCatalog;
 use App\Services\ConnectedIntegrationRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\DevCommands;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -31,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(SendsGmailMessages::class, GmailApiMessageSender::class);
+
+        $this->app->singleton(PlanCatalog::class);
     }
 
     /**
@@ -39,6 +43,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // Client JSON contracts have no envelope.
+        JsonResource::withoutWrapping();
 
         if ($this->app->runningInConsole()) {
             DevCommands::artisan('reverb:start --debug', 'reverb');

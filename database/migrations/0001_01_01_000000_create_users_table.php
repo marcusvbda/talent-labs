@@ -22,6 +22,9 @@ return new class extends Migration
             $table->string('status')->default('active');
             $table->string('locale', 5)->default('en');
             $table->string('timezone', 64)->nullable();
+            $table->string('country', 2)->nullable();
+            $table->string('region', 8)->default('row');
+            $table->string('plan_key', 32)->default('free');
             $table->timestamps();
         });
 

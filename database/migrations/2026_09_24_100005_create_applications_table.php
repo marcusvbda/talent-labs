@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('subject');
             $table->text('body');
             $table->string('origin');
+            $table->string('language', 8)->nullable();
             $table->string('status');
             $table->unsignedInteger('attempts')->default(0);
             $table->string('provider_message_id')->nullable();

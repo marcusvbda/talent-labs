@@ -134,6 +134,7 @@ class ExtractJobPostingProfileJob implements ShouldBeUnique, ShouldQueue
                 'stack' => StackNormalizer::normalize(is_array($data['stack'] ?? null) ? $data['stack'] : []),
                 'locations' => $this->stringList($data['locations'] ?? null),
                 'is_remote' => is_bool($data['is_remote'] ?? null) ? $data['is_remote'] : null,
+                'language' => in_array($data['language'] ?? null, ExtractJobPostingProfile::LANGUAGES, true) ? $data['language'] : 'other',
                 'summary' => $summary === null ? null : mb_substr($summary, 0, 300),
                 'extracted_at' => now(),
             ],

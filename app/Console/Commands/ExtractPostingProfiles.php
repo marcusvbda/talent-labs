@@ -16,7 +16,7 @@ class ExtractPostingProfiles extends Command
      *
      * @var string
      */
-    protected $signature = 'postings:extract-profiles {--limit= : Only queue this many postings}';
+    protected $signature = 'postings:extract-profiles {--limit= : Only queue this many postings} {--missing-language : Re-extract profiles whose language is null}';
 
     /**
      * The console command description.
@@ -36,8 +36,13 @@ class ExtractPostingProfiles extends Command
         }
 
         $query = JobPosting::query()
-            ->whereHas('company', fn (Builder $company) => $company->where('outreach_status', OutreachStatus::Verified))
-            ->needingProfile();
+            ->whereHas('company', fn (Builder $company) => $company->where('outreach_status', OutreachStatus::Verified));
+
+        if ($this->option('missing-language')) {
+            $query->whereHas('profile', fn (Builder $profile) => $profile->whereNull('language'));
+        } else {
+            $query->needingProfile();
+        }
 
         $queued = 0;
 

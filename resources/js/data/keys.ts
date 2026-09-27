@@ -55,5 +55,4 @@ export const keys = {
     plansAll: () => ['plans'] as const,
     plans: (region?: RegionKey) => ['plans', region ?? null] as const,
     notifications: () => ['notifications'] as const,
-    invite: (code: string) => ['invite', code] as const,
 };

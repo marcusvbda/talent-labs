@@ -19,7 +19,7 @@ class ExtractJobPostingProfile implements Agent, HasStructuredOutput
     use BuildsCompactAgentContext;
     use Promptable;
 
-    public const CACHE_SCHEMA_VERSION = 'posting-profile-v1';
+    public const CACHE_SCHEMA_VERSION = 'posting-profile-v2';
 
     public const MAX_DESCRIPTION_CHARS = 4000;
 
@@ -29,11 +29,13 @@ class ExtractJobPostingProfile implements Agent, HasStructuredOutput
 
     public const SENIORITIES = ['intern', 'junior', 'mid', 'senior', 'lead', 'unknown'];
 
+    public const LANGUAGES = ['en', 'pt', 'other'];
+
     public function __construct(private readonly JobPosting $posting) {}
 
     public function instructions(): string
     {
-        return 'Extract a job posting profile from the context (TOON format). Use only evidence in the context; never invent. normalized_title: clean role title. seniority: one of the allowed values, "unknown" if unclear. stack: canonical lowercase technology names. locations: countries, cities or regions as written (e.g. "Germany", "EU", "Worldwide"). is_remote: null if unclear. summary: one plain-text sentence.';
+        return 'Extract a job posting profile from the context (TOON format). Use only evidence in the context; never invent. normalized_title: clean role title. seniority: one of the allowed values, "unknown" if unclear. stack: canonical lowercase technology names. locations: countries, cities or regions as written (e.g. "Germany", "EU", "Worldwide"). is_remote: null if unclear. language: the language the posting is written in — "en" for English, "pt" for Portuguese, "other" for anything else (including Spanish). summary: one plain-text sentence.';
     }
 
     public function postingContext(): string
@@ -65,6 +67,7 @@ class ExtractJobPostingProfile implements Agent, HasStructuredOutput
             'stack' => $schema->array()->items($schema->string()->max(40))->max(15)->required(),
             'locations' => $schema->array()->items($schema->string()->max(40))->max(5)->required(),
             'is_remote' => $schema->boolean()->nullable()->required(),
+            'language' => $schema->string()->enum(self::LANGUAGES)->required(),
             'summary' => $schema->string()->max(300)->nullable()->required(),
         ];
     }

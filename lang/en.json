@@ -275,13 +275,6 @@
     "auth.register.password": "Password",
     "auth.register.password_confirmation": "Confirm password",
     "auth.register.submit": "Create account",
-    "auth.register.success_title": "Account created",
-    "auth.register.success_body": "You can now log in with your new account.",
-    "auth.register.errors.name_required": "Enter your name.",
-    "auth.register.errors.email_required": "Enter your email.",
-    "auth.register.errors.email_invalid": "Enter a valid email address.",
-    "auth.register.errors.password_length": "Password must be at least 8 characters.",
-    "auth.register.errors.password_mismatch": "Passwords do not match.",
     "auth.closed.title": "Sign-ups are closed for now.",
     "auth.closed.body": "We are in a closed beta with a small group of testers.",
     "auth.closed.login_link": "Go to login",
@@ -802,5 +795,13 @@
     "account.delete.confirm_title": "Delete your account?",
     "account.delete.password_label": "Confirm your password",
     "account.delete.confirm": "Delete account",
-    "account.delete.done": "Account deleted"
+    "account.delete.done": "Account deleted",
+    "mail.reset.subject": "Reset your :brand password",
+    "mail.reset.greeting": "Hi :name,",
+    "mail.reset.body": "We received a request to reset the password for your :brand account. Click the button below to choose a new one.",
+    "mail.reset.button": "Reset password",
+    "mail.reset.fallback": "If the button doesn't work, copy and paste this link into your browser:",
+    "mail.reset.expiry": "This link expires in :minutes minutes.",
+    "mail.reset.ignore": "If you didn't request a password reset, you can safely ignore this email.",
+    "auth.register.invite_locked_hint": "This invitation is bound to this email address."
 }
