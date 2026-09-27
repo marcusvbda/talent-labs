@@ -42,7 +42,8 @@ function useFixtureChannel(handlers: AnyHandlers, enabled: boolean) {
     }, [enabled, qc, latest]);
 }
 
-// Real mode: listens on the private App.Models.User.{id} channel.
+// Real mode: listens on the private App.Models.User.{id} channel, plus the
+// public `jobs` channel for the `jobs.collected` broadcast.
 function useRealChannel(
     handlers: AnyHandlers,
     userId: number | undefined,
@@ -57,22 +58,32 @@ function useRealChannel(
             return;
         }
 
+        const events = eventKey
+            .split('|')
+            .filter((event) => event !== 'jobs.collected');
+
         const name = `App.Models.User.${userId}`;
-        const instance = echo().private(name);
-        const events = eventKey.split('|');
-        const listeners = events.map((event) => {
+        const privateChannel = echo().private(name);
+        const privateListeners = events.map((event) => {
             const listener = (payload: unknown) =>
                 latest.current[event]?.(payload, qc);
 
-            instance.listen(`.${event}`, listener);
+            privateChannel.listen(`.${event}`, listener);
 
             return [event, listener] as const;
         });
 
+        const jobsChannel = echo().channel('jobs');
+        const jobsCollectedListener = (payload: unknown) =>
+            latest.current['jobs.collected']?.(payload, qc);
+
+        jobsChannel.listen('.jobs.collected', jobsCollectedListener);
+
         return () => {
-            listeners.forEach(([event, listener]) =>
-                instance.stopListening(`.${event}`, listener),
+            privateListeners.forEach(([event, listener]) =>
+                privateChannel.stopListening(`.${event}`, listener),
             );
+            jobsChannel.stopListening('.jobs.collected', jobsCollectedListener);
         };
     }, [enabled, userId, eventKey, qc, latest]);
 }

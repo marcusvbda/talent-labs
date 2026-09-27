@@ -8,7 +8,7 @@ import { fromSource } from '@/data/source';
 import type { JobFilters, JobsPage } from '@/types/contracts';
 
 // The screen reads `summary` from the first page.
-export function useJobs(filters: JobFilters) {
+export function useJobs(filters: JobFilters, initial?: JobsPage) {
     const real = ({ pageParam }: { pageParam: string | null }) => {
         const e = endpoints.jobs({ ...filters, cursor: pageParam });
 
@@ -24,5 +24,8 @@ export function useJobs(filters: JobFilters) {
         queryFn: fromSource({ real, fixture }),
         initialPageParam: null as string | null,
         getNextPageParam: (last: JobsPage) => last.meta.nextCursor,
+        ...(initial === undefined
+            ? {}
+            : { initialData: { pages: [initial], pageParams: [null] } }),
     });
 }

@@ -1,7 +1,8 @@
 // Only files under data/ may import this flag; components must go through the
-// data hooks, which pick real or fixture sources via fromSource().
+// data hooks, which pick real or fixture sources via fromSource(). A hook
+// whose endpoint is not implemented yet simply omits `real`.
 export const useFixtures = import.meta.env.VITE_USE_FIXTURES === 'true';
 
-export function fromSource<F>(pair: { real: F; fixture: F }): F {
-    return useFixtures ? pair.fixture : pair.real;
+export function fromSource<F>(pair: { real?: F; fixture: F }): F {
+    return useFixtures || pair.real === undefined ? pair.fixture : pair.real;
 }

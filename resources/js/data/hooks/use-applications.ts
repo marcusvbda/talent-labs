@@ -19,7 +19,7 @@ import type {
 
 type Page = Paginated<ApplicationItem>;
 
-export function useApplications(filters: ApplicationFilters) {
+export function useApplications(filters: ApplicationFilters, initial?: Page) {
     const real = ({ pageParam }: { pageParam: string | null }) => {
         const e = endpoints.applications({ ...filters, cursor: pageParam });
 
@@ -35,6 +35,9 @@ export function useApplications(filters: ApplicationFilters) {
         queryFn: fromSource({ real, fixture }),
         initialPageParam: null as string | null,
         getNextPageParam: (last: Page) => last.meta.nextCursor,
+        ...(initial === undefined
+            ? {}
+            : { initialData: { pages: [initial], pageParams: [null] } }),
     });
 }
 

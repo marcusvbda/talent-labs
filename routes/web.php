@@ -5,20 +5,29 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Client\ApplicationsPageController;
+use App\Http\Controllers\Client\DashboardPageController;
+use App\Http\Controllers\Client\Internal\AccountController;
+use App\Http\Controllers\Client\Internal\AccountExportController;
 use App\Http\Controllers\Client\Internal\AccountStatusController;
+use App\Http\Controllers\Client\Internal\ApplicationsController;
+use App\Http\Controllers\Client\Internal\ChartController;
+use App\Http\Controllers\Client\Internal\DashboardController;
 use App\Http\Controllers\Client\Internal\JobsController;
+use App\Http\Controllers\Client\Internal\NotificationsController;
 use App\Http\Controllers\Client\Internal\OnboardingBasicsController;
+use App\Http\Controllers\Client\JobsPageController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'landing')->name('home');
 
-Route::inertia('/dashboard', 'dashboard')->middleware(['auth', 'client'])->name('dashboard');
+Route::get('/dashboard', DashboardPageController::class)->middleware(['auth', 'client'])->name('dashboard');
 Route::inertia('/onboarding', 'onboarding')->middleware(['auth', 'client'])->name('onboarding');
 
-Route::inertia('/jobs', 'jobs')->middleware(['auth', 'client'])->name('jobs');
-Route::inertia('/applications', 'applications')->middleware(['auth', 'client'])->name('applications');
+Route::get('/jobs', JobsPageController::class)->middleware(['auth', 'client'])->name('jobs');
+Route::get('/applications', ApplicationsPageController::class)->middleware(['auth', 'client'])->name('applications');
 
 Route::inertia('/profiles', 'profiles')->middleware(['auth', 'client'])->name('profiles');
 
@@ -33,8 +42,20 @@ Route::middleware(['auth', 'client', 'throttle:120,1'])
     ->group(function (): void {
         Route::get('/account/status', AccountStatusController::class)->name('account.status');
         Route::put('/onboarding/basics', OnboardingBasicsController::class)->name('onboarding.basics');
+        Route::get('/dashboard', DashboardController::class)->name('dashboard');
+        Route::get('/dashboard/chart', ChartController::class)->name('dashboard.chart');
         Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
         Route::get('/jobs/{id}', [JobsController::class, 'show'])->whereNumber('id')->name('jobs.show');
+        Route::get('/applications', [ApplicationsController::class, 'index'])->name('applications.index');
+        Route::get('/applications/counts', [ApplicationsController::class, 'counts'])->name('applications.counts');
+        Route::get('/applications/{application}', [ApplicationsController::class, 'show'])->name('applications.show');
+        Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/read-all', [NotificationsController::class, 'readAll'])->name('notifications.read-all');
+        Route::get('/account', [AccountController::class, 'show'])->name('account.show');
+        Route::put('/account', [AccountController::class, 'update'])->name('account.update');
+        Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password');
+        Route::delete('/account', [AccountController::class, 'destroy'])->name('account.destroy');
+        Route::get('/account/export', AccountExportController::class)->name('account.export');
     });
 
 Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');

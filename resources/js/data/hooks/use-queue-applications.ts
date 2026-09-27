@@ -1,8 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
-import { apiFetch } from '@/data/api';
 import type { ApiError } from '@/data/api';
-import { endpoints } from '@/data/endpoints';
 import { fixtureCall } from '@/data/fixtures/runtime';
 import { fixtureState } from '@/data/fixtures/state';
 import { keys } from '@/data/keys';
@@ -22,14 +20,6 @@ export const invalidateAfterQueue = (queryClient: QueryClient) =>
 
 export function useQueueApplications() {
     const queryClient = useQueryClient();
-    const real = ({ jobIds }: { jobIds: number[] }) => {
-        const e = endpoints.queueApplications();
-
-        return apiFetch<QueueResult>(e.url, {
-            method: e.method,
-            body: { jobIds },
-        });
-    };
     const fixture = ({ jobIds }: { jobIds: number[] }) =>
         fixtureCall(async () => {
             const result = fixtureState.queue(jobIds, 'manual');
@@ -44,7 +34,7 @@ export function useQueueApplications() {
         });
 
     return useMutation<QueueResult, ApiError, { jobIds: number[] }>({
-        mutationFn: fromSource({ real, fixture }),
+        mutationFn: fromSource({ fixture }),
         onSuccess: () => invalidateAfterQueue(queryClient),
     });
 }

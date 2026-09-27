@@ -12,6 +12,8 @@ final class ClientSafeText
 
     public const EMAIL = '[email]';
 
+    public const JOB_URL_TOKEN = '{{ job_url }}';
+
     public static function redact(?string $text): string
     {
         if ($text === null || $text === '') {
@@ -26,5 +28,18 @@ final class ClientSafeText
 
         // Bare domains that point somewhere: a common TLD followed by a path (company.com/careers).
         return preg_replace('~\b[a-z0-9\-]+(?:\.[a-z0-9\-]+)*\.(?:com|org|net|io|co|ai|dev|app|eu|uk|de|br|fr|es|pt|nl|jobs|careers|tech)/[^\s<>"\')\]]*~iu', self::LINK, $text) ?? $text;
+    }
+
+    /**
+     * Replaces the job's own link with a `{{ job_url }}` token before redacting, so the
+     * client sees where the link goes in their message without seeing the link itself.
+     */
+    public static function tokenizeJobUrl(string $text, ?string $jobUrl): string
+    {
+        if ($jobUrl !== null && $jobUrl !== '') {
+            $text = str_replace($jobUrl, self::JOB_URL_TOKEN, $text);
+        }
+
+        return self::redact($text);
     }
 }

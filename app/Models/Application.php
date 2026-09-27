@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\ApplicationOrigin;
 use App\Enums\ApplicationStatus;
+use App\Events\Client\ApplicationProgressed;
+use App\Events\Client\Concerns\DispatchesClientEvent;
 use App\Models\Concerns\BroadcastsRealtime;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -41,11 +43,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Application extends Model
 {
     use BroadcastsRealtime;
+    use DispatchesClientEvent;
 
     protected static function booted(): void
     {
         static::saved(function (Application $application): void {
             static::broadcastUpdated($application);
+
+            static::dispatchClientEvent(new ApplicationProgressed($application->id, $application->user_id));
+
+            if ($application->wasChanged('status')) {
+                static::dispatchAccountStatusUpdated($application->user_id);
+            }
         });
 
         static::deleted(function (Application $application): void {

@@ -23,17 +23,17 @@ few per session. Phase status is updated in place in this file.
 | 8     | Auth pages submit for real (register, forgot, reset)           | inertia-frontend | 6, 7       | M    | DONE |
 | 9     | `/internal` group + `AccountStatus` + onboarding basics        | laravel-backend  | 2, 3       | M    | DONE |
 | 10    | Jobs endpoints (list + detail)                                 | laravel-backend  | 3, 9       | M    | DONE |
-| 11    | Applications endpoints + client-safe errors and body           | laravel-backend  | 9          | M    | IN_PROGRESS |
-| 12    | Dashboard + chart endpoints                                    | laravel-backend  | 10, 11     | M    | PENDING |
-| 13    | Notifications + account read/update/password                   | laravel-backend  | 9          | M    | PENDING |
-| 14    | Account delete + data export                                   | laravel-backend  | 13         | M    | PENDING |
-| 15    | Initial Inertia props for dashboard, jobs, applications        | laravel-backend  | 10, 11, 12 | M    | PENDING |
-| 16    | Gmail connect returns to Account or Onboarding                 | laravel-backend  | none       | S    | PENDING |
-| 17    | Realtime events and their dispatch points                      | laravel-backend  | 9, 11      | M    | PENDING |
-| 18    | Client database notifications (`GmailReauthorizationRequired`) | laravel-backend  | 17         | S    | PENDING |
-| 19    | Frontend: per-hook fixture gate                                | inertia-frontend | none       | M    | PENDING |
-| 20    | Frontend: Wayfinder endpoints + public `jobs` channel          | inertia-frontend | 15, 17, 19 | M    | PENDING |
-| 21    | Verification and report                                        | qa-tester        | 1–20       | S    | PENDING |
+| 11    | Applications endpoints + client-safe errors and body           | laravel-backend  | 9          | M    | DONE |
+| 12    | Dashboard + chart endpoints                                    | laravel-backend  | 10, 11     | M    | DONE |
+| 13    | Notifications + account read/update/password                   | laravel-backend  | 9          | M    | DONE |
+| 14    | Account delete + data export                                   | laravel-backend  | 13         | M    | DONE |
+| 15    | Initial Inertia props for dashboard, jobs, applications        | laravel-backend  | 10, 11, 12 | M    | DONE |
+| 16    | Gmail connect returns to Account or Onboarding                 | laravel-backend  | none       | S    | DONE |
+| 17    | Realtime events and their dispatch points                      | laravel-backend  | 9, 11      | M    | DONE |
+| 18    | Client database notifications (`GmailReauthorizationRequired`) | laravel-backend  | 17         | S    | DONE |
+| 19    | Frontend: per-hook fixture gate                                | inertia-frontend | none       | M    | DONE |
+| 20    | Frontend: Wayfinder endpoints + public `jobs` channel          | inertia-frontend | 15, 17, 19 | M    | DONE |
+| 21    | Verification and report                                        | qa-tester        | 1–20       | S    | DONE |
 
 ## Audit — 2026-09-27
 
@@ -1128,7 +1128,28 @@ locking (all out of scope).
 
 ### Phase 11 — Applications endpoints, client-safe errors and bodies
 
-Status: IN_PROGRESS
+Status: DONE
+Evidence: Added `ClientErrorMessage::for()` (prefix-matched translation of
+`last_error`, 7 lang keys added to `lang/en.json`/`lang/pt.json`),
+`ClientSafeText::tokenizeJobUrl()` (job-url token before `redact()`),
+`ApplicationItemResource`/`ApplicationDetailResource` (detail extends item;
+`language` resolved via the stored→profile→locale→`en` fallback chain;
+`timeline` derived only from `sent_at`/`failed`), `ApplicationFiltersRequest`,
+and `ApplicationsController` (`index`/`counts`/`show`) wired into the
+existing `/internal` group in `routes/web.php` with `counts` registered
+before `{application}`. `grep -rn "recipient_email\|provider_message_id"
+app/Http/Resources/Client/` returns nothing. `vendor/bin/pint --dirty
+--format agent`, `composer lint:check`, `composer types:check
+--memory-limit=1G` all pass. `php artisan route:list --path=internal/applications`
+confirms route order. Tinker-verified (empty local DB, `applications.language`
+column still pending the owner's `migrate:fresh --seed`, so no live-row/HTTP
+test): `ClientErrorMessage::for()` mappings including the PT locale sentence,
+`tokenizeJobUrl()` output, `counts()` returning the four zero-counts, `index()`
+returning an empty page, and the language-filter SQL. `code-reviewer`:
+APPROVED, no blocking findings (one non-blocking note: the language filter
+implements the resource's full 3-step fallback rather than the narrowest
+reading of the contract sentence — judged more correct since it keeps
+filter/display consistent, flagged only as a judgment call).
 Role: laravel-backend · Depends on: 9 · Covers: AC05, AC06, AC09 · Size: M
 Spec: B.6 (applications bullet), **D1 option A**
 
@@ -1239,7 +1260,31 @@ beyond the existing enum (spec 6).
 
 ### Phase 12 — Dashboard and chart endpoints
 
-Status: PENDING
+Status: DONE
+Evidence: Added `DashboardPresenter`/`ChartPresenter` (`app/Client/`),
+`DashboardResource`/`ChartResource` (pass-through, matching `AccountStatusResource`'s
+style), `DashboardController`/`ChartController` (single-action, inline
+`$request->validate()`), wired into the existing `/internal` group in
+`routes/web.php`. `kpis.collected` counts `MatchingJobPostings::forUser()`
+rows distinct by `company_id` within each window (equivalent to filtering
+`JobPoolQuery`'s dedup, verified by review); `matches`/`activity` eager-load
+what `JobCardResource`/`ApplicationItemResource` need and reuse the
+already-loaded `$user` relation to avoid N+1. `hero.nextSendAt` is
+`min(scheduled_for)` over `queued` only. `vendor/bin/pint --dirty --format
+agent`, `composer lint:check`, `composer types:check --memory-limit=1G` all
+pass. Tinker-verified (no DB writes): non-overlapping equal-length
+current/previous windows for `today`/`week`/`month` across 12 cases
+(Europe/Lisbon and America/Sao_Paulo, at non-midnight instants); different
+day boundaries per timezone for the same instant; `hero.lastDays` = 5 entries
+excluding today; chart `14d`/`30d` = 14/30 entries ending today with the
+correct plan `limit`. Full live-row test blocked by the Phase 3/11 schema gap
+(`job_posting_profiles.language` missing locally, `applications` has 0 rows)
+— reported, not worked around. `code-reviewer`: one round of
+CHANGES_REQUIRED (previous-period window wasn't equal length to the current
+partial window, contrary to the phase contract) → fixed
+(`previousStart = 2*start - now`) and re-reviewed → APPROVED. Non-blocking,
+left by owner choice: `DashboardController`/`ChartController` validate
+inline rather than via a dedicated FormRequest.
 Role: laravel-backend · Depends on: 10, 11 · Covers: AC05, AC09 · Size: M
 Spec: B.6 (dashboard and chart bullets), contracts `DashboardData`, `ChartData`
 
@@ -1311,7 +1356,40 @@ computed in the user's timezone from real rows.
 
 ### Phase 13 — Notifications, account read/update, password change
 
-Status: PENDING
+Status: DONE
+Evidence: Added `NotificationResource` (type from `data['type']` else
+`Str::snake(class_basename(...))`; drops nested arrays and any
+URL/email-looking scalar), `AccountResource`, `UpdateAccountRequest`,
+`UpdatePasswordRequest`, `NotificationsController` (`index`/`readAll`),
+`AccountController` (`show`/`update`/`updatePassword`), wired into the
+existing `/internal` group in `routes/web.php`. `updatePassword` calls
+`Auth::logoutOtherDevices()` only on the `database` session driver and
+additionally refreshes the current session's `password_hash_web` (verified
+against `AuthenticateSession`'s vendor source: necessary because `/internal/*`
+doesn't run that middleware, so without it the user's own next Filament
+request would force-logout after changing their own password). `vendor/bin/pint
+--dirty --format agent`, `composer lint:check`, `composer types:check
+--memory-limit=1G` all pass (one PHPStan error, a redundant `is_array()`,
+fixed during implementation). Verified via real HTTP requests through the
+kernel (session driver `array`, no writes): `GET /internal/notifications` →
+200 bare array; `GET /internal/account` → 200 with exactly the six fields;
+`PUT /internal/account/password` with wrong `current_password` → 422;
+`PUT /internal/account` with invalid `name`/`locale` → 422 on both fields.
+Tinker-verified: `AccountResource.region` renders as a plain string;
+`RegionResolver::fromCountry('US')` → `row`; the notification `data` filter
+keeps scalars/null and drops a nested array, a URL and an email in a
+constructed (unsaved) notification. Not live-tested: a successful account
+update or password change (would write real user rows), and
+`read-all` zeroing unread count (local `notifications` table has 0 rows).
+`code-reviewer`: APPROVED, no blocking findings. Non-blocking: an
+unreachable `??` fallback in `AccountResource.region` (region is a
+non-nullable enum column), the link/address heuristic may over-drop a
+scalar that happens to contain a `word.tld`-shaped substring (intentional
+per the "never leak an address" requirement, flagged for whoever wires the
+five notification types later), a redundant explicit `response()->json()`
+given `withoutWrapping()` is already global, and storing the raw (not
+HMAC'd) password hash in the session works only via `AuthenticateSession`'s
+documented backward-compat fallback rather than the primary path.
 Role: laravel-backend · Depends on: 9 · Covers: AC05, AC09 · Size: M
 Spec: B.6 (notifications and account bullets)
 
@@ -1384,7 +1462,34 @@ and password cards run on real data.
 
 ### Phase 14 — Account delete and data export
 
-Status: PENDING
+Status: DONE
+Evidence: Added `App\Actions\Users\DeleteClientAccount` (checks
+`invitations.created_by` for a restricting row first and throws
+`App\Exceptions\ClientAccountDeletionBlocked` before touching anything —
+re-derived from all migrations that `invitations.created_by` is the only
+`restrictOnDelete` FK on `users`, so this pre-check is complete, not just
+plausible; only then disconnects each connected integration best-effort
+(`report($e)` per failure) and deletes `cvs/{user->id}`, then `$user->delete()`),
+`DeleteAccountRequest`, `AccountExportController` (streamed JSON download,
+correct filename/header, `preferences` null-safe, `subject`/`body` tokenized,
+enum fields as plain string values), `AccountController::destroy` (validate →
+run action → `Auth::logout()` → session invalidate/regenerate → `{}`).
+Routes `internal.account.destroy`/`internal.account.export` wired into the
+existing `/internal` group. `vendor/bin/pint --dirty --format agent`,
+`composer lint:check`, `composer types:check --memory-limit=1G` all pass.
+Verified (no real user deleted, no real CV files removed — confirmed by
+users-count-unchanged before/after a rolled-back transaction and
+`Storage::fake('local')` for the file-deletion path): delete flow inside a
+rolled-back DB transaction with zero connected integrations; export against
+a real user (region/planKey as plain strings, ISO dates, `preferences: null`
+for a user with no `JobPreference` row, 0 occurrences of `recipient`/
+`provider_message_id`/`last_error`/`contact` in the output); route
+registration. Not live-tested: export with real application rows (table
+empty locally), a real Gmail-integration disconnect, HTTP-level 422/409/logout
+responses. `code-reviewer`: APPROVED. Non-blocking: the 409
+"account cannot be deleted from here" message is a hardcoded English
+literal rather than a `lang/{en,pt}.json` key, inconsistent with Phase 11's
+established `applications.error.*` i18n convention for user-facing strings.
 Role: laravel-backend · Depends on: 13 · Covers: AC05, AC12 · Size: M
 Spec: B.6 (`DELETE /internal/account`, `GET /internal/account/export`)
 
@@ -1457,7 +1562,39 @@ it is).
 
 ### Phase 15 — Initial Inertia props for Dashboard, Jobs and Applications
 
-Status: PENDING
+Status: DONE
+Evidence: Backend (laravel-backend): extracted `JobsController::index()`/
+`ApplicationsController::index()` payload logic into reusable
+`App\Client\JobsPayload::build()`/`ApplicationsPayload::build()` (single
+implementation, both the `/internal` controllers and the new page
+controllers call the same static method — cursor `null` on the page
+controllers always returns page 1, never reading a stray `?cursor=` from the
+browser URL, while the `/internal` endpoints still honor a real `?cursor=`
+for "load more"); added `filters()` to `JobFiltersRequest`/
+`ApplicationFiltersRequest`; added `DashboardPageController`/
+`JobsPageController`/`ApplicationsPageController`, wired into `routes/web.php`
+replacing the three prop-less `Route::inertia` entries with the same names/
+paths/middleware. Frontend (inertia-frontend, in parallel): added `initial`
+support to `useJobs`/`useApplications` (`{pages:[initial], pageParams:[null]}`,
+omitted when undefined); `dashboard.tsx`/`chart-card.tsx` gate their props on
+`period==='today'`/`range==='14d'`; `jobs.tsx` guards the prop with a
+filters-snapshot-at-mount comparison; `applications.tsx` seeds its
+`tab`/`language`/`search` state and its initial-filters guard from the URL
+query string via a new `parseInitialFilters()` helper (mirroring
+`use-query-filters.ts`), rather than hardcoded `all`/`all`/`''` defaults.
+`vendor/bin/pint --dirty --format agent`, `composer lint:check`,
+`composer types:check --memory-limit=1G`, `yarn run types:check` all pass;
+`yarn run check` fails only on the pre-existing baseline (unrelated files,
+reported separately). Full live-row comparison between page props and the
+matching `/internal/*` JSON blocked for dashboard/jobs by the Phase 3/11
+schema gap (`job_posting_profiles.language` missing locally) — applications
+was compared live and matched exactly. `code-reviewer`: one round of
+CHANGES_REQUIRED (`applications.tsx` never read filters from the URL, so
+`/applications?status=sent` would show the "All" tab while seeding the "All"
+query's cache with `sent`-filtered data) → fixed and re-reviewed → APPROVED.
+No browser network-panel trace was available in this session to empirically
+confirm zero duplicate XHR on first paint; the fix was verified by tracing
+the query-key/prop match by hand instead.
 Role: laravel-backend · Depends on: 10, 11, 12 · Covers: AC05, AC09 · Size: M
 Spec: B.6 (Initial props)
 
@@ -1523,7 +1660,30 @@ instead of a client fetch, and later refreshes go through the same hooks.
 
 ### Phase 16 — Gmail connect returns to Account or Onboarding
 
-Status: PENDING
+Status: DONE
+Evidence: `ConnectedIntegrationOAuthController` gained `RETURN_ROUTES`
+whitelist, `rememberReturn()`/`returnKey()` helpers, and a session-pull
+`returnUrl()`. Critical correctness point verified: `startAuthorization()`
+pulls the session exactly once (embedding the resolved URL into the OAuth
+`$state` via `issue()`); `callback()` never re-reads the session on the
+success or either post-`consume()` failure path — it uses `$state->returnUrl`
+instead — so the onboarding-return target survives the two-separate-HTTP-request
+OAuth round-trip instead of silently defaulting back to `account`. The one
+failure path with no `$state` (consume() itself threw) falls back to a
+literal `route('account')`. Flashes added to success/failure/disconnect
+redirects alongside the existing Filament notifications; `account.gmail.
+connected_flash`/`failed_flash` added to both `lang/{en,pt}.json` (`account.
+gmail.disconnected` confirmed not duplicated). Frontend: `gmail-card.tsx`/
+`step-gmail.tsx` send `{return:'account'}`/`{return:'onboarding'}`, unused
+route imports removed. `vendor/bin/pint --dirty --format agent`, `composer
+lint:check`, `composer types:check --memory-limit=1G`, `yarn run types:check`
+all pass; `yarn run check` fails only on the pre-existing unrelated baseline.
+Tinker-verified the full whitelist matrix (`account`/`onboarding`/`admin`/
+a raw URL/missing/empty/array input) and hand-traced the two-request
+session-pull/state-embed flow. `code-reviewer`: APPROVED, no blocking
+findings (one informational note about unrelated `applications.error.*`
+lang keys in the same diff — those are Phase 11's already-approved,
+still-uncommitted work sharing the same working tree, not new scope creep).
 Role: laravel-backend · Depends on: none · Covers: AC11 · Size: S
 Spec: B.9
 
@@ -1590,7 +1750,40 @@ working.
 
 ### Phase 17 — Realtime events and their dispatch points
 
-Status: PENDING
+Status: DONE
+Evidence: Added `App\Events\Client\{ApplicationProgressed,AccountStatusUpdated,
+NotificationCreated,JobsCollected}` (final, `ShouldBroadcastNow`, exact
+`broadcastAs()`/channel/payload per contract — `JobsCollected`'s payload
+verified to contain only `collectionRunId`/`newJobs`) and
+`Events\Client\Concerns\DispatchesClientEvent` (best-effort dispatch helper +
+non-blocking `Cache::lock(...)->get()` debounce for `AccountStatusUpdated`,
+max one per user per second). Wired into `Application::booted()` (after the
+existing admin broadcast), a new `ConnectedIntegration::booted()`,
+`ConnectedIntegrationTokenManager::markReauthorizationRequired()` (explicit
+dispatch since that path writes via the query builder and skips model
+events, gated on `$transitioned`), and `FinalizeCollectionRun::handle()`
+(moved before the null-user early return, so it fires regardless of
+`triggered_by`). `vendor/bin/pint --dirty --format agent`, `composer
+lint:check`, `composer types:check --memory-limit=1G` all pass. Tinker-verified:
+the four `broadcastAs()` names via grep; the debounce lock genuinely
+non-blocking (a second `get()` for the same key returns `false` in ~ms, not
+blocking); `AccountStatusUpdated`'s resolved payload has the full contract
+shape; a live Reverb instance accepted a real `JobsCollected` broadcast on
+the public `jobs` channel. Not verified: a full saved-application round trip
+(no local application/notification rows) and a real broadcaster outage.
+`code-reviewer`: one round of CHANGES_REQUIRED — `DispatchesClientEvent`'s
+catch was scoped to `BroadcastException` only, but because these events
+broadcast synchronously (`ShouldBroadcastNow`), payload-building
+(`findOrFail`, presenter/resource resolution) runs *inside* that try block,
+so any other `Throwable` (e.g. a `ModelNotFoundException` from a race) would
+have escaped into the model's `saved` listener chain and failed the write —
+unlike the pre-existing `BroadcastsRealtime` sibling, which is safe only
+because its call sites pass an already-built literal payload with no work
+inside the guard. Fixed by broadening both helpers' catches to `\Throwable`
+→ re-reviewed → APPROVED. Non-blocking (pre-existing, out of scope): a null
+`region` on one seeded user throws inside `AccountStatusPresenter::forUser()`
+(`$user->region->value` on null) — same bug the HTTP `/internal/account/status`
+endpoint already has, not introduced by this phase.
 Role: laravel-backend · Depends on: 9, 11 · Covers: AC10 · Size: M
 Spec: B.8 (events)
 
@@ -1676,7 +1869,26 @@ classes (Phase 18), the frontend public-channel subscription (Phase 20).
 
 ### Phase 18 — Client database notifications
 
-Status: PENDING
+Status: DONE
+Evidence: Added `App\Notifications\Client\ClientNotification` (abstract,
+`via()` → `['database']`, `toDatabase()` → `['type' => notificationType(),
+...payload()]`, static `send()` that pre-assigns the notification's uuid,
+calls `$user->notify()`, then re-fetches the row and dispatches
+`NotificationCreated` through Phase 17's best-effort `DispatchesClientEvent`)
+and `App\Notifications\Client\GmailReauthorizationRequired`
+(`gmail_reauthorization_required` / `['provider' => 'Gmail']`). Wired into
+`ConnectedIntegrationTokenManager::markReauthorizationRequired()` inside the
+existing `if ($transitioned)` branch, after the untouched Filament
+`sendToDatabase(...)` call and before the untouched final `throw`.
+`vendor/bin/pint --dirty --format agent`, `composer lint:check`, `composer
+types:check --memory-limit=1G` all pass. Tinker-verified: `send()` creates one
+`notifications` row with `data == {"type":"gmail_reauthorization_required",
+"provider":"Gmail"}`; row deleted after the check. Lang keys for
+`notifications.gmail_reauthorization_required` confirmed present in both
+`lang/en.json` and `lang/pt.json`. `code-reviewer`: APPROVED, no blocking
+findings (non-blocking: if `send()` throws, the method's mandatory final
+`throw` never fires — symmetric with the pre-existing Filament
+`sendToDatabase` call just above it, not a regression).
 Role: laravel-backend · Depends on: 17 · Covers: AC11 · Size: S
 Spec: B.8 (notifications bullet)
 
@@ -1738,7 +1950,22 @@ Spec: B.8 (notifications bullet)
 
 ### Phase 19 — Frontend: per-hook fixture gate
 
-Status: PENDING
+Status: DONE
+Evidence: `fromSource<F>(pair: { real?: F; fixture: F })` in `source.ts` now
+falls back to `fixture` when `real` is omitted, plus the added comment line.
+Dropped `real` (and the now-unused `apiFetch`/`endpoints`/type imports) from
+the 11 out-of-scope hooks: `use-live-sending.ts`, `use-pause-sending.ts`,
+`use-queue-applications.ts`, `use-review-drafts.ts`, `use-queue-reviewed.ts`,
+`use-preferences.ts`, `use-preferences-preview.ts`, `use-profiles.ts`,
+`use-cv.ts`, `use-template-preview.ts`, `use-plans.ts`. The 12 hooks that keep
+`real` (endpoints already implemented, D1 option A confirms
+`useApplicationCounts` stays) and the 3 hooks that never had `real` are
+untouched; `endpoints.ts` untouched. `grep -rn "fromSource({ real"
+resources/js/data/hooks/ | wc -l` = 18 (12 files, some with multiple
+query/mutation functions). `yarn run types:check` passes clean. `yarn run
+check` fails only on the pre-existing baseline
+(`page-header.tsx`/`top-bar.tsx`/`menu.tsx`) plus unrelated doc/skill files —
+none of this phase's files. `code-reviewer`: APPROVED, no findings.
 Role: inertia-frontend · Depends on: none · Covers: AC09 · Size: M
 Spec: B.6 (Per-hook fallback)
 
@@ -1798,7 +2025,26 @@ spec implements go to the server; every other hook keeps its fixture.
 
 ### Phase 20 — Frontend: Wayfinder endpoints and the public `jobs` channel
 
-Status: PENDING
+Status: DONE
+Evidence: `endpoints.ts`'s 16 implemented entries now call the generated
+Wayfinder helpers under `resources/js/actions/App/Http/Controllers/Client/Internal/`
+for base url/method (query-string entries still layer `withQuery`/`omitDefault`
+on top); the other 16 placeholder entries are untouched. `application(id)`
+converts a string id to `Number(id)` before calling `ApplicationsController.show()`
+(that helper only accepts `number | {id: number}`) — verified safe:
+`Application` has no `getRouteKeyName` override, its route binding is always
+the integer PK, and the only caller (`use-application.ts`) never invokes the
+query with a non-numeric id. `use-user-channel.ts`'s `useRealChannel` now also
+subscribes to `echo().channel('jobs')` and listens for `.jobs.collected`,
+routed into the same handler map, with matching `stopListening` cleanup
+alongside the private channel; `useFixtureChannel` and the once-per-build
+`useTransport` selection are untouched, so hook order stays stable.
+`use-realtime-cache.ts` only had its comment updated. `yarn run types:check`
+passes clean; `yarn run check` shows no new failures beyond the pre-existing
+baseline. `code-reviewer`: APPROVED, no blocking findings (non-blocking: the
+public `jobs` channel is subscribed unconditionally whenever the real
+transport is enabled, regardless of whether a `jobs.collected` handler is
+present — harmless today since the only caller always registers one).
 Role: inertia-frontend · Depends on: 15, 17, 19 · Covers: AC09, AC10 · Size: M
 Spec: B.6 (Wayfinder), B.8 (frontend bullet)
 
@@ -1863,7 +2109,33 @@ public `jobs` channel.
 
 ### Phase 21 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: Deterministic gate: `composer lint:check` PASS, `composer
+types:check --memory-limit=1G` PASS, `yarn run types:check` PASS,
+`php artisan test --compact` PASS (2/2 example tests). `yarn run check` FAILs
+only on the documented baseline (`page-header.tsx`, `top-bar.tsx`,
+`menu.tsx` — `state.ts` is no longer flagged, not a regression) plus
+incidental noise unrelated to this feature (`boost.json`,
+`.claude/skills/**`, this plan file itself — Boost/skill regeneration and
+plan-doc formatting, not application code). All five forbidden-pattern
+greps are clean (`DAILY_SEND_LIMIT`, client-resource banned keys, `poll()`/
+`wire:poll`, raw `last_error` outside `ClientErrorMessage`, `lang/es`).
+AC05's live contract-key comparison is **blocked**: the dev DB has not had
+`migrate:fresh --seed` run since Phases 1–3 edited the `users`,
+`job_posting_profiles` and `applications` create-migrations (`invitations`
+is the one genuinely new migration and has run); all twelve endpoints are
+recorded "not verified — owner must run `migrate:fresh --seed` first"
+rather than guessed from code. AC01–AC12 each given a verdict: AC06/AC07
+verified by grep/code; AC08 verified by code inspection only (needs the
+`language` column to run live); AC02/AC03/AC04/AC05/AC09/AC10/AC11/AC12 are
+owner checks (browser walkthrough, two windows, real Gmail/Resend, or
+blocked on the same migration). Confirmed `resend/resend-php` installed;
+`.env` still missing `PLAN_DEFAULT`, `PLAN_FREE_DAILY_LIMIT`,
+`PLAN_STARTER_DAILY_LIMIT`, `PLAN_PRO_DAILY_LIMIT`, `INVITE_EXPIRY_DAYS`
+(config falls back to defaults, so nothing is broken, but the owner should
+still append them); `postings:extract-profiles --missing-language`
+documented for a kept database. No code changed in this phase — report
+only, git untouched, no destructive DB commands run.
 Role: qa-tester · Depends on: 1–20 · Covers: AC05, AC06, AC09 · Size: S
 Spec: Acceptance criteria, Verification
 

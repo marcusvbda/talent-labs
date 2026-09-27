@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Client;
 
 use App\Ai\Agents\ExtractJobPostingProfile;
+use App\Client\JobsPayload;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -29,6 +30,23 @@ class JobFiltersRequest extends FormRequest
             'stack' => ['nullable', 'array'],
             'stack.*' => ['string', 'max:40'],
             'cursor' => ['nullable', 'string'],
+        ];
+    }
+
+    /**
+     * The validated list filters, normalised for {@see JobsPayload::build()}.
+     *
+     * @return array{q: string, language: string, seniority: array<mixed>, remote: string, today: bool, stack: array<mixed>}
+     */
+    public function filters(): array
+    {
+        return [
+            'q' => $this->string('q')->toString(),
+            'language' => $this->string('language')->toString(),
+            'seniority' => $this->array('seniority'),
+            'remote' => $this->string('remote')->toString(),
+            'today' => $this->boolean('today'),
+            'stack' => $this->array('stack'),
         ];
     }
 

@@ -35,8 +35,17 @@ import { useT } from '@/i18n/i18n-provider';
 import { AppLayout } from '@/layouts/app-layout';
 import { useFormat } from '@/lib/format';
 import { jobs } from '@/routes';
-import type { DashboardPeriod } from '@/types/contracts';
+import type {
+    ChartData,
+    DashboardData,
+    DashboardPeriod,
+} from '@/types/contracts';
 import type { SharedProps } from '@/types/shared';
+
+type DashboardPageProps = SharedProps & {
+    dashboard: DashboardData;
+    chart: ChartData;
+};
 
 const METER_TICKS = 20;
 
@@ -52,10 +61,17 @@ const dayOfMonth = (date: string) => String(Number(date.slice(8, 10)));
 export default function Dashboard() {
     const { t } = useT();
     const format = useFormat();
-    const { auth } = usePage<SharedProps>().props;
+    const {
+        auth,
+        dashboard: dashboardProp,
+        chart: chartProp,
+    } = usePage<DashboardPageProps>().props;
     const [period, setPeriod] = useState<DashboardPeriod>('today');
     const status = useAccountStatus();
-    const dashboard = useDashboard(period);
+    const dashboard = useDashboard(
+        period,
+        period === 'today' ? dashboardProp : undefined,
+    );
     const sending = useLiveSending();
     const nextSend = useCountdown(dashboard.data?.hero.nextSendAt ?? null);
 
@@ -287,7 +303,7 @@ export default function Dashboard() {
                         )}
                     </LockOverlay>
                 }
-                chart={<ChartCard />}
+                chart={<ChartCard initial={chartProp} />}
                 matches={
                     <LockOverlay
                         locked={setupIncomplete}

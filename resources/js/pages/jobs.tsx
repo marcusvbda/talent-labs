@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { DataCard } from '@/components/patterns/data-card';
 import { PageHeader } from '@/components/patterns/page-header';
@@ -19,7 +19,10 @@ import { AppLayout } from '@/layouts/app-layout';
 import { useFormat } from '@/lib/format';
 import { useQueryFilters } from '@/lib/use-query-filters';
 import { preferences, profiles } from '@/routes';
-import type { JobCard } from '@/types/contracts';
+import type { JobCard, JobsPage } from '@/types/contracts';
+import type { SharedProps } from '@/types/shared';
+
+type JobsPageProps = SharedProps & { jobs: JobsPage };
 
 const JobsSkeleton = () => {
     const { t } = useT();
@@ -42,7 +45,12 @@ export default function Jobs() {
     const { t, plural } = useT();
     const format = useFormat();
     const [filters, setFilters] = useQueryFilters();
-    const jobs = useJobs(filters);
+    const { jobs: jobsProp } = usePage<JobsPageProps>().props;
+    // The prop is a snapshot for the query string this page was loaded with;
+    // only honour it while the filters still match that snapshot.
+    const [loadedFilters] = useState(() => JSON.stringify(filters));
+    const isInitialFilters = JSON.stringify(filters) === loadedFilters;
+    const jobs = useJobs(filters, isInitialFilters ? jobsProp : undefined);
     const status = useAccountStatus();
     const account = status.data;
     const selection = useSelection(account?.quota.remaining ?? 0);

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ConnectedIntegrationStatus;
+use App\Events\Client\Concerns\DispatchesClientEvent;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,17 @@ use Illuminate\Support\Carbon;
 #[Hidden(['access_token', 'refresh_token'])]
 class ConnectedIntegration extends Model
 {
+    use DispatchesClientEvent;
+
+    protected static function booted(): void
+    {
+        static::saved(function (ConnectedIntegration $connectedIntegration): void {
+            if ($connectedIntegration->wasChanged('status')) {
+                static::dispatchAccountStatusUpdated($connectedIntegration->user_id);
+            }
+        });
+    }
+
     /**
      * Get the attributes that should be cast.
      *

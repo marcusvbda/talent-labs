@@ -4,6 +4,8 @@ namespace App\Actions\Collection;
 
 use App\Enums\CollectionRunStatus;
 use App\Enums\SourceRunStatus;
+use App\Events\Client\Concerns\DispatchesClientEvent;
+use App\Events\Client\JobsCollected;
 use App\Filament\Resources\CollectionRuns\CollectionRunResource;
 use App\Models\CollectionRun;
 use App\Models\User;
@@ -12,6 +14,8 @@ use Filament\Notifications\Notification;
 
 class FinalizeCollectionRun
 {
+    use DispatchesClientEvent;
+
     /**
      * Close a run once its batch has finished. Safe to call more than once.
      */
@@ -32,6 +36,10 @@ class FinalizeCollectionRun
         };
         $run->finished_at = now();
         $run->save();
+
+        if ($run->jobs_new > 0) {
+            self::dispatchClientEvent(new JobsCollected($run->id, $run->jobs_new));
+        }
 
         $user = $run->triggered_by !== null ? User::find($run->triggered_by) : null;
 

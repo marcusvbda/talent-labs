@@ -9,7 +9,6 @@ import {
     useDisconnectGmail,
 } from '@/data/hooks/use-connect-gmail';
 import { useT } from '@/i18n/i18n-provider';
-import { account } from '@/routes';
 import { connect, reconnect } from '@/routes/integrations/oauth';
 import type { AccountStatus } from '@/types/contracts';
 
@@ -25,7 +24,7 @@ export const GmailCard = ({
     const disconnectGmail = useDisconnectGmail();
     const [confirming, setConfirming] = useState(false);
 
-    const redirect = { query: { redirect: account().url } };
+    const redirect = { query: { return: 'account' } };
     const connectHref = connect('gmail', redirect).url;
     const reconnectHref = reconnect('gmail', redirect).url;
 

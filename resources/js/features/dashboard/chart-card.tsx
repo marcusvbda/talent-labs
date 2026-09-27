@@ -9,11 +9,11 @@ import type { ChartData } from '@/types/contracts';
 
 type ChartRange = ChartData['range'];
 
-export function ChartCard() {
+export function ChartCard({ initial }: { initial?: ChartData }) {
     const { t } = useT();
     const format = useFormat();
     const [range, setRange] = useState<ChartRange>('14d');
-    const chart = useChart(range);
+    const chart = useChart(range, range === '14d' ? initial : undefined);
     const data = chart.data;
     const days = range === '14d' ? 14 : 30;
 

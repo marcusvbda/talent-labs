@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { useId, useState } from 'react';
 import { DataCard } from '@/components/patterns/data-card';
 import { FilterBar } from '@/components/patterns/filter-bar';
@@ -22,12 +22,38 @@ import type {
     ApplicationFilters,
     ApplicationItem,
     JobLanguage,
+    Paginated,
 } from '@/types/contracts';
+import type { SharedProps } from '@/types/shared';
 
 type TabStatus = NonNullable<ApplicationFilters['status']>;
+type ApplicationsPageProps = SharedProps & {
+    applications: Paginated<ApplicationItem>;
+};
 
 const TABS: TabStatus[] = ['all', 'in_progress', 'sent', 'attention'];
+const LANGUAGES: (JobLanguage | 'all')[] = ['en', 'pt', 'all'];
 const SEARCH_DEBOUNCE_MS = 300;
+
+// Mount-time seed only, mirroring the query string the backend used to build
+// the `applications` prop (status/language/q, same names as
+// ApplicationFiltersRequest). Not kept in sync afterwards.
+const parseInitialFilters = (search: string) => {
+    const params = new URLSearchParams(search);
+    const status = params.get('status');
+    const language = params.get('language');
+
+    return {
+        tab: (status && TABS.includes(status as TabStatus)
+            ? status
+            : 'all') as TabStatus,
+        language: (language &&
+        LANGUAGES.includes(language as JobLanguage | 'all')
+            ? language
+            : 'all') as JobLanguage | 'all',
+        search: params.get('q') ?? '',
+    };
+};
 
 const ApplicationsSkeleton = () => {
     const { t } = useT();
@@ -49,19 +75,35 @@ const ApplicationsSkeleton = () => {
 export default function Applications() {
     const { t } = useT();
     const format = useFormat();
-    const [tab, setTab] = useState<TabStatus>('all');
-    const [language, setLanguage] = useState<JobLanguage | 'all'>('all');
-    const [search, setSearch] = useState('');
+    const [initialFilters] = useState(() =>
+        parseInitialFilters(window.location.search),
+    );
+    const [tab, setTab] = useState<TabStatus>(initialFilters.tab);
+    const [language, setLanguage] = useState<JobLanguage | 'all'>(
+        initialFilters.language,
+    );
+    const [search, setSearch] = useState(initialFilters.search);
     const q = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
     const languageId = useId();
     const [opened, setOpened] = useState<ApplicationItem | null>(null);
     const account = useAccountStatus().data;
     const counts = useApplicationCounts().data;
-    const applications = useApplications({
-        status: tab,
-        language,
-        q: q === '' ? undefined : q,
-    });
+    const { applications: applicationsProp } =
+        usePage<ApplicationsPageProps>().props;
+    // The prop matches the query string this page was loaded with; once the
+    // user changes any filter away from that snapshot, stop honouring it.
+    const isInitialFilters =
+        tab === initialFilters.tab &&
+        language === initialFilters.language &&
+        q === initialFilters.search.trim();
+    const applications = useApplications(
+        {
+            status: tab,
+            language,
+            q: q === '' ? undefined : q,
+        },
+        isInitialFilters ? applicationsProp : undefined,
+    );
     const rows = applications.data?.pages.flatMap((page) => page.data) ?? [];
 
     const languageOptions = [

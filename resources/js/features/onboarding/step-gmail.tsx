@@ -5,7 +5,6 @@ import { useConnectGmail } from '@/data/hooks/use-connect-gmail';
 import { StepFooter } from '@/features/onboarding/step-footer';
 import { useT } from '@/i18n/i18n-provider';
 import { connect } from '@/routes/integrations/oauth';
-import { onboarding } from '@/routes';
 import type { AccountStatus } from '@/types/contracts';
 
 export const StepGmail = ({
@@ -21,7 +20,7 @@ export const StepGmail = ({
     const connectGmail = useConnectGmail();
     const connected = gmail.state === 'connected';
     const href = connect('gmail', {
-        query: { redirect: onboarding().url },
+        query: { return: 'onboarding' },
     }).url;
 
     return (
