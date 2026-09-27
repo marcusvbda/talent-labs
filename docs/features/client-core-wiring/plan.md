@@ -23,7 +23,7 @@ few per session. Phase status is updated in place in this file.
 | 8     | Auth pages submit for real (register, forgot, reset)           | inertia-frontend | 6, 7       | M    | DONE |
 | 9     | `/internal` group + `AccountStatus` + onboarding basics        | laravel-backend  | 2, 3       | M    | DONE |
 | 10    | Jobs endpoints (list + detail)                                 | laravel-backend  | 3, 9       | M    | DONE |
-| 11    | Applications endpoints + client-safe errors and body           | laravel-backend  | 9          | M    | PENDING |
+| 11    | Applications endpoints + client-safe errors and body           | laravel-backend  | 9          | M    | IN_PROGRESS |
 | 12    | Dashboard + chart endpoints                                    | laravel-backend  | 10, 11     | M    | PENDING |
 | 13    | Notifications + account read/update/password                   | laravel-backend  | 9          | M    | PENDING |
 | 14    | Account delete + data export                                   | laravel-backend  | 13         | M    | PENDING |
@@ -1128,7 +1128,7 @@ locking (all out of scope).
 
 ### Phase 11 — Applications endpoints, client-safe errors and bodies
 
-Status: PENDING
+Status: IN_PROGRESS
 Role: laravel-backend · Depends on: 9 · Covers: AC05, AC06, AC09 · Size: M
 Spec: B.6 (applications bullet), **D1 option A**
 
