@@ -7,6 +7,7 @@ import DashboardController from '@/actions/App/Http/Controllers/Client/Internal/
 import JobsController from '@/actions/App/Http/Controllers/Client/Internal/JobsController';
 import NotificationsController from '@/actions/App/Http/Controllers/Client/Internal/NotificationsController';
 import OnboardingBasicsController from '@/actions/App/Http/Controllers/Client/Internal/OnboardingBasicsController';
+import PreferencesController from '@/actions/App/Http/Controllers/Client/Internal/PreferencesController';
 import type {
     ApplicationFilters,
     ChartData,
@@ -126,18 +127,9 @@ export const endpoints = {
     applicationCounts: (): Endpoint => ApplicationsController.counts(),
     application: (id: number | string): Endpoint =>
         ApplicationsController.show(typeof id === 'string' ? Number(id) : id),
-    preferences: (): Endpoint => ({
-        url: '/internal/preferences',
-        method: 'get',
-    }),
-    savePreferences: (): Endpoint => ({
-        url: '/internal/preferences',
-        method: 'put',
-    }),
-    preferencesPreview: (): Endpoint => ({
-        url: '/internal/preferences/preview',
-        method: 'post',
-    }),
+    preferences: (): Endpoint => PreferencesController.show(),
+    savePreferences: (): Endpoint => PreferencesController.update(),
+    preferencesPreview: (): Endpoint => PreferencesController.preview(),
     profiles: (): Endpoint => ({ url: '/internal/profiles', method: 'get' }),
     createProfile: (): Endpoint => ({
         url: '/internal/profiles',

@@ -16,6 +16,7 @@ use App\Http\Controllers\Client\Internal\DashboardController;
 use App\Http\Controllers\Client\Internal\JobsController;
 use App\Http\Controllers\Client\Internal\NotificationsController;
 use App\Http\Controllers\Client\Internal\OnboardingBasicsController;
+use App\Http\Controllers\Client\Internal\PreferencesController;
 use App\Http\Controllers\Client\JobsPageController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
 use App\Http\Controllers\LocaleController;
@@ -56,6 +57,11 @@ Route::middleware(['auth', 'client', 'throttle:120,1'])
         Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password');
         Route::delete('/account', [AccountController::class, 'destroy'])->name('account.destroy');
         Route::get('/account/export', AccountExportController::class)->name('account.export');
+        Route::get('/preferences', [PreferencesController::class, 'show'])->name('preferences.show');
+        Route::put('/preferences', [PreferencesController::class, 'update'])->name('preferences.update');
+        Route::post('/preferences/preview', [PreferencesController::class, 'preview'])
+            ->middleware('throttle:60,1,preferences-preview')
+            ->name('preferences.preview');
     });
 
 Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');

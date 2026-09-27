@@ -16,6 +16,7 @@ import { usePreferencesPreview } from '@/data/hooks/use-preferences-preview';
 import {
     PreferencesSections,
     hasMissingLocations,
+    preferencesFieldErrors,
 } from '@/features/preferences/preferences-sections';
 import { PreferencesSummary } from '@/features/preferences/preferences-summary';
 import { useT } from '@/i18n/i18n-provider';
@@ -69,6 +70,7 @@ const PreferencesEditor = ({ saved }: { saved: PreferencesValue }) => {
     const preview = usePreferencesPreview(debounced);
     const dirty = signature(draft) !== signature(saved);
     const blocked = !dirty || hasMissingLocations(draft);
+    const errors = preferencesFieldErrors(save.error?.errors);
 
     const onSave = () =>
         save.mutate(draft, {
@@ -76,7 +78,11 @@ const PreferencesEditor = ({ saved }: { saved: PreferencesValue }) => {
                 setDraft(next);
                 toast.success(t('preferences.saved'));
             },
-            onError: () => toast.error(t('preferences.save_failed')),
+            onError: (error) => {
+                if (error.status !== 422) {
+                    toast.error(t('preferences.save_failed'));
+                }
+            },
         });
 
     const summary = (
@@ -95,7 +101,11 @@ const PreferencesEditor = ({ saved }: { saved: PreferencesValue }) => {
         <>
             <AppGrid className="pb-24 lg:pb-0">
                 <div className="flex min-w-0 flex-col gap-gap lg:col-span-8">
-                    <PreferencesSections value={draft} onChange={setDraft} />
+                    <PreferencesSections
+                        value={draft}
+                        onChange={setDraft}
+                        errors={errors}
+                    />
                 </div>
                 <aside className="hidden min-w-0 lg:col-span-4 lg:block">
                     <Card tone="light" className="lg:sticky lg:top-6">

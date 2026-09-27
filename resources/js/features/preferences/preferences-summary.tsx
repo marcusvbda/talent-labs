@@ -65,9 +65,9 @@ export function usePreferencesSentence(draft: Preferences): string {
                 { list: or(draft.locations) },
             ),
         );
-    } else if (draft.remoteMode === 'remote_or_locations') {
-        parts.push(t('preferences.summary.remote'));
     }
+    // `remote_or_locations` with no locations applies no location/remote
+    // filter at all (backend semantics), so no fragment is added here.
 
     if (draft.excludeWords.length > 0) {
         parts.push(

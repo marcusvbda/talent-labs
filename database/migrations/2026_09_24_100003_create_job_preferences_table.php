@@ -16,15 +16,16 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
             $table->jsonb('titles')->default(new Expression("'[]'"));
-            $table->jsonb('keywords')->default(new Expression("'[]'"));
+            $table->jsonb('seniorities')->default(new Expression("'[]'"));
             $table->jsonb('stack')->default(new Expression("'[]'"));
             $table->jsonb('locations')->default(new Expression("'[]'"));
-            $table->boolean('accepts_remote')->default(true);
+            $table->string('remote_mode')->default('remote_or_locations');
+            $table->jsonb('exclude_words')->default(new Expression("'[]'"));
+            $table->timestamp('saved_at')->nullable();
             $table->string('cv_path')->nullable();
             $table->string('cv_original_name')->nullable();
             $table->string('email_subject')->nullable();
             $table->text('email_body')->nullable();
-            $table->boolean('auto_send_enabled')->default(false);
             $table->timestamps();
         });
     }

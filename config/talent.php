@@ -46,6 +46,11 @@ return [
         ],
     ],
 
+    'matching' => [
+        // Postings with unclassified seniority always pass a seniority filter.
+        'unknown_seniority_passes' => (bool) env('MATCHING_UNKNOWN_SENIORITY_PASSES', true),
+    ],
+
     'plans' => [
         'default' => env('PLAN_DEFAULT', 'free'),
         'catalog' => [

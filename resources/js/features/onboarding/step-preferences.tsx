@@ -10,6 +10,7 @@ import { usePreferencesPreview } from '@/data/hooks/use-preferences-preview';
 import {
     PreferencesSections,
     hasMissingLocations,
+    preferencesFieldErrors,
 } from '@/features/preferences/preferences-sections';
 import { PreferencesSummary } from '@/features/preferences/preferences-summary';
 import { useT } from '@/i18n/i18n-provider';
@@ -34,17 +35,26 @@ const Editor = ({
     const preview = usePreferencesPreview(
         useDebouncedValue(draft, PREVIEW_DEBOUNCE_MS),
     );
+    const errors = preferencesFieldErrors(save.error?.errors);
 
     const onSave = () =>
         save.mutate(draft, {
             onSuccess: onFinish,
-            onError: () => toast.error(t('preferences.save_failed')),
+            onError: (error) => {
+                if (error.status !== 422) {
+                    toast.error(t('preferences.save_failed'));
+                }
+            },
         });
 
     return (
         <AppGrid>
             <div className="flex min-w-0 flex-col gap-gap md:col-span-2 lg:col-span-7">
-                <PreferencesSections value={draft} onChange={setDraft} />
+                <PreferencesSections
+                    value={draft}
+                    onChange={setDraft}
+                    errors={errors}
+                />
             </div>
             <aside className="flex min-w-0 flex-col gap-4 md:col-span-2 lg:col-span-5">
                 <DataCard title={t('onboarding.preferences.summary')}>

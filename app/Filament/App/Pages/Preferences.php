@@ -10,16 +10,13 @@ use App\Models\User;
 use App\Outreach\Queries\MatchingJobPostings;
 use App\Outreach\Support\ApplicationTemplateRenderer;
 use App\Outreach\Support\ClientSafeText;
-use App\Outreach\Support\StackNormalizer;
 use App\Plans\PlanCatalog;
 use BackedEnum;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -58,11 +55,6 @@ class Preferences extends Page
         $pref = $this->preference();
 
         $this->form->fill([
-            'titles' => $pref->titles ?? [],
-            'keywords' => $pref->keywords ?? [],
-            'stack' => $pref->stack ?? [],
-            'locations' => $pref->locations ?? [],
-            'accepts_remote' => $pref->accepts_remote,
             'cv_path' => $this->ownsCvPath($pref->cv_path) ? $pref->cv_path : null,
             'email_subject' => $pref->email_subject,
             'email_body' => $pref->email_body,
@@ -133,13 +125,10 @@ class Preferences extends Page
 
     protected function preference(): JobPreference
     {
-        return JobPreference::firstOrCreate(
-            ['user_id' => auth()->id()],
-            [
-                'email_subject' => ApplicationTemplateRenderer::DEFAULT_SUBJECT,
-                'email_body' => ApplicationTemplateRenderer::DEFAULT_BODY,
-            ],
-        );
+        /** @var User $user */
+        $user = auth()->user();
+
+        return JobPreference::forUser($user);
     }
 
     public function form(Schema $schema): Schema
@@ -147,14 +136,6 @@ class Preferences extends Page
         return $schema
             ->statePath('data')
             ->components([
-                Section::make('Job preferences')
-                    ->schema([
-                        TagsInput::make('titles')->label('Job titles'),
-                        TagsInput::make('keywords')->label('Description keywords'),
-                        TagsInput::make('stack')->label('Stack'),
-                        TagsInput::make('locations')->label('Locations'),
-                        Toggle::make('accepts_remote')->label('Accept remote jobs'),
-                    ]),
                 Section::make('Gmail')
                     ->schema([
                         Text::make(fn (): string => match ($this->gmailStatus()) {
@@ -320,11 +301,6 @@ class Preferences extends Page
         }
 
         $pref->fill([
-            'titles' => $this->cleanList($state['titles'] ?? []),
-            'keywords' => $this->cleanList($state['keywords'] ?? []),
-            'stack' => StackNormalizer::normalize($state['stack'] ?? []),
-            'locations' => $this->cleanList($state['locations'] ?? []),
-            'accepts_remote' => (bool) ($state['accepts_remote'] ?? false),
             'cv_path' => $newPath,
             'cv_original_name' => $newPath === null ? null : ($state['cv_original_name'] ?? $pref->cv_original_name),
             'email_subject' => $state['email_subject'],
@@ -334,8 +310,6 @@ class Preferences extends Page
         if (filled($oldPath) && $oldPath !== $newPath) {
             Storage::disk('local')->delete($oldPath);
         }
-
-        $this->data['stack'] = $pref->stack;
 
         Notification::make()->title('Preferences saved')->success()->send();
     }
@@ -351,18 +325,6 @@ class Preferences extends Page
         }
 
         return Storage::disk('local')->exists($path);
-    }
-
-    /**
-     * @param  array<mixed>  $values
-     * @return list<string>
-     */
-    private function cleanList(array $values): array
-    {
-        return array_values(array_unique(array_filter(
-            array_map(fn (mixed $v): string => trim((string) $v), $values),
-            fn (string $v): bool => $v !== '',
-        )));
     }
 
     public function downloadCv(): StreamedResponse

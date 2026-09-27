@@ -24,12 +24,50 @@ export const showsLocations = (mode: RemoteMode) => mode !== 'remote_only';
 export const hasMissingLocations = (value: Preferences) =>
     value.remoteMode === 'locations_only' && value.locations.length === 0;
 
+const FIELDS: (keyof Preferences)[] = [
+    'titles',
+    'seniorities',
+    'stack',
+    'locations',
+    'remoteMode',
+    'excludeWords',
+];
+
+// Maps a raw 422 error bag (e.g. `{ "titles.0": [...] }`) to the first
+// message for each `Preferences` field, so each field can show its own
+// server-side validation error.
+export const preferencesFieldErrors = (
+    errors: Record<string, string[]> | undefined,
+): Partial<Record<keyof Preferences, string>> => {
+    if (!errors) {
+        return {};
+    }
+
+    const result: Partial<Record<keyof Preferences, string>> = {};
+
+    FIELDS.forEach((field) => {
+        const key = Object.keys(errors).find(
+            (candidate) =>
+                candidate === field || candidate.startsWith(`${field}.`),
+        );
+        const message = key ? errors[key]?.[0] : undefined;
+
+        if (message) {
+            result[field] = message;
+        }
+    });
+
+    return result;
+};
+
 export const PreferencesSections = ({
     value,
     onChange,
+    errors,
 }: {
     value: Preferences;
     onChange: (value: Preferences) => void;
+    errors?: Partial<Record<keyof Preferences, string>>;
 }) => {
     const { t } = useT();
     const { seniorities, stackSuggestions } = usePreferenceOptions();
@@ -61,6 +99,7 @@ export const PreferencesSections = ({
                 <Field
                     label={t('preferences.titles.label')}
                     hint={t('preferences.titles.help')}
+                    error={errors?.titles}
                 >
                     {(control) => (
                         <TagsInput
@@ -102,9 +141,17 @@ export const PreferencesSections = ({
                 <p className="mt-3 text-chip text-muted">
                     {t('preferences.seniority.note')}
                 </p>
+                {errors?.seniorities && (
+                    <p role="alert" className="mt-1 text-chip text-danger-text">
+                        {errors.seniorities}
+                    </p>
+                )}
             </DataCard>
             <DataCard title={t('preferences.stack.title')}>
-                <Field label={t('preferences.stack.label')}>
+                <Field
+                    label={t('preferences.stack.label')}
+                    error={errors?.stack}
+                >
                     {(control) => (
                         <TagsInput
                             {...control}
@@ -150,13 +197,18 @@ export const PreferencesSections = ({
                             ),
                         }))}
                     />
+                    {errors?.remoteMode && (
+                        <p role="alert" className="text-chip text-danger-text">
+                            {errors.remoteMode}
+                        </p>
+                    )}
                     {showsLocations(value.remoteMode) && (
                         <Field
                             label={t('preferences.locations.label')}
                             error={
                                 hasMissingLocations(value)
                                     ? t('preferences.locations.required')
-                                    : undefined
+                                    : errors?.locations
                             }
                         >
                             {(control) => (
@@ -177,6 +229,7 @@ export const PreferencesSections = ({
                 <Field
                     label={t('preferences.exclude.label')}
                     hint={t('preferences.exclude.help')}
+                    error={errors?.excludeWords}
                 >
                     {(control) => (
                         <TagsInput

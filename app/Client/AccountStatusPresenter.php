@@ -40,7 +40,7 @@ final class AccountStatusPresenter
             ['key' => 'basics', 'done' => $user->country !== null && $user->timezone !== null],
             ['key' => 'gmail', 'done' => $gmailState === 'connected'],
             ['key' => 'profile', 'done' => $hasCv && $this->eligibility->hasValidTemplate($preference)],
-            ['key' => 'preferences', 'done' => $preference !== null],
+            ['key' => 'preferences', 'done' => $preference?->saved_at !== null],
         ];
 
         return [

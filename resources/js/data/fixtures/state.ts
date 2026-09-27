@@ -169,11 +169,27 @@ const fold = (value: string): string =>
         .toLowerCase();
 
 // Blank needles never match: an unnormalised draft must not count every job.
+// Approximates the backend's whole-word rule (WordPattern): a boundary only
+// applies on a side where the term starts/ends with a letter or digit, so
+// "C++" or ".NET" still match without requiring a word boundary on that side.
+const escapeRegExp = (value: string): string =>
+    value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const ALNUM = /[\p{L}\p{N}]/u;
+
+const wordPattern = (needle: string): RegExp => {
+    const trimmed = needle.trim();
+    const left = ALNUM.test(trimmed.charAt(0)) ? '\\b' : '';
+    const right = ALNUM.test(trimmed.charAt(trimmed.length - 1)) ? '\\b' : '';
+
+    return new RegExp(`${left}${escapeRegExp(trimmed)}${right}`);
+};
+
 const containsAny = (haystack: string, needles: string[]): boolean =>
     needles.some((needle) => {
         const folded = fold(needle).trim();
 
-        return folded !== '' && haystack.includes(folded);
+        return folded !== '' && wordPattern(folded).test(haystack);
     });
 
 // Inside a field any value can match; between fields all must match. An empty
@@ -207,9 +223,12 @@ export function jobMatchesPreferences(
         return false;
     }
 
+    // Exclude words match the title by whole word, but the stack by exact
+    // tag (same "whole item" comparison as the stack filter above, not a
+    // substring/word match inside a single normalized tag).
     if (
         containsAny(title, prefs.excludeWords) ||
-        stack.some((entry) => containsAny(entry, prefs.excludeWords))
+        prefs.excludeWords.some((word) => stack.includes(fold(word)))
     ) {
         return false;
     }
@@ -219,7 +238,11 @@ export function jobMatchesPreferences(
     }
 
     if (prefs.remoteMode === 'remote_or_locations') {
-        return job.isRemote === true || locationMatch;
+        return (
+            job.isRemote === true ||
+            prefs.locations.length === 0 ||
+            locationMatch
+        );
     }
 
     return locationMatch;
