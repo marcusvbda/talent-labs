@@ -28,7 +28,7 @@ export function Tabs({
         >
             <TabList
                 aria-label={ariaLabel}
-                className="flex max-w-full gap-2 overflow-x-auto p-1"
+                className="flex max-w-full flex-wrap gap-2 overflow-x-auto p-1"
             >
                 {tabs.map((tab) => (
                     <Tab

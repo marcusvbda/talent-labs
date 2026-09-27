@@ -9,6 +9,7 @@ const Cell = ({ span, children }: { span: string; children: ReactNode }) => (
 export function DashboardGrid({
     hero,
     kpi,
+    setup,
     live,
     chart,
     matches,
@@ -16,6 +17,8 @@ export function DashboardGrid({
 }: {
     hero: ReactNode;
     kpi: ReactNode;
+    /** When set, replaces the hero + kpi row with a single full-width cell. */
+    setup?: ReactNode;
     live: ReactNode;
     chart: ReactNode;
     matches: ReactNode;
@@ -23,8 +26,14 @@ export function DashboardGrid({
 }) {
     return (
         <AppGrid>
-            <Cell span="md:col-span-2 lg:col-span-5">{hero}</Cell>
-            <Cell span="md:col-span-2 lg:col-span-7">{kpi}</Cell>
+            {setup ? (
+                <Cell span="md:col-span-2 lg:col-span-12">{setup}</Cell>
+            ) : (
+                <>
+                    <Cell span="md:col-span-2 lg:col-span-5">{hero}</Cell>
+                    <Cell span="md:col-span-2 lg:col-span-7">{kpi}</Cell>
+                </>
+            )}
             <Cell span="lg:col-span-7">{live}</Cell>
             <Cell span="lg:col-span-5">{chart}</Cell>
             <Cell span="lg:col-span-7">{matches}</Cell>

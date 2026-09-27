@@ -1,6 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
 import {
-    ArrowUpRight,
     Check,
     Clock,
     Layers,
@@ -9,125 +8,37 @@ import {
     SlidersHorizontal,
 } from 'lucide-react';
 import { useState } from 'react';
-import { ActivityRow } from '@/components/patterns/activity-row';
-import type { ActivityStatus } from '@/components/patterns/activity-row';
 import { DataCard } from '@/components/patterns/data-card';
 import { HeroCard } from '@/components/patterns/hero-card';
+import { LockOverlay } from '@/components/patterns/lock-overlay';
 import { PageHeader } from '@/components/patterns/page-header';
 import { StatTile } from '@/components/patterns/stat-tile';
 import { Button } from '@/components/ui/button';
 import { IconButton } from '@/components/ui/icon-button';
-import { LiveDot } from '@/components/ui/live-dot';
-import { Pill } from '@/components/ui/pill';
 import { Segmented } from '@/components/ui/segmented';
 import { useAccountStatus } from '@/data/hooks/use-account-status';
 import { useDashboard } from '@/data/hooks/use-dashboard';
 import { useLiveSending } from '@/data/hooks/use-live-sending';
-import { useFixturePlan } from '@/data/hooks/use-fixture-plan';
+import { ActivityCard } from '@/features/dashboard/activity-card';
 import { ChartCard } from '@/features/dashboard/chart-card';
 import { DashboardGrid } from '@/features/dashboard/dashboard-grid';
+import { GmailBanner } from '@/features/dashboard/gmail-banner';
 import {
     LiveSendingCard,
     LiveSendingPlaceholder,
 } from '@/features/dashboard/live-sending-card';
 import { NewMatchesCard } from '@/features/dashboard/new-matches-card';
 import { RichText } from '@/features/dashboard/rich-text';
+import { SetupCard } from '@/features/dashboard/setup-card';
 import { useCountdown } from '@/features/dashboard/use-countdown';
 import { useT } from '@/i18n/i18n-provider';
 import { AppLayout } from '@/layouts/app-layout';
 import { useFormat } from '@/lib/format';
 import { jobs } from '@/routes';
 import type { DashboardPeriod } from '@/types/contracts';
-import type { Locale, SharedProps } from '@/types/shared';
+import type { SharedProps } from '@/types/shared';
 
-const MINUTE = 60_000;
 const METER_TICKS = 20;
-
-/** Demo numbers from the design mockup; replaced by real data in later phases. */
-const DEMO = {
-    sent: 18,
-    limit: 50,
-    matches: 61,
-    jobs: [
-        {
-            id: 'cobalt',
-            company: 'Cobalt Freight',
-            title: 'Frontend Developer, React',
-            place: 'Remote, EU',
-            minutesAgo: 12,
-            stack: ['React', 'TypeScript'],
-            language: 'en' as Locale,
-        },
-        {
-            id: 'estrela',
-            company: 'Estrela Pay',
-            title: 'Desenvolvedor Full-stack Pleno',
-            place: 'São Paulo',
-            minutesAgo: 60,
-            stack: ['Laravel', 'React'],
-            language: 'pt' as Locale,
-        },
-        {
-            id: 'lumen',
-            company: 'Lumen Health',
-            title: 'Senior Backend Engineer',
-            place: 'Lisbon',
-            minutesAgo: 120,
-            stack: ['Python', 'PostgreSQL'],
-            language: 'en' as Locale,
-        },
-        {
-            id: 'nuvia',
-            company: 'Nuvia',
-            title: 'Ingeniero de Software Full-stack',
-            place: 'Madrid, Híbrido',
-            minutesAgo: 180,
-            stack: ['Node.js', 'React'],
-            language: 'pt' as Locale,
-        },
-    ],
-    activity: [
-        {
-            status: 'sending' as ActivityStatus,
-            title: 'Senior Backend Engineer',
-            company: 'Klarwerk',
-            minutesAgo: 0,
-        },
-        {
-            status: 'done' as ActivityStatus,
-            title: 'Full-stack Engineer',
-            company: 'Lumen Health',
-            minutesAgo: 8,
-        },
-        {
-            status: 'done' as ActivityStatus,
-            title: 'Frontend Developer',
-            company: 'Cobalt Freight',
-            minutesAgo: 14,
-        },
-        {
-            status: 'failed' as ActivityStatus,
-            title: '',
-            company: '',
-            minutesAgo: 21,
-        },
-        {
-            status: 'done' as ActivityStatus,
-            title: 'Desenvolvedor Backend',
-            company: 'Estrela Pay',
-            minutesAgo: 25,
-        },
-    ],
-};
-
-/** Demo timestamps are computed relative to mount time. */
-const buildClock = () => {
-    const now = Date.now();
-
-    return {
-        now,
-    };
-};
 
 const greetingKey = (hour: number) =>
     hour < 12
@@ -142,26 +53,22 @@ export default function Dashboard() {
     const { t } = useT();
     const format = useFormat();
     const { auth } = usePage<SharedProps>().props;
-    const plan = useFixturePlan() ?? 'free';
-    const [clock] = useState(buildClock);
     const [period, setPeriod] = useState<DashboardPeriod>('today');
-    const [selected, setSelected] = useState<string[]>(['cobalt', 'estrela']);
     const status = useAccountStatus();
     const dashboard = useDashboard(period);
     const sending = useLiveSending();
     const nextSend = useCountdown(dashboard.data?.hero.nextSendAt ?? null);
 
     const name = auth.user?.name.trim().split(/\s+/)[0] ?? '';
-    const ago = (minutes: number) =>
-        format.relativeTime(clock.now - minutes * MINUTE);
-    const at = (minutes: number) =>
-        new Date(clock.now - minutes * MINUTE).toISOString();
-    const left = DEMO.limit - DEMO.sent;
 
     const quota = status.data?.quota;
     const data = dashboard.data;
     const heroLoading = !data || !status.data;
-    const date = format.date(clock.now, {
+    const onboardingComplete = status.data?.onboarding.complete;
+    const setupIncomplete = onboardingComplete === false;
+    const gmailExpired =
+        status.data?.gmail.state === 'reauthorization_required';
+    const date = format.date(Date.now(), {
         weekday: 'long',
         month: 'short',
         day: 'numeric',
@@ -231,7 +138,13 @@ export default function Dashboard() {
                     </>
                 }
             />
+            {gmailExpired && <GmailBanner />}
             <DashboardGrid
+                setup={
+                    setupIncomplete && status.data ? (
+                        <SetupCard onboarding={status.data.onboarding} />
+                    ) : undefined
+                }
                 hero={
                     <HeroCard
                         label={t('dashboard.hero.label')}
@@ -356,102 +269,45 @@ export default function Dashboard() {
                     </DataCard>
                 }
                 live={
-                    sending.data ? (
-                        <LiveSendingCard
-                            sending={sending.data}
-                            mode={status.data?.plan.mode ?? 'select'}
-                            activity={data?.activity ?? []}
-                        />
-                    ) : (
-                        <LiveSendingPlaceholder
-                            isError={sending.isError}
-                            onRetry={() => void sending.refetch()}
-                        />
-                    )
+                    <LockOverlay
+                        locked={setupIncomplete}
+                        title={t('dashboard.setup.locked')}
+                    >
+                        {sending.data ? (
+                            <LiveSendingCard
+                                sending={sending.data}
+                                mode={status.data?.plan.mode ?? 'select'}
+                                activity={data?.activity ?? []}
+                            />
+                        ) : (
+                            <LiveSendingPlaceholder
+                                isError={sending.isError}
+                                onRetry={() => void sending.refetch()}
+                            />
+                        )}
+                    </LockOverlay>
                 }
                 chart={<ChartCard />}
                 matches={
-                    <NewMatchesCard
-                        plan={plan}
-                        matches={DEMO.matches}
-                        left={left}
-                        selected={selected}
-                        onClear={() => setSelected([])}
-                        onToggle={(id, checked) =>
-                            setSelected((current) =>
-                                checked
-                                    ? [...current, id]
-                                    : current.filter((item) => item !== id),
-                            )
-                        }
-                        jobs={DEMO.jobs.map((job) => ({
-                            id: job.id,
-                            company: job.company,
-                            title: job.title,
-                            meta: `${job.company} · ${job.place} · ${ago(job.minutesAgo)}`,
-                            stack: job.stack,
-                            language: job.language,
-                        }))}
-                    />
-                }
-                activity={
-                    <DataCard
-                        title={t('dashboard.activity.title')}
-                        subtitle={t('dashboard.activity.subtitle')}
-                        actions={
-                            <Pill tone="tile">
-                                <LiveDot className="size-2" />
-                                {t('dashboard.live.badge')}
-                            </Pill>
-                        }
-                        className="flex flex-col"
+                    <LockOverlay
+                        locked={setupIncomplete}
+                        title={t('dashboard.setup.locked')}
                     >
-                        <div className="flex flex-col">
-                            {DEMO.activity.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="border-b border-hairline py-4 first:pt-0 last:border-b-0"
-                                >
-                                    <ActivityRow
-                                        status={item.status}
-                                        title={
-                                            item.status === 'sending'
-                                                ? t('status.sending')
-                                                : item.status === 'failed'
-                                                  ? t(
-                                                        'dashboard.activity.failed',
-                                                    )
-                                                  : t('dashboard.activity.sent')
-                                        }
-                                        subtitle={
-                                            item.status === 'failed'
-                                                ? t(
-                                                      'dashboard.activity.failed_detail',
-                                                  )
-                                                : `${item.title} · ${item.company}`
-                                        }
-                                        time={at(item.minutesAgo)}
-                                        timeFormat={
-                                            item.status === 'sending'
-                                                ? 'relative'
-                                                : 'clock'
-                                        }
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-auto pt-2">
-                            <Button
-                                variant="secondary-tile"
-                                size="lg"
-                                fullWidth
-                                iconRight={ArrowUpRight}
-                            >
-                                {t('dashboard.activity.view_all')}
-                            </Button>
-                        </div>
-                    </DataCard>
+                        <NewMatchesCard
+                            matches={
+                                data?.matches ?? {
+                                    total: 0,
+                                    newToday: 0,
+                                    items: [],
+                                }
+                            }
+                            mode={status.data?.plan.mode ?? 'select'}
+                            accountEmail={status.data?.gmail.accountEmail ?? ''}
+                            remaining={status.data?.quota.remaining ?? 0}
+                        />
+                    </LockOverlay>
                 }
+                activity={<ActivityCard activity={data?.activity ?? []} />}
             />
         </AppLayout>
     );

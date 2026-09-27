@@ -96,7 +96,7 @@ const Empty = ({
     title: string;
     children?: ReactNode;
 }) => (
-    <div className="flex flex-col items-center gap-4 rounded-panel bg-dark-2 px-5 py-10 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-panel bg-dark-2 px-5 py-10 text-center">
         <p className="text-row-title">{title}</p>
         {children}
     </div>

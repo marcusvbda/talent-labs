@@ -18,7 +18,11 @@ export function DarkCard({
     children: ReactNode;
 }) {
     return (
-        <Card tone="dark" as="section" className={className}>
+        <Card
+            tone="dark"
+            as="section"
+            className={`flex h-full flex-col ${className ?? ''}`}
+        >
             <div className="mb-5 flex items-center justify-between gap-4">
                 {Icon && (
                     <span className="inline-grid size-control-sm shrink-0 place-items-center rounded-full bg-white text-ink">
@@ -41,7 +45,7 @@ export function DarkCard({
                     </div>
                 )}
             </div>
-            {children}
+            <div className="flex flex-1 flex-col">{children}</div>
         </Card>
     );
 }

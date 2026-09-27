@@ -9,34 +9,34 @@ one or a few per session. Phase status is updated in place in this file.
 
 ## Status board
 
-| Phase | Title                                                                         | Role             | Depends on         | Size | Status  |
-| ----- | ----------------------------------------------------------------------------- | ---------------- | ------------------ | ---- | ------- |
-| 1     | Data contracts, realtime contracts, endpoint map, query keys                  | inertia-frontend | none               | S    | DONE    |
-| 2     | `LockOverlay` extraction + `Stepper` primitive + styleguide                   | inertia-frontend | none               | M    | DONE    |
-| 3     | Fixture catalog I: companies, jobs, stack suggestions                         | inertia-frontend | 1                  | M    | DONE    |
-| 4     | Fixture catalog II: applications, profiles, preferences, plans, notifications | inertia-frontend | 1, 3               | M    | DONE    |
-| 5     | Fixture state store, sending engine, DevToolbar simulations                   | inertia-frontend | 3, 4               | M    | DONE    |
-| 6     | Hooks I: account status, dashboard, chart                                     | inertia-frontend | 5                  | S    | DONE    |
-| 7     | Hooks II: live sending, pause, resume, jobs, job detail                       | inertia-frontend | 5                  | S    | DONE    |
-| 8     | Hooks III: applications, drafts, queueing mutations                           | inertia-frontend | 5                  | M    | DONE    |
-| 9     | Hooks IV: preferences, preview, profiles, CV, template preview                | inertia-frontend | 5                  | M    | DONE    |
-| 10    | Hooks V: plans, notifications, account, onboarding basics                     | inertia-frontend | 5                  | M    | DONE    |
-| 11    | Realtime cache wiring (`useRealtimeCache` in `AppLayout`)                     | inertia-frontend | 6, 7, 8            | S    | DONE    |
-| 12    | S7 Plans page + `PlanGate` links                                              | inertia-frontend | 10                 | M    | DONE    |
-| 13    | S6 Preferences page                                                           | inertia-frontend | 9                  | M    | DONE    |
-| 14    | S5 Profiles page                                                              | inertia-frontend | 9                  | M    | DONE    |
-| 15    | S2 Jobs page: filters, detail sheet, selection, confirm modal                 | inertia-frontend | 7, 8, 12, 13, 14   | M    | DONE    |
-| 16    | S3 Review modal (Pro review mode)                                             | inertia-frontend | 8, 15              | M    | DONE    |
-| 17    | S4 Applications page + detail sheet                                           | inertia-frontend | 8, 11              | M    | DONE    |
-| 18    | S9 Onboarding, 4 steps                                                        | inertia-frontend | 2, 9, 10, 13, 14   | M    | DONE    |
-| 19    | S1 Dashboard part 1: header, hero, KPI tiles, chart                           | inertia-frontend | 6, 11, 15          | M    | DONE    |
-| 20    | S1 Dashboard part 2: live sending card                                        | inertia-frontend | 7, 11, 19          | M    | DONE    |
-| 21    | S1 Dashboard part 3: matches, activity, setup card, Gmail banner              | inertia-frontend | 15, 16, 17, 18, 20 | M    | PENDING |
-| 22    | S8 Account page                                                               | inertia-frontend | 10                 | M    | PENDING |
-| 23    | S10 Auth pages: register, closed, forgot, reset                               | inertia-frontend | 10                 | M    | PENDING |
-| 24    | S11 Notifications popover + realtime toasts                                   | inertia-frontend | 10, 11, 12, 17, 22 | M    | PENDING |
-| 25    | S12 Command palette                                                           | inertia-frontend | 7, 13, 14, 15, 17  | S    | PENDING |
-| 26    | Verification and report                                                       | qa-tester        | 1–25               | S    | PENDING |
+| Phase | Title                                                                         | Role             | Depends on         | Size | Status      |
+| ----- | ----------------------------------------------------------------------------- | ---------------- | ------------------ | ---- | ----------- |
+| 1     | Data contracts, realtime contracts, endpoint map, query keys                  | inertia-frontend | none               | S    | DONE        |
+| 2     | `LockOverlay` extraction + `Stepper` primitive + styleguide                   | inertia-frontend | none               | M    | DONE        |
+| 3     | Fixture catalog I: companies, jobs, stack suggestions                         | inertia-frontend | 1                  | M    | DONE        |
+| 4     | Fixture catalog II: applications, profiles, preferences, plans, notifications | inertia-frontend | 1, 3               | M    | DONE        |
+| 5     | Fixture state store, sending engine, DevToolbar simulations                   | inertia-frontend | 3, 4               | M    | DONE        |
+| 6     | Hooks I: account status, dashboard, chart                                     | inertia-frontend | 5                  | S    | DONE        |
+| 7     | Hooks II: live sending, pause, resume, jobs, job detail                       | inertia-frontend | 5                  | S    | DONE        |
+| 8     | Hooks III: applications, drafts, queueing mutations                           | inertia-frontend | 5                  | M    | DONE        |
+| 9     | Hooks IV: preferences, preview, profiles, CV, template preview                | inertia-frontend | 5                  | M    | DONE        |
+| 10    | Hooks V: plans, notifications, account, onboarding basics                     | inertia-frontend | 5                  | M    | DONE        |
+| 11    | Realtime cache wiring (`useRealtimeCache` in `AppLayout`)                     | inertia-frontend | 6, 7, 8            | S    | DONE        |
+| 12    | S7 Plans page + `PlanGate` links                                              | inertia-frontend | 10                 | M    | DONE        |
+| 13    | S6 Preferences page                                                           | inertia-frontend | 9                  | M    | DONE        |
+| 14    | S5 Profiles page                                                              | inertia-frontend | 9                  | M    | DONE        |
+| 15    | S2 Jobs page: filters, detail sheet, selection, confirm modal                 | inertia-frontend | 7, 8, 12, 13, 14   | M    | DONE        |
+| 16    | S3 Review modal (Pro review mode)                                             | inertia-frontend | 8, 15              | M    | DONE        |
+| 17    | S4 Applications page + detail sheet                                           | inertia-frontend | 8, 11              | M    | DONE        |
+| 18    | S9 Onboarding, 4 steps                                                        | inertia-frontend | 2, 9, 10, 13, 14   | M    | DONE        |
+| 19    | S1 Dashboard part 1: header, hero, KPI tiles, chart                           | inertia-frontend | 6, 11, 15          | M    | DONE        |
+| 20    | S1 Dashboard part 2: live sending card                                        | inertia-frontend | 7, 11, 19          | M    | DONE        |
+| 21    | S1 Dashboard part 3: matches, activity, setup card, Gmail banner              | inertia-frontend | 15, 16, 17, 18, 20 | M    | DONE    |
+| 22    | S8 Account page                                                               | inertia-frontend | 10                 | M    | PENDING     |
+| 23    | S10 Auth pages: register, closed, forgot, reset                               | inertia-frontend | 10                 | M    | PENDING     |
+| 24    | S11 Notifications popover + realtime toasts                                   | inertia-frontend | 10, 11, 12, 17, 22 | M    | PENDING     |
+| 25    | S12 Command palette                                                           | inertia-frontend | 7, 13, 14, 15, 17  | S    | PENDING     |
+| 26    | Verification and report                                                       | qa-tester        | 1–25               | S    | PENDING     |
 
 ## Audit — 2026-09-27
 
@@ -1442,7 +1442,24 @@ against the mockup, then mobile. 6. Gate.
 
 ### Phase 21 — S1 Dashboard part 3: matches, activity, setup card, Gmail banner
 
-Status: PENDING
+Status: DONE
+Evidence: `new-matches-card.tsx` rewritten on `useSelection` + `DashboardData.matches`
+(select/review/auto gated on `mode`, matching `send-bar.tsx`'s pattern);
+`activity-card.tsx` extracted on `DashboardData.activity` (queued/sending/sent/failed/
+ambiguous each get a distinct label — a `queued` fallthrough to "Not delivered" was
+caught during manual verification and fixed); `setup-card.tsx` and `gmail-banner.tsx`
+added; `dashboard-grid.tsx` gained an optional full-width `setup` slot;
+`dashboard.tsx` composes all four and the `DEMO` constant is gone
+(`grep -n "DEMO" resources/js/pages/dashboard.tsx` empty). Two out-of-scope files
+(`user-menu.tsx`, `mobile-nav.tsx`) were accidentally rewritten (quote style +
+one dropped locale-switcher entry) by the implementing agent; reverted to their
+committed state except the owner-confirmed removal of the locale entries from
+`user-menu.tsx` (kept in `mobile-nav.tsx`'s own switcher only, per owner). Checks:
+`yarn run check` (clean except the two pre-existing baseline failures per D1),
+`yarn types:check` (pass), `yarn build` (pass), lang/en.json vs lang/pt.json key
+parity (identical). Verified live via `yarn build` + browser: matches/activity now
+show real fixture data instead of the old fake "Sending… Klarwerk" / Spanish-titled
+job.
 Role: inertia-frontend · Depends on: 15, 16, 17, 18, 20 · Covers: AC02, AC03, AC04, AC05, AC07, AC11, AC13, AC14 · Size: M
 Spec: B.6 S1 (row 3, onboarding state, Gmail banner)
 
