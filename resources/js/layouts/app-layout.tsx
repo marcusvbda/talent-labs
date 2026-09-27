@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 import { TopBar } from '@/components/patterns/top-bar';
 import { useRealtimeCache } from '@/data/realtime/use-realtime-cache';
+import { useAccountStatus } from '@/data/hooks/use-account-status';
 import { useFixturePlan } from '@/data/hooks/use-fixture-plan';
+import { CommandPalette } from '@/features/palette/command-palette';
+import { usePalette, usePaletteShortcut } from '@/features/palette/use-palette';
 import { useMainNav } from '@/lib/navigation';
 import { useFlashToasts } from '@/lib/use-flash-toasts';
 import { cn } from '@/lib/utils';
@@ -36,18 +39,29 @@ export function AppLayout({
 }) {
     useFlashToasts();
     useRealtimeCache();
+    usePaletteShortcut();
+    const palette = usePalette();
     const mainNav = useMainNav();
     const nav = showNav ? mainNav : [];
     const plan = useFixturePlan();
+    const status = useAccountStatus();
+    const notificationsDot = status.data
+        ? status.data.unreadNotifications > 0
+        : false;
 
     return (
         <div className="min-h-screen w-full bg-shell text-ink lg:bg-canvas">
             <div className="mx-auto flex min-h-screen w-full flex-col gap-gap bg-shell px-4 py-5 md:px-8 lg:min-h-0 lg:px-7 lg:py-6 lg:shadow-shell desk:px-shell-x desk:pt-shell-t desk:pb-shell-b">
-                <TopBar nav={nav} plan={plan} />
+                <TopBar
+                    nav={nav}
+                    plan={plan}
+                    notificationsDot={notificationsDot}
+                />
                 <main className="flex min-w-0 flex-col gap-gap">
                     {children}
                 </main>
             </div>
+            <CommandPalette open={palette.open} onClose={palette.close} />
         </div>
     );
 }

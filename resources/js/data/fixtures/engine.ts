@@ -40,7 +40,10 @@ const emitAccount = (): void =>
     });
 
 const emitNotification = (
-    type: 'application_failed' | 'daily_limit_reached',
+    type:
+        | 'application_failed'
+        | 'daily_limit_reached'
+        | 'gmail_reauthorization_required',
     data: Record<string, string | number>,
 ): void =>
     devEmitter.emit('notification.created', {
@@ -350,6 +353,8 @@ export const engine = {
 };
 
 // Gmail needing reauthorization halts sending; reconnecting picks it up again.
+let lastGmail = getDevState().gmail;
+
 const unsubscribe = useFixtures
     ? subscribeDevState(() => {
           if (halted()) {
@@ -359,6 +364,17 @@ const unsubscribe = useFixtures
           }
 
           emitSending();
+
+          const gmail = getDevState().gmail;
+
+          if (
+              gmail === 'needs_reconnection' &&
+              lastGmail !== 'needs_reconnection'
+          ) {
+              emitNotification('gmail_reauthorization_required', {});
+          }
+
+          lastGmail = gmail;
       })
     : () => {};
 

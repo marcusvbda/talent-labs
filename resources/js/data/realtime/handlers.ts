@@ -1,5 +1,7 @@
 import type { InfiniteData, QueryClient } from '@tanstack/react-query';
+import { toast } from '@/components/ui/toast';
 import { keys } from '@/data/keys';
+import type { Params } from '@/i18n/translate';
 import type { JobsChannelEvents, UserChannelEvents } from '@/types/realtime';
 import type {
     AccountStatus,
@@ -8,6 +10,7 @@ import type {
     DashboardData,
     LiveSending,
     NotificationItem,
+    NotificationType,
     Paginated,
 } from '@/types/contracts';
 
@@ -110,6 +113,33 @@ export function notificationCreated(
                 unreadNotifications: data.unreadNotifications + 1,
             },
     );
+}
+
+// Types that also surface as a toast when they arrive over the channel.
+const TOAST_TONES: Partial<Record<NotificationType, 'error' | 'info'>> = {
+    gmail_reauthorization_required: 'error',
+    sending_auto_paused: 'error',
+    daily_limit_reached: 'info',
+};
+
+// `notificationCreated` is a plain handler (no React tree), so it cannot call
+// `useT()`; the caller (a hook, `useRealtimeCache`) supplies `t` here instead.
+export function notifyToast(
+    notification: NotificationItem,
+    t: (key: string, params?: Params) => string,
+): void {
+    const tone = TOAST_TONES[notification.type];
+
+    if (!tone) {
+        return;
+    }
+
+    const message = t(
+        `notifications.${notification.type}`,
+        notification.data as Params,
+    );
+
+    toast[tone](message);
 }
 
 // Bursts of collection runs collapse into a single refetch.

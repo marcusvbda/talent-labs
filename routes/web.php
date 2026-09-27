@@ -20,6 +20,8 @@ Route::inertia('/preferences', 'preferences')->middleware(['auth', 'client'])->n
 
 Route::inertia('/plans', 'plans')->middleware(['auth', 'client'])->name('plans');
 
+Route::inertia('/account', 'account')->middleware(['auth', 'client'])->name('account');
+
 Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware('guest')->group(function (): void {
@@ -27,6 +29,11 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/login', [LoginController::class, 'store'])
         ->middleware('throttle:6,1')
         ->name('login.store');
+
+    Route::inertia('/register', 'auth/register')->name('register');
+    Route::inertia('/register/closed', 'auth/closed')->name('register.closed');
+    Route::inertia('/forgot-password', 'auth/forgot-password')->name('password.request');
+    Route::inertia('/reset-password/{token}', 'auth/reset-password')->name('password.reset');
 });
 
 Route::post('/logout', LogoutController::class)->middleware('auth')->name('logout');

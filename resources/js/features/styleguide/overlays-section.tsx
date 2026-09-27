@@ -7,6 +7,7 @@ import { Modal } from '@/components/ui/modal';
 import { Popover } from '@/components/ui/popover';
 import { Sheet } from '@/components/ui/sheet';
 import { Tooltip } from '@/components/ui/tooltip';
+import { CommandPalette } from '@/features/palette/command-palette';
 import { useT } from '@/i18n/i18n-provider';
 import { StyleguideSection } from './styleguide-section';
 
@@ -24,6 +25,7 @@ export function OverlaysSection() {
     const [modal, setModal] = useState(false);
     const [right, setRight] = useState(false);
     const [bottom, setBottom] = useState(false);
+    const [palette, setPalette] = useState(false);
 
     return (
         <StyleguideSection id="overlays" title={t('styleguide.overlays.title')}>
@@ -141,6 +143,19 @@ export function OverlaysSection() {
                         {t('styleguide.overlays.tooltip_trigger')}
                     </Button>
                 </Tooltip>
+            </Group>
+
+            <Group title={t('styleguide.overlays.command_palette')}>
+                <Button
+                    variant="secondary-tile"
+                    onClick={() => setPalette(true)}
+                >
+                    {t('styleguide.overlays.open_command_palette')}
+                </Button>
+                <CommandPalette
+                    open={palette}
+                    onClose={() => setPalette(false)}
+                />
             </Group>
         </StyleguideSection>
     );

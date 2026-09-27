@@ -10,7 +10,7 @@ import { useT } from '@/i18n/i18n-provider';
 import type { Locale } from '@/types/contracts';
 
 const LOCALES: Locale[] = ['en', 'pt'];
-const COUNTRIES = [
+export const COUNTRIES = [
     'AR',
     'AU',
     'AT',

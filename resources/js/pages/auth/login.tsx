@@ -6,6 +6,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useT } from '@/i18n/i18n-provider';
 import { GuestLayout } from '@/layouts/guest-layout';
+import { request as passwordRequest } from '@/routes/password';
 
 export default function Login() {
     const { t } = useT();
@@ -59,10 +60,18 @@ export default function Login() {
                                 />
                             )}
                         </Field>
-                        <label className="flex items-center gap-3 text-label-sm text-ink">
-                            <Checkbox name="remember" value="1" />
-                            {t('auth.login.remember')}
-                        </label>
+                        <div className="flex items-center justify-between gap-3">
+                            <label className="flex items-center gap-3 text-label-sm text-ink">
+                                <Checkbox name="remember" value="1" />
+                                {t('auth.login.remember')}
+                            </label>
+                            <a
+                                href={passwordRequest().url}
+                                className="text-label-sm text-ink underline underline-offset-2 hover:no-underline"
+                            >
+                                {t('auth.forgot.link')}
+                            </a>
+                        </div>
                         <Button
                             type="submit"
                             variant="primary-ink"

@@ -32,11 +32,11 @@ one or a few per session. Phase status is updated in place in this file.
 | 19    | S1 Dashboard part 1: header, hero, KPI tiles, chart                           | inertia-frontend | 6, 11, 15          | M    | DONE        |
 | 20    | S1 Dashboard part 2: live sending card                                        | inertia-frontend | 7, 11, 19          | M    | DONE        |
 | 21    | S1 Dashboard part 3: matches, activity, setup card, Gmail banner              | inertia-frontend | 15, 16, 17, 18, 20 | M    | DONE    |
-| 22    | S8 Account page                                                               | inertia-frontend | 10                 | M    | PENDING     |
-| 23    | S10 Auth pages: register, closed, forgot, reset                               | inertia-frontend | 10                 | M    | PENDING     |
-| 24    | S11 Notifications popover + realtime toasts                                   | inertia-frontend | 10, 11, 12, 17, 22 | M    | PENDING     |
-| 25    | S12 Command palette                                                           | inertia-frontend | 7, 13, 14, 15, 17  | S    | PENDING     |
-| 26    | Verification and report                                                       | qa-tester        | 1–25               | S    | PENDING     |
+| 22    | S8 Account page                                                               | inertia-frontend | 10                 | M    | DONE        |
+| 23    | S10 Auth pages: register, closed, forgot, reset                               | inertia-frontend | 10                 | M    | DONE        |
+| 24    | S11 Notifications popover + realtime toasts                                   | inertia-frontend | 10, 11, 12, 17, 22 | M    | DONE        |
+| 25    | S12 Command palette                                                           | inertia-frontend | 7, 13, 14, 15, 17  | S    | DONE        |
+| 26    | Verification and report                                                       | qa-tester        | 1–25               | S    | DONE        |
 
 ## Audit — 2026-09-27
 
@@ -1524,7 +1524,8 @@ phase `DEMO` is gone.
 
 ### Phase 22 — S8 Account page
 
-Status: PENDING
+Status: DONE
+Evidence: `/account` registered (auth+client middleware) and reachable from the user menu (`user_menu.account`); six DataCards (Profile, Language & region, Gmail, Password, Data, Danger zone) render on fixtures via existing Phase 10 hooks (`useAccount`, `useSaveAccount`, `useChangePassword`, `useDeleteAccount`) plus new `useDisconnectGmail`; wrong current password shows the field-level 422 error; Disconnect and Delete both confirm first; export is a plain download link. `yarn run check` — new file (gmail-card.tsx) fixed to pass; remaining formatting failures (docs/features/client-app-foundation/plan.md, plus 3 pre-existing unrelated files: page-header.tsx, menu.tsx, fixtures/state.ts) are pre-existing baseline drift not touched by this phase. `yarn types:check` pass. `yarn build` pass. `composer lint:check` — only the known D1 baseline (ApplicationTemplateRenderer.php). `composer types:check` pass (0 errors). EN/PT key sets identical (754/754). `code-reviewer` APPROVED; non-blocking notes: pages/account.tsx uses a bespoke two-column grid instead of the `AppGrid` pattern, and the Data card's download link is manually styled rather than a kit link-button.
 Role: inertia-frontend · Depends on: 10 · Covers: AC02, AC03, AC13, AC14 · Size: M
 Spec: B.6 S8, B.3 (export link)
 
@@ -1571,7 +1572,8 @@ flows behind confirmation.
 
 ### Phase 23 — S10 Auth pages: register, closed, forgot, reset
 
-Status: PENDING
+Status: DONE
+Evidence: four guest routes registered (register, register.closed, password.request, password.reset); `/register?invite=ok-*` shows the form with email prefilled/disabled from the fixture invite check, missing/invalid invite redirects to `/register/closed` with no flash or loop; register/forgot/reset all submit client-side only (no request) and show success states linking back to login; login has a working "Forgot password?" link to `password.request()`. `yarn run check` — only pre-existing baseline formatting failures (docs/features/client-app-foundation/plan.md, page-header.tsx, menu.tsx, fixtures/state.ts), our own new files pass. `yarn types:check` pass. `yarn build` pass. `composer lint:check` — only the known D1 baseline (ApplicationTemplateRenderer.php). `composer types:check` pass (0 errors). EN/PT key sets identical (781/781), PT translations verified genuine. `code-reviewer` APPROVED; non-blocking notes: forgot-password page reuses `auth.register.errors.email_*` keys (naming nit only), reset-password's `{token}` is read but unused (no backend yet, as scoped).
 Role: inertia-frontend · Depends on: 10 · Covers: AC02, AC03, AC12, AC13, AC14 · Size: M
 Spec: B.5 (guest routes), B.6 S10
 
@@ -1621,7 +1623,8 @@ link. 5. EN/PT. 6. Mobile check. 7. Gate (+ PHP gates).
 
 ### Phase 24 — S11 Notifications popover + realtime toasts
 
-Status: PENDING
+Status: DONE
+Evidence: bell opens a popover (desktop) / bottom Sheet (mobile, <768px) listing notifications with unread dots, "Mark all as read" clears the dot via `keys.account.status()` invalidation; switching the DevToolbar Gmail state to "needs reconnection" emits `gmail_reauthorization_required` exactly once per transition (module-level `lastGmail` tracking in `engine.ts`, verified no re-fire on unrelated dev-state changes) and shows an error toast; `daily_limit_reached`/`sending_auto_paused` also toast, `application_failed`/`jobs_collected` correctly don't; every row links to an existing page. `yarn types:check`/`yarn build` pass; `yarn run check` only pre-existing baseline failures (docs/features/client-app-foundation/plan.md, page-header.tsx, menu.tsx, fixtures/state.ts). No PHP touched. EN/PT key sets identical (789/789). `code-reviewer` first pass: CHANGES_REQUIRED (missing mobile bottom-Sheet variant, a phase Step even though not restated in "Done when"); orchestrator implemented the mobile Sheet directly (dual desktop-Popover/mobile-Sheet render mirroring the existing hamburger/MobileNav pattern) and a second focused review APPROVED it with no new issues.
 Role: inertia-frontend · Depends on: 10, 11, 12, 17, 22 · Covers: AC02, AC03, AC13 · Size: M
 Spec: B.6 S11, B.7
 
@@ -1674,7 +1677,8 @@ becomes a bottom `Sheet` under 768 px). 6. Gate.
 
 ### Phase 25 — S12 Command palette
 
-Status: PENDING
+Status: DONE
+Evidence: ⌘K/Ctrl+K (via `usePaletteShortcut`) and both search controls (pill with `Kbd` hint, icon button) open the palette; Esc closes it (headlessui `Dialog` default). Typing filters Pages/Actions by substring and re-queries Jobs (debounced 250ms, top 5, navigates to `jobs({query:{q}})` without opening the sheet); ↑/↓/Enter navigate the combined list with correct wraparound; "Pause sending"/"Resume sending" toggles on `useLiveSending().data.state`. Registered on `/dev/styleguide` wiring the real `CommandPalette`. `yarn types:check`/`yarn build` pass; `yarn run check` only pre-existing baseline failures (docs/features/client-app-foundation/plan.md, page-header.tsx, menu.tsx, fixtures/state.ts). No PHP touched. EN/PT key sets identical (802/802). `code-reviewer` APPROVED, no blocking findings (one wording nit on "6 nav + Account + Plans" clarified as non-issue — Plans is already one of the 6 nav destinations). Orchestrator note: the delegated agent built `use-palette.ts` and `command-palette.tsx` correctly but ran out of turns before wiring `top-bar.tsx`'s click handlers, the styleguide entry, and all `palette.*`/`nav.account`/`styleguide.overlays.command_palette` i18n keys — orchestrator completed that wiring directly and it was included in the reviewed diff.
 Role: inertia-frontend · Depends on: 7, 13, 14, 15, 17 · Covers: AC02, AC03, AC15 · Size: S
 Spec: B.6 S12
 
@@ -1721,7 +1725,8 @@ groups and keyboard navigation. 3. Wire `TopBar`. 4. Styleguide entry. 5. EN/PT.
 
 ### Phase 26 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: Gate — `yarn run check` fails on exactly the known baseline 4 files (`docs/features/client-app-foundation/plan.md`, `page-header.tsx`, `menu.tsx`, `fixtures/state.ts`), nothing new; `yarn types:check` passed; `yarn build` passed; `composer lint:check` fails on exactly `ApplicationTemplateRenderer.php` (D1 baseline), nothing new; `composer types:check` (phpstan) passed 0 errors; `php artisan test` passed 2/2. Greps: no `refetchInterval`/`wire:poll`/`->poll(` usage (only a comment); one raw-hex hit (`logo-mark.tsx`, CSS-var fallback for the brand dot, pre-existing from an earlier session, not touched by 22–25); fixtures contain two `.test`-TLD addresses (`ana.silva@example.test` in `state.ts`, `tester@example.test` in `handlers/account.ts`) which are the client's own Gmail/login address, not a job/recipient/company address, so AC08 intent holds; no `'/internal` outside `endpoints.ts`; no stale `dashboard.live.step.`/`dashboard.mode"` keys. i18n: `lang/en.json` and `lang/pt.json` have identical key sets (diff empty both ways); 10-key spot check under `account.*`/`auth.*`/`notifications.*`/`palette.*` shows genuine PT translations, not copy-pasted English. AC01–AC15: all verified (AC01 types+contracts imports confirmed, AC02 every route in `routes/web.php` has a matching page in `resources/js/pages/**`, AC03 `DataCard` `state="error"/"empty"` used on jobs/applications, AC04 DevToolbar plan selector wired through `setDevState`/`useDevState`, AC05 engine emits `application.progressed`/`sending.updated` consumed by `handlers.ts`, AC06 `pause`/`resume`/`registerSimulation('failure', ...)` present in `engine.ts`, AC07 `useSelection` implements one-per-company replace+toast and `overQuota` wired to the Jobs page, AC08 covered by the grep above, AC09/AC10/AC11 all page+feature files present, AC12 all four auth pages exist and `register.tsx`'s invite-gate redirect is real (`router.visit(closed().url)` on an invalid/missing invite), AC13 covered by the i18n check, AC14 responsive Tailwind prefixes used throughout — true visual check deferred to the owner's manual pass, AC15 `CommandPalette` is the only new primitive added to `overlays-section.tsx` in phases 22–25, no raw hex/polling per the greps). Smoke tests done as a **code-path trace** (no browser available in this environment): `useQueueApplications`/`useQueueReviewed` → `engine.ts` `start()`/scheduling → `devEmitter.emit('application.progressed'|'sending.updated')` → `handlers.ts` updates `keys.dashboards()`/`keys.applications.all()`/`keys.sending()` caches — confirmed consistent across Starter (direct queue), Pro (review-modal queue via `use-queue-reviewed.ts`), Free (`autoQueue()` in `engine.ts`), pause/resume, and simulated failure (`registerSimulation('failure', ...)`). No new bugs found beyond the two pre-existing/non-blocking grep notes above. Manual checklist handed to the owner: every DevToolbar plan × state (normal/loading/empty/error) × language (EN/PT) × width (360/390/768/1024/1280/1440/1600px) on every screen, plus a visual diff of the dashboard against `docs/features/client-app-foundation/reference/dashboard-mockup.png`.
 Role: qa-tester · Depends on: 1–25 · Covers: every AC · Size: S
 Spec: Acceptance criteria, Verification
 

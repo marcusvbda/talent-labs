@@ -1,11 +1,11 @@
 import { router, usePage } from '@inertiajs/react';
-import { ChevronDown, LogOut } from 'lucide-react';
+import { ChevronDown, LogOut, UserRound } from 'lucide-react';
 import { useLocaleEntries } from '@/components/patterns/language-switcher';
 import { Avatar } from '@/components/ui/avatar';
 import { Chip } from '@/components/ui/chip';
 import { Menu } from '@/components/ui/menu';
 import { useT } from '@/i18n/i18n-provider';
-import { logout } from '@/routes';
+import { account, logout } from '@/routes';
 import type { PlanKey } from '@/types/plans';
 import type { SharedProps } from '@/types/shared';
 
@@ -18,6 +18,11 @@ export function UserMenu({ plan }: { plan?: PlanKey }) {
     return (
         <Menu
             items={[
+                {
+                    label: t('user_menu.account'),
+                    icon: UserRound,
+                    href: account().url,
+                },
                 ...localeEntries,
                 {
                     label: t('user_menu.logout'),
