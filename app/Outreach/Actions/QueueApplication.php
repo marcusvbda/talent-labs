@@ -44,12 +44,16 @@ class QueueApplication
         private PlanCatalog $plans,
     ) {}
 
-    public function handle(User $user, JobPosting $posting, ApplicationOrigin $origin): ?Application
+    /**
+     * When `$subject`/`$body` are given (reviewed by the client), they replace the
+     * profile templates; only `{{ job_url }}` is substituted in them.
+     */
+    public function handle(User $user, JobPosting $posting, ApplicationOrigin $origin, ?string $subject = null, ?string $body = null): ?Application
     {
         $this->rejectionReason = null;
 
         try {
-            $application = DB::transaction(fn (): ?Application => $this->queue($user, $posting, $origin));
+            $application = DB::transaction(fn (): ?Application => $this->queue($user, $posting, $origin, $subject, $body));
         } catch (UniqueConstraintViolationException) {
             return $this->reject(self::REJECT_ALREADY_APPLIED);
         }
@@ -70,7 +74,7 @@ class QueueApplication
         return $this->rejectionReason;
     }
 
-    private function queue(User $user, JobPosting $posting, ApplicationOrigin $origin): ?Application
+    private function queue(User $user, JobPosting $posting, ApplicationOrigin $origin, ?string $subject, ?string $body): ?Application
     {
         // Serializes concurrent queueing for the same user.
         User::query()->whereKey($user->id)->lockForUpdate()->first();
@@ -108,6 +112,7 @@ class QueueApplication
         }
 
         $variables = ApplicationTemplateRenderer::variablesFor($user, $posting, $profile);
+        $reviewedVariables = ['job_url' => (string) $posting->url];
 
         $application = Application::query()->create([
             'user_id' => $user->id,
@@ -117,8 +122,12 @@ class QueueApplication
             'application_profile_id' => $profile->id,
             'language' => $profile->language->value,
             'recipient_email' => $contact->email,
-            'subject' => ApplicationTemplateRenderer::render((string) $profile->email_subject, $variables),
-            'body' => ApplicationTemplateRenderer::render((string) $profile->email_body, $variables),
+            'subject' => $subject !== null
+                ? ApplicationTemplateRenderer::render($subject, $reviewedVariables)
+                : ApplicationTemplateRenderer::render((string) $profile->email_subject, $variables),
+            'body' => $body !== null
+                ? ApplicationTemplateRenderer::render($body, $reviewedVariables)
+                : ApplicationTemplateRenderer::render((string) $profile->email_body, $variables),
             'origin' => $origin,
             'status' => ApplicationStatus::Queued,
             'attempts' => 0,

@@ -23,8 +23,6 @@ final class AccountStatusPresenter
     {
         $plan = $this->plans->for($user);
 
-        $usedToday = $user->applications()->countedToday()->count();
-
         $gmail = $user->gmailIntegration;
         $gmailState = match ($gmail?->status) {
             ConnectedIntegrationStatus::Connected => 'connected',
@@ -50,12 +48,7 @@ final class AccountStatusPresenter
                 'mode' => $plan->mode,
                 'dailyLimit' => $plan->dailyLimit,
             ],
-            'quota' => [
-                'usedToday' => $usedToday,
-                'limit' => $plan->dailyLimit,
-                'remaining' => max(0, $plan->dailyLimit - $usedToday),
-                'resetsAt' => now(config('app.timezone'))->addDay()->startOfDay()->toIso8601String(),
-            ],
+            'quota' => $this->quota($user),
             'gmail' => [
                 'state' => $gmailState,
                 'accountEmail' => $gmailEmail,
@@ -77,6 +70,24 @@ final class AccountStatusPresenter
             'country' => $user->country,
             'timezone' => $user->timezone,
             'unreadNotifications' => $user->unreadNotifications()->count(),
+        ];
+    }
+
+    /**
+     * Build the `Quota` contract (resources/js/types/contracts.ts) for the user.
+     *
+     * @return array{usedToday: int, limit: int, remaining: int, resetsAt: string}
+     */
+    public function quota(User $user): array
+    {
+        $limit = $this->plans->for($user)->dailyLimit;
+        $usedToday = $user->applications()->countedToday()->count();
+
+        return [
+            'usedToday' => $usedToday,
+            'limit' => $limit,
+            'remaining' => max(0, $limit - $usedToday),
+            'resetsAt' => now(config('app.timezone'))->addDay()->startOfDay()->toIso8601String(),
         ];
     }
 }

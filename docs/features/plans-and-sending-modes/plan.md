@@ -16,10 +16,10 @@ session. Phase status is updated in place in this file.
 | 4     | `LiveSending` presenter, `SendingUpdated` event, `GET /internal/sending` | laravel-backend  | 3             | M    | DONE        |
 | 5     | Spaced queueing, job start guards, pause/resume core                     | laravel-backend  | 3, 4          | M    | DONE        |
 | 6     | Staged send pipeline (stages, sub-steps, pacing)                         | laravel-backend  | 5             | M    | DONE        |
-| 7     | Terminal effects: notifications, auto-pause, resume on reconnect         | laravel-backend  | 6             | M    | IN_PROGRESS |
-| 8     | Pause/resume endpoints                                                   | laravel-backend  | 4, 5          | S    | PENDING     |
-| 9     | `POST /internal/applications` (select only) + `QueueResult`              | laravel-backend  | 5             | M    | PENDING     |
-| 10    | Review endpoints: drafts and reviewed queueing                           | laravel-backend  | 9             | M    | PENDING     |
+| 7     | Terminal effects: notifications, auto-pause, resume on reconnect         | laravel-backend  | 6             | M    | DONE        |
+| 8     | Pause/resume endpoints                                                   | laravel-backend  | 4, 5          | S    | DONE        |
+| 9     | `POST /internal/applications` (select only) + `QueueResult`              | laravel-backend  | 5             | M    | DONE        |
+| 10    | Review endpoints: drafts and reviewed queueing                           | laravel-backend  | 9             | M    | DONE        |
 | 11    | Automatic-mode dispatcher + scheduler in `composer dev`                  | laravel-backend  | 5             | S    | PENDING     |
 | 12    | Admin Users: usage, sending badge, pause/resume actions                  | filament-admin   | 5             | S    | PENDING     |
 | 13    | Admin Sending monitor page                                               | filament-admin   | 6             | M    | PENDING     |
@@ -508,7 +508,14 @@ connecting_gmail)`; `pace()`.
 
 ### Phase 7 — Terminal effects: notifications, auto-pause, resume on reconnect
 
-Status: IN_PROGRESS
+Status: DONE
+Evidence: The full contract was already implemented (notification classes `ApplicationFailed`,
+`DailyLimitReached`, `SendingAutoPaused`, `GmailReauthorizationRequired`; `SendApplicationEmail::afterTerminal`
+wired at every terminal transition including `failed()`; `QueueApplication::notifyDailyLimitReached`;
+`CompleteConnectedIntegration` resume-on-reconnect). `composer lint:check` and `composer types:check` both
+pass. `code-reviewer` traced every terminal transition (sent/failed/ambiguous/`failed()`), the reauth and
+repeated-failures pause branches, the daily-limit dedup, and the reconnect-resume path against the contract:
+APPROVED, no blocking or non-blocking findings.
 Role: laravel-backend · Depends on: 6 · Covers: AC08, AC07 (live), B.7 notifications · Size: M
 Spec: Part 0.5, B.5 (5–6), B.7 (Notifications)
 
@@ -559,7 +566,16 @@ Gmail breaks or sends keep failing.
 
 ### Phase 8 — Pause/resume endpoints
 
-Status: PENDING
+Status: DONE
+Evidence: `SendingController::pause`/`resume` added, calling `SendScheduler::pause`/`resume` and returning
+`LiveSendingPresenter::forUser($user)`; resume returns 422 with `sending.resume.reconnect_gmail` when Gmail
+isn't connected. Routes `POST /internal/sending/pause` (`internal.sending.pause`) and
+`POST /internal/sending/resume` (`internal.sending.resume`) confirmed via `php artisan route:list
+--path=internal/sending`. Translations added to `lang/en.json`/`lang/pt.json` only (`lang/es.json` does not
+exist and was not touched). `composer lint:check`, `composer types:check` pass. `code-reviewer`: APPROVED,
+no blocking or non-blocking findings — confirmed `$user` freshness after `pause`/`resume` (same object
+instance refreshed in place), correct `ConnectedIntegrationStatus::Connected` check, correct route
+placement/naming.
 Role: laravel-backend · Depends on: 4, 5 · Covers: AC07 · Size: S
 Spec: B.7 (`POST /internal/sending/pause` / `resume`)
 
@@ -593,7 +609,21 @@ Spec: B.7 (`POST /internal/sending/pause` / `resume`)
 
 ### Phase 9 — `POST /internal/applications` (select only) + `QueueResult`
 
-Status: PENDING
+Status: DONE
+Evidence: `vendor/bin/pint --dirty --format agent`, `composer lint:check`, `composer types:check` (0
+errors) all pass. `php artisan route:list --path=internal/applications` shows the new
+`POST internal/applications internal.applications.store` alongside the existing routes.
+`QueueApplicationsRequest::authorize()` denies `review`/`auto` plan modes with
+`queue.mode.review_only`/`queue.mode.auto_only`, allows `select`; `rules()` caps `jobIds` at
+`CanSendApplications::check($user)->remaining`. `ApplicationsController::store` processes `jobIds` in
+given order (bulk-fetches postings but iterates the id list, not the fetched collection), calls
+`QueueApplication::handle()` unchanged (3-arg signature confirmed untouched), and returns the exact
+`QueueResult` shape with `quota` computed post-loop via the new `AccountStatusPresenter::quota()`
+(byte-for-byte extraction, `forUser()` output unchanged). `QueueRejectionMessage` maps all four
+`REJECT_*` constants plus the `REJECT_NOT_ELIGIBLE_PREFIX` prefix and a generic fallback. Translations
+added only to `lang/en.json`/`lang/pt.json` (825 keys each, no duplicates, `lang/es.json` untouched/does
+not exist). `code-reviewer`: APPROVED, no blocking findings; one non-blocking note (defensive
+`?->toIso8601String()` on an already-guaranteed-non-null `scheduled_for` — harmless, not reachable).
 Role: laravel-backend · Depends on: 5 · Covers: AC02, AC04 (403) · Size: M
 Spec: B.4 (bulk order), B.7 (first bullet), Part 0.7
 
@@ -639,7 +669,25 @@ Spec: B.4 (bulk order), B.7 (first bullet), Part 0.7
 
 ### Phase 10 — Review endpoints: drafts and reviewed queueing
 
-Status: PENDING
+Status: DONE
+Evidence: `vendor/bin/pint --dirty --format agent`, `composer lint:check`, `composer types:check
+--memory-limit=1G` (0 errors) all pass. `php artisan route:list --path=internal/applications` shows
+`POST internal/applications/drafts` (`internal.applications.drafts`) and
+`POST internal/applications/reviewed` (`internal.applications.reviewed`). `QueueApplication::handle()`
+extended with optional trailing `?string $subject/$body`; reviewed text renders with only `job_url` in
+the variables map (no profile-variable leak); every other line of `queue()` unchanged, confirmed by
+direct read. `ReviewDraftsRequest`/`QueueReviewedRequest` restrict to plan mode `review`
+(`review.mode.denied`), read the plan fresh per request; body/subject variable-token validation
+confirmed to reject any non-`job_url` token, case-sensitive, no partial-match bypass.
+`ReviewDraftPresenter` redacts exactly `company`/`job_title`/`job_location`/tokenizes `job_url`, leaves
+`cover_letter` untouched per D3=A; never leaks the recipient address or real job URL. `drafts()` silently
+omits out-of-pool or no-complete-profile postings (no rejected list, matches contract); `reviewed()`
+relies on `QueueApplication`'s own `MatchingJobPostings` pool re-check (confirmed unmodified) to reject
+out-of-pool jobs, always returns the full `QueueResult` shape with `quota` computed post-call.
+Translations added only to `lang/en.json`/`lang/pt.json`, no duplicates, valid JSON, `lang/es.json`
+untouched. `code-reviewer`: APPROVED, no blocking findings; two non-blocking notes (pre-existing
+`ApplicationTemplateRenderer::render()` empty-string-on-missing-allowed-variable quirk, and the
+`'missing'` rejection reason correctly falling through to the generic message by design).
 Role: laravel-backend · Depends on: 9 · Covers: AC03 · Size: M
 Spec: B.7 (`/drafts`, `/reviewed`), client-app-screens B.2 `ReviewDraft`
 
