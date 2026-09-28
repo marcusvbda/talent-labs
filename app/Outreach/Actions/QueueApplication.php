@@ -4,12 +4,17 @@ namespace App\Outreach\Actions;
 
 use App\Enums\ApplicationOrigin;
 use App\Enums\ApplicationStatus;
+use App\Events\Client\SendingUpdated;
 use App\Models\Application;
 use App\Models\JobPosting;
 use App\Models\User;
+use App\Notifications\Client\ClientNotification;
+use App\Notifications\Client\DailyLimitReached;
 use App\Outreach\Jobs\SendApplicationEmail;
 use App\Outreach\Queries\MatchingJobPostings;
 use App\Outreach\Support\ApplicationTemplateRenderer;
+use App\Outreach\Support\SendScheduler;
+use App\Plans\PlanCatalog;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -35,6 +40,8 @@ class QueueApplication
     public function __construct(
         private CanSendApplications $eligibility,
         private SelectRecipientForCompany $recipients,
+        private SendScheduler $scheduler,
+        private PlanCatalog $plans,
     ) {}
 
     public function handle(User $user, JobPosting $posting, ApplicationOrigin $origin): ?Application
@@ -42,10 +49,17 @@ class QueueApplication
         $this->rejectionReason = null;
 
         try {
-            return DB::transaction(fn (): ?Application => $this->queue($user, $posting, $origin));
+            $application = DB::transaction(fn (): ?Application => $this->queue($user, $posting, $origin));
         } catch (UniqueConstraintViolationException) {
             return $this->reject(self::REJECT_ALREADY_APPLIED);
         }
+
+        if ($application !== null) {
+            SendingUpdated::broadcastFor($user->id);
+            $this->notifyDailyLimitReached($user);
+        }
+
+        return $application;
     }
 
     /**
@@ -109,13 +123,33 @@ class QueueApplication
             'status' => ApplicationStatus::Queued,
             'attempts' => 0,
             'queued_at' => now(),
-            'scheduled_for' => now(),
+            'scheduled_for' => $this->scheduler->nextSlot($user),
         ]);
 
-        // Sent right away: no spacing between a client's sends (owner decision).
-        SendApplicationEmail::dispatch($application->id)->afterCommit();
+        SendApplicationEmail::dispatch($application->id, $application->scheduled_for)
+            ->delay($application->scheduled_for)
+            ->afterCommit();
 
         return $application;
+    }
+
+    /**
+     * Once a day, when this queueing used the last application of today's quota.
+     */
+    private function notifyDailyLimitReached(User $user): void
+    {
+        if ($this->eligibility->check($user)->remaining > 0) {
+            return;
+        }
+
+        $alreadyNotified = $user->notifications()
+            ->where('data->type', 'daily_limit_reached')
+            ->whereDate('created_at', today())
+            ->exists();
+
+        if (! $alreadyNotified) {
+            ClientNotification::send($user, new DailyLimitReached($this->plans->for($user)->dailyLimit));
+        }
     }
 
     private function reject(string $reason): null

@@ -4,15 +4,20 @@ namespace App\Actions;
 
 use App\Data\OAuthTokenData;
 use App\Enums\ConnectedIntegrationStatus;
+use App\Enums\SendingPauseReason;
 use App\Models\ConnectedIntegration;
 use App\Models\User;
+use App\Outreach\Support\SendScheduler;
 use App\Services\ConnectedIntegrationRegistry;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class CompleteConnectedIntegration
 {
-    public function __construct(private ConnectedIntegrationRegistry $registry) {}
+    public function __construct(
+        private ConnectedIntegrationRegistry $registry,
+        private SendScheduler $scheduler,
+    ) {}
 
     public function run(User $user, string $pluginKey, OAuthTokenData $token): ConnectedIntegration
     {
@@ -53,6 +58,11 @@ class CompleteConnectedIntegration
         });
 
         $plugin->afterConnected($integration);
+
+        // Reconnecting clears a pause caused by the broken Gmail authorization.
+        if ($user->fresh()?->sending_pause_reason === SendingPauseReason::ReauthorizationRequired) {
+            $this->scheduler->resume($user);
+        }
 
         return $integration;
     }

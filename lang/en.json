@@ -726,6 +726,8 @@
     "applications.failed.explain": "This one will not be retried automatically.",
     "applications.error.gmail": "Your Gmail account is not connected.",
     "applications.error.cv": "Your CV file could not be read.",
+    "applications.error.cv_invalid": "Your CV file is not a valid PDF.",
+    "applications.error.content": "This email's content is invalid.",
     "applications.error.recipient": "We could not confirm the recipient.",
     "applications.error.company": "This company is no longer available.",
     "applications.error.account": "Your account is not active.",

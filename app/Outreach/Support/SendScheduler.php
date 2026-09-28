@@ -3,9 +3,16 @@
 namespace App\Outreach\Support;
 
 use App\Enums\ApplicationStatus;
+use App\Enums\SendingPauseReason;
+use App\Events\Client\SendingUpdated;
+use App\Models\Application;
 use App\Models\User;
+use App\Outreach\Jobs\SendApplicationEmail;
 use Carbon\CarbonImmutable;
 use DateTimeZone;
+use Illuminate\Broadcasting\BroadcastException;
+use Illuminate\Support\Facades\DB;
+use Marcusvbda\FilamentRealtimeDriver\RealtimeEvent;
 use Throwable;
 
 /**
@@ -136,6 +143,83 @@ class SendScheduler
         }
 
         return $this->nextWindowStart($user, $at);
+    }
+
+    /**
+     * Pauses the user's sending. Queued rows park at their next job start; an
+     * in-flight send finishes normally. False when already paused.
+     */
+    public function pause(User $user, SendingPauseReason $reason): bool
+    {
+        $paused = DB::transaction(function () use ($user, $reason): bool {
+            $locked = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->isSendingPaused()) {
+                return false;
+            }
+
+            $locked->forceFill([
+                'sending_paused_at' => now(),
+                'sending_pause_reason' => $reason,
+            ])->save();
+
+            return true;
+        });
+
+        if ($paused) {
+            $user->refresh();
+            SendingUpdated::broadcastFor($user->id);
+        }
+
+        return $paused;
+    }
+
+    /**
+     * Clears the pause and re-slots every queued application in queue order.
+     * Jobs of the previous slots become stale and exit on start.
+     */
+    public function resume(User $user): void
+    {
+        DB::transaction(function () use ($user): void {
+            $locked = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+
+            $locked->forceFill([
+                'sending_paused_at' => null,
+                'sending_pause_reason' => null,
+            ])->save();
+
+            // Cleared first so the anchor ignores the old slots.
+            Application::query()
+                ->whereBelongsTo($locked)
+                ->where('status', ApplicationStatus::Queued)
+                ->update(['scheduled_for' => null]);
+
+            $rows = Application::query()
+                ->whereBelongsTo($locked)
+                ->where('status', ApplicationStatus::Queued)
+                ->orderBy('queued_at')
+                ->orderBy('id')
+                ->get(['id']);
+
+            $previousSlot = null;
+
+            foreach ($rows as $row) {
+                $slot = $this->nextSlot($locked, $previousSlot);
+                Application::query()->whereKey($row->id)->update(['scheduled_for' => $slot]);
+                SendApplicationEmail::dispatch($row->id, $slot)->delay($slot)->afterCommit();
+                $previousSlot = $slot;
+            }
+        });
+
+        $user->refresh();
+        SendingUpdated::broadcastFor($user->id);
+
+        // Query-builder writes skip model events: refresh the admin table explicitly.
+        try {
+            RealtimeEvent::dispatch('applications', 'ApplicationsUpdated', ['userId' => $user->id]);
+        } catch (BroadcastException $e) {
+            report($e);
+        }
     }
 
     private function later(?CarbonImmutable $a, ?CarbonImmutable $b): ?CarbonImmutable

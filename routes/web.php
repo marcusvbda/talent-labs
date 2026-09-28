@@ -20,6 +20,7 @@ use App\Http\Controllers\Client\Internal\PreferencesController;
 use App\Http\Controllers\Client\Internal\ProfileCvController;
 use App\Http\Controllers\Client\Internal\ProfilePreviewController;
 use App\Http\Controllers\Client\Internal\ProfilesController;
+use App\Http\Controllers\Client\Internal\SendingController;
 use App\Http\Controllers\Client\JobsPageController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
 use App\Http\Controllers\LocaleController;
@@ -53,6 +54,7 @@ Route::middleware(['auth', 'client', 'throttle:120,1'])
         Route::get('/applications', [ApplicationsController::class, 'index'])->name('applications.index');
         Route::get('/applications/counts', [ApplicationsController::class, 'counts'])->name('applications.counts');
         Route::get('/applications/{application}', [ApplicationsController::class, 'show'])->name('applications.show');
+        Route::get('/sending', [SendingController::class, 'show'])->name('sending.show');
         Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/read-all', [NotificationsController::class, 'readAll'])->name('notifications.read-all');
         Route::get('/account', [AccountController::class, 'show'])->name('account.show');

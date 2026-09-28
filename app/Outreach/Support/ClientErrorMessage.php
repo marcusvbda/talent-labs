@@ -18,6 +18,8 @@ final class ClientErrorMessage
     private const PREFIXES = [
         'Gmail is not connected.' => 'applications.error.gmail',
         'CV file is missing.' => 'applications.error.cv',
+        'CV file is not a valid PDF.' => 'applications.error.cv_invalid',
+        'Email content is invalid.' => 'applications.error.content',
         'Recipient is not a verified contact' => 'applications.error.recipient',
         'Company is no longer verified' => 'applications.error.company',
         'Client account is not active.' => 'applications.error.account',

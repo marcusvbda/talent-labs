@@ -726,6 +726,8 @@
     "applications.failed.explain": "Esta não será reenviada automaticamente.",
     "applications.error.gmail": "Sua conta do Gmail não está conectada.",
     "applications.error.cv": "Não conseguimos ler o arquivo do seu currículo.",
+    "applications.error.cv_invalid": "O arquivo do seu currículo não é um PDF válido.",
+    "applications.error.content": "O conteúdo deste e-mail é inválido.",
     "applications.error.recipient": "Não conseguimos confirmar o destinatário.",
     "applications.error.company": "Esta empresa não está mais disponível.",
     "applications.error.account": "Sua conta não está ativa.",
