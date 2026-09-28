@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Client\Internal;
 
+use App\Enums\ApplicationLanguage;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\ApplicationProfile;
 use App\Models\User;
 use App\Outreach\Support\ClientSafeText;
 use App\Support\RegionResolver;
@@ -22,6 +24,30 @@ class AccountExportController extends Controller
         $user = $request->user();
 
         $preference = $user->jobPreference;
+
+        $profilesByLanguage = $user->applicationProfiles()
+            ->get()
+            ->keyBy(fn (ApplicationProfile $profile): string => $profile->language->value);
+
+        $applicationProfiles = [];
+
+        foreach (ApplicationLanguage::cases() as $language) {
+            $profile = $profilesByLanguage->get($language->value);
+
+            if (! $profile instanceof ApplicationProfile) {
+                continue;
+            }
+
+            $applicationProfiles[] = [
+                'language' => $profile->language->value,
+                'active' => $profile->is_active,
+                'cvOriginalName' => $profile->cv_original_name,
+                'cvUploadedAt' => $profile->cv_uploaded_at?->toIso8601String(),
+                'emailSubject' => $profile->email_subject,
+                'emailBody' => $profile->email_body,
+                'coverLetter' => $profile->cover_letter ?? '',
+            ];
+        }
 
         $applications = $user->applications()
             ->with(['company:id,name', 'jobPosting:id,title,url'])
@@ -67,10 +93,8 @@ class AccountExportController extends Controller
                 'remoteMode' => $preference->remote_mode->value,
                 'excludeWords' => $preference->exclude_words,
                 'savedAt' => $preference->saved_at?->toIso8601String(),
-                'cvOriginalName' => $preference->cv_original_name,
-                'emailSubject' => $preference->email_subject,
-                'emailBody' => $preference->email_body,
             ],
+            'applicationProfiles' => $applicationProfiles,
             'applications' => $applications,
         ], headers: [
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',

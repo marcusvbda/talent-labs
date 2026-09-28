@@ -52,7 +52,7 @@ class ApplicationsController extends Controller
     {
         Gate::authorize('view', $application);
 
-        $application->load(['company', 'jobPosting.profile', 'user.jobPreference']);
+        $application->load(['company', 'jobPosting.profile', 'applicationProfile']);
 
         return new ApplicationDetailResource($application);
     }

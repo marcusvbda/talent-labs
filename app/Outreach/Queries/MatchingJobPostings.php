@@ -6,6 +6,7 @@ use App\Enums\ContactConfidence;
 use App\Enums\OutreachStatus;
 use App\Enums\ProfileStatus;
 use App\Enums\RemoteMode;
+use App\Models\ApplicationProfile;
 use App\Models\JobPosting;
 use App\Models\User;
 use App\Outreach\Data\PreferenceCriteria;
@@ -25,9 +26,9 @@ final class MatchingJobPostings
      * write to (an smtp_verified contact in the priority list) and this client has not
      * applied to that company yet. Only postings whose role family is one of the target
      * families (talent.collection.target_role_families) are in the pool, so a company verified
-     * through a dev posting never surfaces its non-target (e.g. sales) postings. Postings with
-     * no language, or a language other than en/pt, are left out because no application
-     * profile can match them (skippable with $withLanguageRule = false).
+     * through a dev posting never surfaces its non-target (e.g. sales) postings. Postings are
+     * left out unless their language has an active, complete application profile for this
+     * user (skippable with $withLanguageRule = false).
      *
      * Preferences narrow the pool: terms inside one field are ORed, fields are ANDed, and an
      * empty field applies no filter (no preferences at all = the whole pool). Titles,
@@ -49,7 +50,7 @@ final class MatchingJobPostings
             ->join('companies', 'companies.id', '=', 'job_postings.company_id')
             ->where('companies.outreach_status', OutreachStatus::Verified->value)
             ->where('job_posting_profiles.status', ProfileStatus::Done->value)
-            ->when($withLanguageRule, fn (Builder $query) => $query->whereIn('job_posting_profiles.language', ['en', 'pt']))
+            ->when($withLanguageRule, fn (Builder $query) => $query->whereIn('job_posting_profiles.language', ApplicationProfile::activeCompleteLanguagesFor($user)))
             ->whereIn('job_postings.role_family', config('talent.collection.target_role_families'))
             ->whereExists(function ($contacts): void {
                 $contacts->select(DB::raw(1))

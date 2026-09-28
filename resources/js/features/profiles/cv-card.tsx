@@ -101,7 +101,9 @@ export const CvCard = ({
                 <FileDrop
                     accept="application/pdf"
                     maxSizeMb={5}
-                    progress={upload.isPending ? 0 : undefined}
+                    progress={
+                        upload.isPending ? (upload.progress ?? 0) : undefined
+                    }
                     error={
                         upload.error?.errors?.cv?.[0] ?? upload.error?.message
                     }

@@ -86,7 +86,23 @@ const ProfileEditor = ({
         create.mutate(
             { language },
             {
-                onSuccess: () => save.mutate(persist(), { onError: onFailure }),
+                onSuccess: (created) => {
+                    const next: Draft = {
+                        subject: draft.subject.trim()
+                            ? draft.subject
+                            : created.emailSubject,
+                        body: draft.body.trim()
+                            ? draft.body
+                            : created.emailBody,
+                        coverLetter: draft.coverLetter,
+                    };
+
+                    setDraft(next);
+                    save.mutate(
+                        { language, ...next, active: true },
+                        { onError: onFailure },
+                    );
+                },
                 onError: onFailure,
             },
         );

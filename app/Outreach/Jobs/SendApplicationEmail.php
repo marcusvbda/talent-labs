@@ -8,6 +8,7 @@ use App\Enums\ContactConfidence;
 use App\Enums\OutreachStatus;
 use App\Exceptions\ConnectedIntegrationReauthorizationRequired;
 use App\Models\Application;
+use App\Models\ApplicationProfile;
 use App\Models\ConnectedIntegration;
 use App\Outreach\Contracts\SendsGmailMessages;
 use App\Outreach\Support\ApplicationTemplateRenderer;
@@ -165,11 +166,11 @@ class SendApplicationEmail implements ShouldQueue
             return null;
         }
 
-        $application->load(['company', 'contact', 'user.jobPreference', 'user.gmailIntegration']);
+        $application->load(['company', 'contact', 'user.gmailIntegration', 'applicationProfile']);
         $user = $application->user;
         $contact = $application->contact;
         $integration = $user->gmailIntegration;
-        $preference = $user->jobPreference;
+        $profile = $application->applicationProfile;
 
         $reason = match (true) {
             ! $user->isActive() => 'Client account is not active.',
@@ -180,10 +181,10 @@ class SendApplicationEmail implements ShouldQueue
             $integration === null,
             $integration->status !== ConnectedIntegrationStatus::Connected,
             blank($integration->account_email) => 'Gmail is not connected.',
-            $preference === null,
-            blank($preference->cv_path),
-            ! self::isOwnCvPath((string) $preference->cv_path, $application->user_id),
-            ! Storage::disk('local')->exists((string) $preference->cv_path) => 'CV file is missing.',
+            $profile === null,
+            blank($profile->cv_path),
+            ! ApplicationProfile::isOwnCvPath((string) $profile->cv_path, $application->user_id),
+            ! Storage::disk('local')->exists((string) $profile->cv_path) => 'CV file is missing.',
             default => null,
         };
 
@@ -208,8 +209,8 @@ class SendApplicationEmail implements ShouldQueue
             ->text($application->body)
             ->html(ApplicationTemplateRenderer::html($application->body))
             ->attachFromPath(
-                Storage::disk('local')->path((string) $preference->cv_path),
-                self::attachmentName($preference->cv_original_name),
+                Storage::disk('local')->path((string) $profile->cv_path),
+                self::attachmentName($profile->cv_original_name),
                 'application/pdf',
             );
 
@@ -247,17 +248,6 @@ class SendApplicationEmail implements ShouldQueue
         }
 
         return $configured;
-    }
-
-    /**
-     * The CV must live under the application owner's own cvs/{userId}/ folder.
-     */
-    private static function isOwnCvPath(string $path, int $userId): bool
-    {
-        return str_starts_with($path, 'cvs/'.$userId.'/')
-            && ! str_contains($path, '\\')
-            && ! str_contains($path, "\0")
-            && ! in_array('..', explode('/', $path), true);
     }
 
     /**

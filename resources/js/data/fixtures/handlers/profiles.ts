@@ -12,7 +12,7 @@ import type {
 const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 const MAX_SUBJECT = 200;
 const MAX_BODY = 5000;
-const MAX_COVER_LETTER = 5000;
+const MAX_COVER_LETTER = 6000;
 
 const MAX_CV_BYTES = 5 * 1024 * 1024;
 
@@ -167,6 +167,15 @@ export function saveProfile(input: SaveProfileInput): ApplicationProfile {
         if (message !== null) {
             errors[field] = [message];
         }
+    }
+
+    if (
+        errors.coverLetter === undefined &&
+        /\{\{\s*cover_letter\s*\}\}/.test(input.coverLetter)
+    ) {
+        errors.coverLetter = [
+            'The cover letter cannot contain {{ cover_letter }}.',
+        ];
     }
 
     if (Object.keys(errors).length > 0) {

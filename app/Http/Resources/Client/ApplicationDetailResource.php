@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 /**
  * The `ApplicationDetail` contract: the item fields plus the message as sent. The job link
  * is replaced by a `{{ job_url }}` token and any other link or email is redacted.
- * Expects `company`, `jobPosting.profile` and `user.jobPreference` loaded.
+ * Expects `company`, `jobPosting.profile` and `applicationProfile` loaded.
  *
  * @property Application $resource
  */
@@ -28,7 +28,7 @@ class ApplicationDetailResource extends ApplicationItemResource
             ...parent::toArray($request),
             'subject' => ClientSafeText::tokenizeJobUrl($application->subject, $jobUrl),
             'body' => ClientSafeText::tokenizeJobUrl($application->body, $jobUrl),
-            'cvFileName' => $application->user->jobPreference?->cv_original_name,
+            'cvFileName' => $application->applicationProfile?->cv_original_name,
             'timeline' => $this->timeline(),
         ];
     }

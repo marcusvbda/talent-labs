@@ -15,22 +15,19 @@ export const TEMPLATE_VARIABLES: TemplateVariable[] = [
     'cover_letter',
 ];
 
-// EN is copied verbatim from the PHP constants DEFAULT_SUBJECT / DEFAULT_BODY
-// in ApplicationTemplateRenderer (including the stray ")" after the job_url
-// token, per owner decision D3). PT is a faithful translation of the
-// same two strings. None of them contains the cover_letter token: the client
-// inserts it through the variable chips.
+// Copied verbatim from ApplicationTemplateRenderer::defaultsFor() in
+// app/Outreach/Support/ApplicationTemplateRenderer.php.
 export const defaultTemplates: Record<
     JobLanguage,
     { subject: string; body: string }
 > = {
     en: {
-        subject: 'Application — {{ job_title }}',
-        body: "Hello {{ company }} team,\n\nI'd like to apply for the '{{ job_title }}' position {{ job_url }}). My CV is attached.\n\nThank you for your time.\n\nBest regards,\n{{ client_name }}",
+        subject: 'Application: {{ job_title }}',
+        body: "Hello {{ company }} team,\n\nI'm writing to apply for the {{ job_title }} position ({{ job_url }}).\n\n{{ cover_letter }}\n\nMy CV is attached. Thank you for your time.\n\nBest regards,\n{{ client_name }}",
     },
     pt: {
-        subject: 'Candidatura — {{ job_title }}',
-        body: "Olá, equipe da {{ company }},\n\nGostaria de me candidatar à vaga de '{{ job_title }}' {{ job_url }}). Meu currículo está anexado.\n\nObrigado pelo seu tempo.\n\nAtenciosamente,\n{{ client_name }}",
+        subject: 'Candidatura: {{ job_title }}',
+        body: 'Olá, equipe {{ company }},\n\nGostaria de me candidatar à vaga de {{ job_title }} ({{ job_url }}).\n\n{{ cover_letter }}\n\nMeu currículo está em anexo. Obrigado pelo seu tempo.\n\nAtenciosamente,\n{{ client_name }}',
     },
 };
 

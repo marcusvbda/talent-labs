@@ -186,11 +186,18 @@ class Jobs extends Page implements HasTable
                 $names = $postings->map(fn (JobPosting $p): string => $p->company->name ?? $p->company_name)->values();
                 $first = $records->first();
                 $subject = null;
+                $profile = $first instanceof JobPosting
+                    ? $user->applicationProfiles()->where('language', $first->profile?->language)->where('is_active', true)->first()
+                    : null;
 
-                if ($first instanceof JobPosting) {
+                if ($profile !== null && ! $profile->isComplete()) {
+                    $profile = null;
+                }
+
+                if ($first instanceof JobPosting && $profile !== null) {
                     $subject = ClientSafeText::redact(ApplicationTemplateRenderer::render(
-                        (string) $user->jobPreference?->email_subject,
-                        ApplicationTemplateRenderer::variablesFor($user, $first),
+                        (string) $profile->email_subject,
+                        ApplicationTemplateRenderer::variablesFor($user, $first, $profile),
                     ));
                 }
 
@@ -201,7 +208,7 @@ class Jobs extends Page implements HasTable
                     'companies' => $postings->count(),
                     'names' => $names->take(10)->all(),
                     'more' => max(0, $names->count() - 10),
-                    'attachment' => $user->jobPreference?->cv_original_name ?: 'CV',
+                    'attachment' => $profile?->cv_original_name ?: 'CV',
                     'subject' => $subject,
                     'remaining' => $remaining,
                     'limit' => $this->dailyLimit(),

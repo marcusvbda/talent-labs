@@ -3,15 +3,14 @@
 namespace App\Client;
 
 use App\Enums\ConnectedIntegrationStatus;
+use App\Models\ApplicationProfile;
 use App\Models\User;
-use App\Outreach\Actions\CanSendApplications;
 use App\Plans\PlanCatalog;
 
 final class AccountStatusPresenter
 {
     public function __construct(
         private PlanCatalog $plans,
-        private CanSendApplications $eligibility,
     ) {}
 
     /**
@@ -34,12 +33,12 @@ final class AccountStatusPresenter
         $gmailEmail = $gmail !== null && $gmailState === 'connected' ? $gmail->account_email : null;
 
         $preference = $user->jobPreference()->first();
-        $hasCv = $this->eligibility->hasCv($preference);
+        $languages = ApplicationProfile::activeCompleteLanguagesFor($user);
 
         $steps = [
             ['key' => 'basics', 'done' => $user->country !== null && $user->timezone !== null],
             ['key' => 'gmail', 'done' => $gmailState === 'connected'],
-            ['key' => 'profile', 'done' => $hasCv && $this->eligibility->hasValidTemplate($preference)],
+            ['key' => 'profile', 'done' => $languages !== []],
             ['key' => 'preferences', 'done' => $preference?->saved_at !== null],
         ];
 
@@ -69,8 +68,7 @@ final class AccountStatusPresenter
                 'steps' => $steps,
             ],
             'profiles' => [
-                // Spec B.6: temporary rule — the legacy CV activates both languages until per-language profiles exist.
-                'activeLanguages' => $hasCv ? ['en', 'pt'] : [],
+                'activeLanguages' => $languages,
             ],
             'region' => $user->region->value,
             'country' => $user->country,

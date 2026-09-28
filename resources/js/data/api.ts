@@ -80,3 +80,73 @@ export async function apiFetch<T>(url: string, init: ApiInit = {}): Promise<T> {
 
     return payload as T;
 }
+
+export function apiUpload<T>(
+    url: string,
+    form: FormData,
+    onProgress: (percent: number) => void,
+    method: 'post' | 'put' | 'patch' = 'post',
+): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        const request = new XMLHttpRequest();
+
+        request.open(method.toUpperCase(), url, true);
+        request.withCredentials = true;
+        request.setRequestHeader('Accept', 'application/json');
+        request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+        const token = xsrfToken();
+
+        if (token) {
+            request.setRequestHeader('X-XSRF-TOKEN', token);
+        }
+
+        request.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+                onProgress(Math.round((event.loaded / event.total) * 100));
+            }
+        };
+
+        request.onerror = () => {
+            reject(new ApiError(0, 'Network error'));
+        };
+
+        request.onload = () => {
+            if (request.status === 204) {
+                resolve(undefined as T);
+
+                return;
+            }
+
+            let payload: unknown;
+
+            try {
+                payload = request.responseText
+                    ? JSON.parse(request.responseText)
+                    : undefined;
+            } catch {
+                payload = undefined;
+            }
+
+            if (request.status < 200 || request.status >= 300) {
+                const data = (payload ?? {}) as {
+                    message?: unknown;
+                    errors?: Record<string, string[]>;
+                };
+                const message =
+                    typeof data.message === 'string' && data.message !== ''
+                        ? data.message
+                        : request.statusText ||
+                          `Request failed with status ${request.status}`;
+
+                reject(new ApiError(request.status, message, data.errors));
+
+                return;
+            }
+
+            resolve(payload as T);
+        };
+
+        request.send(form);
+    });
+}

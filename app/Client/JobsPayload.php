@@ -3,6 +3,7 @@
 namespace App\Client;
 
 use App\Http\Resources\Client\JobCardResource;
+use App\Models\ApplicationProfile;
 use App\Models\User;
 
 /**
@@ -28,6 +29,16 @@ class JobsPayload
         $total = JobPoolQuery::forUser($user, $filters)->reorder()->count();
         $collectedToday = JobPoolQuery::forUser($user, [...$filters, 'today' => true])->reorder()->count();
 
+        $activeLanguages = ApplicationProfile::activeCompleteLanguagesFor($user);
+        $unlockCounts = LanguageUnlockCounts::forUser($user);
+        $lockedByLanguage = [];
+
+        foreach (['en', 'pt'] as $language) {
+            if (! in_array($language, $activeLanguages, true) && $unlockCounts[$language] > 0) {
+                $lockedByLanguage[] = ['language' => $language, 'count' => $unlockCounts[$language]];
+            }
+        }
+
         return [
             'data' => JobCardResource::collection($page->getCollection())->resolve(),
             'meta' => [
@@ -37,7 +48,7 @@ class JobsPayload
             'summary' => [
                 'total' => $total,
                 'collectedToday' => $collectedToday,
-                'lockedByLanguage' => [],
+                'lockedByLanguage' => $lockedByLanguage,
             ],
         ];
     }

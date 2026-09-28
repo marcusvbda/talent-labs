@@ -11,10 +11,6 @@ final class ApplicationTemplateRenderer
 {
     public const ALLOWED_VARIABLES = ['company', 'job_title', 'job_location', 'job_url', 'client_name', 'cover_letter'];
 
-    public const DEFAULT_SUBJECT = 'Application — {{ job_title }}';
-
-    public const DEFAULT_BODY = "Hello {{ company }} team,\n\nI'd like to apply for the '{{ job_title }}' position {{ job_url }}). My CV is attached.\n\nThank you for your time.\n\nBest regards,\n{{ client_name }}";
-
     private const DEFAULT_SUBJECT_EN = 'Application: {{ job_title }}';
 
     private const DEFAULT_BODY_EN = "Hello {{ company }} team,\n\nI'm writing to apply for the {{ job_title }} position ({{ job_url }}).\n\n{{ cover_letter }}\n\nMy CV is attached. Thank you for your time.\n\nBest regards,\n{{ client_name }}";
@@ -54,7 +50,7 @@ final class ApplicationTemplateRenderer
     /**
      * @return array<string, string>
      */
-    public static function variablesFor(User $user, JobPosting $posting, ?ApplicationProfile $profile = null): array
+    public static function variablesFor(User $user, JobPosting $posting, ApplicationProfile $profile): array
     {
         $location = $posting->location;
 
@@ -72,7 +68,7 @@ final class ApplicationTemplateRenderer
 
         return [
             ...$base,
-            'cover_letter' => $profile === null ? '' : self::render((string) $profile->cover_letter, $base),
+            'cover_letter' => self::render((string) $profile->cover_letter, $base),
         ];
     }
 

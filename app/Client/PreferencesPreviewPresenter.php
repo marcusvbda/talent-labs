@@ -21,23 +21,9 @@ final class PreferencesPreviewPresenter
             ->distinct()
             ->count('job_postings.company_id');
 
-        /** @var array<string, int|string> $counts */
-        $counts = MatchingJobPostings::forUser($user, $criteria, withLanguageRule: false)
-            ->reorder()
-            ->toBase()
-            ->select('job_posting_profiles.language')
-            ->selectRaw('count(distinct job_postings.company_id) as aggregate')
-            ->whereIn('job_posting_profiles.language', ['en', 'pt'])
-            ->groupBy('job_posting_profiles.language')
-            ->pluck('aggregate', 'language')
-            ->all();
-
         return [
             'matchCount' => $matchCount,
-            'byLanguage' => [
-                'en' => (int) ($counts['en'] ?? 0),
-                'pt' => (int) ($counts['pt'] ?? 0),
-            ],
+            'byLanguage' => LanguageUnlockCounts::forUser($user, $criteria),
         ];
     }
 }

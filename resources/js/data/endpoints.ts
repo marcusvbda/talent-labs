@@ -8,6 +8,9 @@ import JobsController from '@/actions/App/Http/Controllers/Client/Internal/JobsC
 import NotificationsController from '@/actions/App/Http/Controllers/Client/Internal/NotificationsController';
 import OnboardingBasicsController from '@/actions/App/Http/Controllers/Client/Internal/OnboardingBasicsController';
 import PreferencesController from '@/actions/App/Http/Controllers/Client/Internal/PreferencesController';
+import ProfileCvController from '@/actions/App/Http/Controllers/Client/Internal/ProfileCvController';
+import ProfilePreviewController from '@/actions/App/Http/Controllers/Client/Internal/ProfilePreviewController';
+import ProfilesController from '@/actions/App/Http/Controllers/Client/Internal/ProfilesController';
 import type {
     ApplicationFilters,
     ChartData,
@@ -130,31 +133,18 @@ export const endpoints = {
     preferences: (): Endpoint => PreferencesController.show(),
     savePreferences: (): Endpoint => PreferencesController.update(),
     preferencesPreview: (): Endpoint => PreferencesController.preview(),
-    profiles: (): Endpoint => ({ url: '/internal/profiles', method: 'get' }),
-    createProfile: (): Endpoint => ({
-        url: '/internal/profiles',
-        method: 'post',
-    }),
-    saveProfile: (language: JobLanguage): Endpoint => ({
-        url: `/internal/profiles/${language}`,
-        method: 'put',
-    }),
-    deleteProfile: (language: JobLanguage): Endpoint => ({
-        url: `/internal/profiles/${language}`,
-        method: 'delete',
-    }),
-    uploadCv: (language: JobLanguage): Endpoint => ({
-        url: `/internal/profiles/${language}/cv`,
-        method: 'post',
-    }),
-    deleteCv: (language: JobLanguage): Endpoint => ({
-        url: `/internal/profiles/${language}/cv`,
-        method: 'delete',
-    }),
-    templatePreview: (language: JobLanguage): Endpoint => ({
-        url: `/internal/profiles/${language}/preview`,
-        method: 'post',
-    }),
+    profiles: (): Endpoint => ProfilesController.index(),
+    createProfile: (): Endpoint => ProfilesController.store(),
+    saveProfile: (language: JobLanguage): Endpoint =>
+        ProfilesController.update(language),
+    deleteProfile: (language: JobLanguage): Endpoint =>
+        ProfilesController.destroy(language),
+    uploadCv: (language: JobLanguage): Endpoint =>
+        ProfileCvController.store(language),
+    deleteCv: (language: JobLanguage): Endpoint =>
+        ProfileCvController.destroy(language),
+    templatePreview: (language: JobLanguage): Endpoint =>
+        ProfilePreviewController(language),
     plans: (region?: RegionKey): Endpoint => ({
         url: withQuery('/internal/plans', { region }),
         method: 'get',

@@ -6,7 +6,6 @@ use App\Enums\ApplicationOrigin;
 use App\Enums\ApplicationStatus;
 use App\Models\Application;
 use App\Models\JobPosting;
-use App\Models\JobPreference;
 use App\Models\User;
 use App\Outreach\Jobs\SendApplicationEmail;
 use App\Outreach\Queries\MatchingJobPostings;
@@ -22,10 +21,12 @@ class QueueApplication
 
     public const string REJECT_ALREADY_APPLIED = 'You already applied to this company.';
 
+    public const string REJECT_NO_PROFILE = "You have no application profile in this job's language.";
+
     /**
      * Prefix of the eligibility rejection: "Not eligible: " followed by the
      * unmet items of CanSendApplications joined with a single space, e.g.
-     * "Not eligible: Upload your CV. Daily limit of 10 applications reached."
+     * "Not eligible: Create an application profile. Daily limit of 10 applications reached."
      */
     public const string REJECT_NOT_ELIGIBLE_PREFIX = 'Not eligible: ';
 
@@ -58,19 +59,13 @@ class QueueApplication
     private function queue(User $user, JobPosting $posting, ApplicationOrigin $origin): ?Application
     {
         // Serializes concurrent queueing for the same user.
-        $preference = JobPreference::query()->whereBelongsTo($user)->lockForUpdate()->first();
+        User::query()->whereKey($user->id)->lockForUpdate()->first();
 
         $eligibility = $this->eligibility->check($user);
 
         if (! $eligibility->ok()) {
             return $this->reject(self::REJECT_NOT_ELIGIBLE_PREFIX.implode(' ', $eligibility->unmet));
         }
-
-        if ($preference === null) {
-            return $this->reject(self::REJECT_NOT_ELIGIBLE_PREFIX.'Upload your CV.');
-        }
-
-        $user->setRelation('jobPreference', $preference);
 
         $company = $posting->company;
 
@@ -85,20 +80,31 @@ class QueueApplication
             return $this->reject(self::REJECT_NO_RECIPIENT);
         }
 
+        $profile = $user->applicationProfiles()
+            ->where('language', $posting->profile?->language)
+            ->where('is_active', true)
+            ->first();
+
+        if ($profile === null || ! $profile->isComplete()) {
+            return $this->reject(self::REJECT_NO_PROFILE);
+        }
+
         if (! MatchingJobPostings::forUser($user)->where('job_postings.id', $posting->id)->exists()) {
             return $this->reject(self::REJECT_NO_MATCH);
         }
 
-        $variables = ApplicationTemplateRenderer::variablesFor($user, $posting);
+        $variables = ApplicationTemplateRenderer::variablesFor($user, $posting, $profile);
 
         $application = Application::query()->create([
             'user_id' => $user->id,
             'company_id' => $company->id,
             'job_posting_id' => $posting->id,
             'contact_id' => $contact->id,
+            'application_profile_id' => $profile->id,
+            'language' => $profile->language->value,
             'recipient_email' => $contact->email,
-            'subject' => ApplicationTemplateRenderer::render((string) $preference->email_subject, $variables),
-            'body' => ApplicationTemplateRenderer::render((string) $preference->email_body, $variables),
+            'subject' => ApplicationTemplateRenderer::render((string) $profile->email_subject, $variables),
+            'body' => ApplicationTemplateRenderer::render((string) $profile->email_body, $variables),
             'origin' => $origin,
             'status' => ApplicationStatus::Queued,
             'attempts' => 0,
