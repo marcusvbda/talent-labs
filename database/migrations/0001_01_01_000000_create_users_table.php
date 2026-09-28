@@ -25,6 +25,8 @@ return new class extends Migration
             $table->string('country', 2)->nullable();
             $table->string('region', 8)->default('row');
             $table->string('plan_key', 32)->default('free');
+            $table->timestamp('sending_paused_at')->nullable();
+            $table->string('sending_pause_reason', 32)->nullable();
             $table->timestamps();
         });
 

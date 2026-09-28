@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Contracts\OAuthIntegrationPlugin;
 use App\Outreach\Contracts\SendsGmailMessages;
 use App\Outreach\Support\GmailApiMessageSender;
+use App\Outreach\Support\OutreachConfig;
 use App\Plans\PlanCatalog;
 use App\Services\ConnectedIntegrationRegistry;
 use Carbon\CarbonImmutable;
@@ -43,6 +44,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // Fail fast on unsafe sending knobs, in every environment.
+        OutreachConfig::validate();
 
         // Client JSON contracts have no envelope.
         JsonResource::withoutWrapping();

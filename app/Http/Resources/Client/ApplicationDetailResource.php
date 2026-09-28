@@ -42,6 +42,10 @@ class ApplicationDetailResource extends ApplicationItemResource
     {
         $application = $this->resource;
 
+        if ($application->stage_log !== []) {
+            return array_values($application->stage_log);
+        }
+
         if ($application->sent_at !== null) {
             return [['stage' => 'sent', 'at' => $application->sent_at->toIso8601String()]];
         }

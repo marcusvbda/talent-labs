@@ -5,7 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\PlanKey;
 use App\Enums\Region;
+use App\Enums\SendingPauseReason;
 use App\Enums\UserStatus;
+use App\Events\Client\Concerns\DispatchesClientEvent;
 use App\Notifications\Client\ResetPassword;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -35,6 +37,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $country
  * @property Region $region
  * @property PlanKey $plan_key
+ * @property Carbon|null $sending_paused_at
+ * @property SendingPauseReason|null $sending_pause_reason
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read JobPreference|null $jobPreference
@@ -47,8 +51,19 @@ use Illuminate\Support\Carbon;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, HasLocalePreference
 {
+    use DispatchesClientEvent;
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected static function booted(): void
+    {
+        static::saved(function (User $user): void {
+            if ($user->wasChanged(['plan_key', 'sending_paused_at', 'sending_pause_reason'])) {
+                static::dispatchAccountStatusUpdated($user->id);
+            }
+        });
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -64,6 +79,8 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference
             'status' => UserStatus::class,
             'region' => Region::class,
             'plan_key' => PlanKey::class,
+            'sending_paused_at' => 'datetime',
+            'sending_pause_reason' => SendingPauseReason::class,
         ];
     }
 
@@ -134,6 +151,11 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference
     public function isActive(): bool
     {
         return $this->status === UserStatus::Active;
+    }
+
+    public function isSendingPaused(): bool
+    {
+        return $this->sending_paused_at !== null;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Client;
 
 use App\Enums\ConnectedIntegrationStatus;
+use App\Enums\SendingPauseReason;
 use App\Models\ApplicationProfile;
 use App\Models\User;
 use App\Plans\PlanCatalog;
@@ -60,8 +61,10 @@ final class AccountStatusPresenter
                 'accountEmail' => $gmailEmail,
             ],
             'sending' => [
-                'paused' => false,
-                'autoPausedReason' => null,
+                'paused' => $user->isSendingPaused(),
+                'autoPausedReason' => in_array($user->sending_pause_reason, [SendingPauseReason::ReauthorizationRequired, SendingPauseReason::RepeatedFailures], true)
+                    ? $user->sending_pause_reason->value
+                    : null,
             ],
             'onboarding' => [
                 'complete' => collect($steps)->every(fn (array $step): bool => $step['done']),

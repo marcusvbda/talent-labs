@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
@@ -24,6 +25,9 @@ return new class extends Migration
             $table->string('origin');
             $table->string('language', 8)->nullable();
             $table->string('status');
+            $table->string('stage', 32)->nullable();
+            $table->string('sub_step', 32)->nullable();
+            $table->jsonb('stage_log')->default(new Expression("'[]'::jsonb"));
             $table->unsignedInteger('attempts')->default(0);
             $table->string('provider_message_id')->nullable();
             $table->string('last_error')->nullable();
@@ -35,6 +39,7 @@ return new class extends Migration
             $table->unique(['user_id', 'company_id']);
             $table->index(['user_id', 'queued_at']);
             $table->index('status');
+            $table->index(['user_id', 'status', 'scheduled_for']);
         });
     }
 

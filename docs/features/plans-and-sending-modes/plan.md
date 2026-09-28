@@ -10,9 +10,9 @@ session. Phase status is updated in place in this file.
 
 | Phase | Title                                                                   | Role             | Depends on     | Size | Status       |
 | ----- | ----------------------------------------------------------------------- | ---------------- | -------------- | ---- | ------------ |
-| 1     | Outreach config, boot validation, sending enums                         | laravel-backend  | none           | M    | PENDING      |
-| 2     | Pause and stage columns, models, `AccountStatus.sending`, item stages   | laravel-backend  | 1              | M    | PENDING      |
-| 3     | `SendScheduler`: window and `nextSlot`                                  | laravel-backend  | 2              | S    | PENDING      |
+| 1     | Outreach config, boot validation, sending enums                         | laravel-backend  | none           | M    | DONE         |
+| 2     | Pause and stage columns, models, `AccountStatus.sending`, item stages   | laravel-backend  | 1              | M    | DONE         |
+| 3     | `SendScheduler`: window and `nextSlot`                                  | laravel-backend  | 2              | S    | DONE         |
 | 4     | `LiveSending` presenter, `SendingUpdated` event, `GET /internal/sending` | laravel-backend  | 3              | M    | PENDING      |
 | 5     | Spaced queueing, job start guards, pause/resume core                    | laravel-backend  | 3, 4           | M    | PENDING      |
 | 6     | Staged send pipeline (stages, sub-steps, pacing)                        | laravel-backend  | 5              | M    | PENDING      |
@@ -131,7 +131,12 @@ posting data. B would change the client's email.
 
 ### Phase 1 — Outreach config, boot validation, sending enums
 
-Status: PENDING
+Status: DONE
+Evidence: `composer lint:check` and `composer types:check` pass. `php artisan about` boots; with
+`OUTREACH_SEND_INTERVAL_MIN_SECONDS=2` it fails with "OUTREACH_SEND_INTERVAL_MIN_SECONDS must be at
+least 5 (got 2)"; with `OUTREACH_STEP_DELAY_MS=5000` it fails similarly. `SendStage`/`SendSubStep`
+backing values verified 1:1 against `resources/js/types/contracts.ts`. `code-reviewer`: APPROVED, no
+blocking findings.
 Role: laravel-backend · Depends on: none · Covers: groundwork for AC02, AC05, AC06, AC08 · Size: M
 Spec: Part 0.1–0.5, B.2, B.3 (enums)
 
@@ -194,7 +199,11 @@ Spec: Part 0.1–0.5, B.2, B.3 (enums)
 
 ### Phase 2 — Pause and stage columns, models, `AccountStatus.sending`, item stages
 
-Status: PENDING
+Status: DONE
+Evidence: `composer lint:check` and `composer types:check` pass. Only the two create migrations were
+edited (`git status --porcelain database/migrations` confirms no new file). `code-reviewer`: APPROVED,
+no blocking findings. Owner still needs to run `php artisan migrate:fresh --seed` before any runtime
+check of these columns (not run by the agent).
 Role: laravel-backend · Depends on: 1 · Covers: AC01, AC05 (data), AC07 (state) · Size: M
 Spec: B.3, B.7 ("`AccountStatus.sending` becomes real"), Part 0.7
 
@@ -240,7 +249,13 @@ Spec: B.3, B.7 ("`AccountStatus.sending` becomes real"), Part 0.7
 
 ### Phase 3 — `SendScheduler`: window and `nextSlot`
 
-Status: PENDING
+Status: DONE
+Evidence: `composer lint:check` and `composer types:check` pass. `grep -rn "SendScheduler" app` shows
+no callers yet (class only). Window math verified in a scratch tinker script (weekend skip, window
+disabled, boundary cases). `code-reviewer`: APPROVED, no blocking findings; the one non-blocking note
+(raw `max()` values parsed with `config('app.timezone')`) is moot since `config/app.php` hardcodes
+`'timezone' => 'UTC'` with no env override. `anchor`/spacing math against real `Application` rows still
+needs the owner's `php artisan migrate:fresh --seed`.
 Role: laravel-backend · Depends on: 2 · Covers: AC02, AC06 · Size: S
 Spec: Part 0.2–0.3, B.4 (`nextSlot`), B.2 (window timezone)
 

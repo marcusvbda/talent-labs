@@ -30,6 +30,16 @@ return [
         // Test mode: when set, every application email is delivered to this address
         // instead of the company. Empty/unset = emails go to the companies for real.
         'intercept_to' => env('OUTREACH_INTERCEPT_TO'),
+        'interval_min_seconds' => (int) env('OUTREACH_SEND_INTERVAL_MIN_SECONDS', 45),
+        'interval_max_seconds' => (int) env('OUTREACH_SEND_INTERVAL_MAX_SECONDS', 120),
+        'step_delay_ms' => (int) env('OUTREACH_STEP_DELAY_MS', 1200),
+        'window' => [
+            'enabled' => (bool) env('OUTREACH_WINDOW_ENABLED', true),
+            'start' => env('OUTREACH_WINDOW_START', '08:00'),
+            'end' => env('OUTREACH_WINDOW_END', '19:00'),
+            'weekdays_only' => (bool) env('OUTREACH_WINDOW_WEEKDAYS_ONLY', true),
+        ],
+        'auto_pause_after_failures' => (int) env('OUTREACH_AUTO_PAUSE_AFTER_FAILURES', 3),
     ],
 
     'contacts' => [
@@ -54,7 +64,7 @@ return [
     'plans' => [
         'default' => env('PLAN_DEFAULT', 'free'),
         'catalog' => [
-            'free' => ['name' => 'Free', 'mode' => 'auto', 'daily_limit' => (int) env('PLAN_FREE_DAILY_LIMIT', 10)],
+            'free' => ['name' => 'Free', 'mode' => 'auto', 'daily_limit' => (int) env('PLAN_FREE_DAILY_LIMIT', 25)],
             'starter' => ['name' => 'Starter', 'mode' => 'select', 'daily_limit' => (int) env('PLAN_STARTER_DAILY_LIMIT', 50)],
             'pro' => ['name' => 'Pro', 'mode' => 'review', 'daily_limit' => (int) env('PLAN_PRO_DAILY_LIMIT', 150)],
         ],

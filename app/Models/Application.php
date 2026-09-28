@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\ApplicationOrigin;
 use App\Enums\ApplicationStatus;
+use App\Enums\SendStage;
+use App\Enums\SendSubStep;
 use App\Events\Client\ApplicationProgressed;
 use App\Events\Client\Concerns\DispatchesClientEvent;
 use App\Models\Concerns\BroadcastsRealtime;
@@ -27,6 +29,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ApplicationOrigin $origin
  * @property string|null $language
  * @property ApplicationStatus $status
+ * @property SendStage|null $stage
+ * @property SendSubStep|null $sub_step
+ * @property array<int, array{stage: string, at: string}> $stage_log
  * @property int $attempts
  * @property string|null $provider_message_id
  * @property string|null $last_error
@@ -79,6 +84,9 @@ class Application extends Model
         return [
             'origin' => ApplicationOrigin::class,
             'status' => ApplicationStatus::class,
+            'stage' => SendStage::class,
+            'sub_step' => SendSubStep::class,
+            'stage_log' => 'array',
             'attempts' => 'integer',
             'queued_at' => 'datetime',
             'scheduled_for' => 'datetime',
