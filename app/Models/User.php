@@ -88,7 +88,6 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference
     {
         return match ($panel->getId()) {
             'admin' => $this->is_admin && $this->status === UserStatus::Active,
-            'app' => $this->status === UserStatus::Active,
             default => false,
         };
     }

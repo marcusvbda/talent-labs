@@ -134,6 +134,10 @@ const ReviewSession = ({
     const subjectInvalid = subjectLength < 1 || subjectLength > SUBJECT_MAX;
     const bodyInvalid = bodyLength < 1 || bodyLength > BODY_MAX;
 
+    const fieldErrors = queue.error?.status === 422 ? queue.error.errors : {};
+    const serverSubject = fieldErrors?.subject?.[0];
+    const serverBody = fieldErrors?.body?.[0];
+
     const close = () => {
         if (!queue.isPending) {
             onClose(queuedCount);
@@ -142,6 +146,7 @@ const ReviewSession = ({
 
     const update = (patch: Partial<Edit>) => {
         if (draft && current) {
+            queue.reset();
             setEdits({ ...edits, [draft.job.id]: { ...current, ...patch } });
         }
     };
@@ -177,7 +182,14 @@ const ReviewSession = ({
                             t('review.failed'),
                     );
                 },
-                onError: () => toast.error(t('review.failed')),
+                onError: (error) =>
+                    error.status === 422
+                        ? undefined
+                        : toast.error(
+                              error.status === 403
+                                  ? error.message
+                                  : t('review.failed'),
+                          ),
             },
         );
     };
@@ -265,7 +277,7 @@ const ReviewSession = ({
                             error={
                                 subjectInvalid
                                     ? t('review.subject.length')
-                                    : undefined
+                                    : serverSubject
                             }
                         >
                             {(control) => (
@@ -284,7 +296,7 @@ const ReviewSession = ({
                             error={
                                 bodyInvalid
                                     ? t('review.body.length')
-                                    : undefined
+                                    : serverBody
                             }
                         >
                             {(control) => (

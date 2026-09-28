@@ -13,7 +13,7 @@ export type SharedUser = {
 export type SharedProps = {
     app: {
         brand: { name: string; wordmark: [string, string] };
-        env: 'local' | 'production' | string;
+        env: string;
         useFixtures: boolean;
     };
     auth: { user: SharedUser | null };

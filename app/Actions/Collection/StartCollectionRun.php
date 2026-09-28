@@ -22,7 +22,7 @@ class StartCollectionRun
      *
      * @throws CollectionRunException
      */
-    public function handle(User $triggeredBy): CollectionRun
+    public function handle(?User $triggeredBy): CollectionRun
     {
         $lock = Cache::lock('collection-runs:start', 10);
 
@@ -44,7 +44,7 @@ class StartCollectionRun
 
                 $run = CollectionRun::create([
                     'status' => CollectionRunStatus::Pending,
-                    'triggered_by' => $triggeredBy->id,
+                    'triggered_by' => $triggeredBy?->id,
                     'sources_total' => $sources->count(),
                 ]);
 

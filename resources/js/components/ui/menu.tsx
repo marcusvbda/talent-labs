@@ -3,13 +3,13 @@ import {
     MenuButton,
     MenuItem,
     MenuItems,
-} from "@headlessui/react";
-import { Link } from "@inertiajs/react";
-import type { LucideIcon } from "lucide-react";
-import { TriangleAlert } from "lucide-react";
-import { Fragment } from "react";
-import type { ReactElement } from "react";
-import { cn } from "@/lib/utils";
+} from '@headlessui/react';
+import { Link } from '@inertiajs/react';
+import type { LucideIcon } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
+import { Fragment } from 'react';
+import type { ReactElement } from 'react';
+import { cn } from '@/lib/utils';
 
 export type MenuEntry = {
     label: string;
@@ -21,11 +21,11 @@ export type MenuEntry = {
 );
 
 const ITEM_BASE =
-    "flex w-full cursor-pointer items-center gap-3 rounded-checkbox px-4 py-3 text-left text-body select-none focus-visible:focus-ring";
+    'flex w-full cursor-pointer items-center gap-3 rounded-checkbox px-4 py-3 text-left text-body select-none focus-visible:focus-ring';
 
 const ITEM_TONES = {
-    default: "text-ink data-focus:bg-tile",
-    danger: "text-danger-text data-focus:bg-danger-bg",
+    default: 'text-ink data-focus:bg-tile',
+    danger: 'text-danger-text data-focus:bg-danger-bg',
 };
 
 export function Menu({
@@ -41,7 +41,7 @@ export function Menu({
             <MenuButton as={Fragment}>{trigger}</MenuButton>
             <MenuItems
                 transition
-                anchor={{ to: "bottom start", gap: 8, padding: 16 }}
+                anchor={{ to: 'bottom start', gap: 8, padding: 16 }}
                 className="z-30 w-56 max-w-[calc(100vw-2rem)] rounded-row bg-card p-2 shadow-shell outline-2 outline-hairline transition duration-150 focus:outline-hairline data-closed:opacity-0"
             >
                 {items.map((item, index) => {

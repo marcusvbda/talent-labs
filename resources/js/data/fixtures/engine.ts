@@ -50,9 +50,6 @@ const emitNotification = (
         notification: fixtureState.addNotification(type, data),
     });
 
-const applicationById = (id: number): ApplicationItem | undefined =>
-    fixtureState.get().applications.find((row) => row.item.id === id)?.item;
-
 const later = (ms: number, run: () => void): void => {
     clear();
     timer = setTimeout(() => {

@@ -11,6 +11,7 @@ import PreferencesController from '@/actions/App/Http/Controllers/Client/Interna
 import ProfileCvController from '@/actions/App/Http/Controllers/Client/Internal/ProfileCvController';
 import ProfilePreviewController from '@/actions/App/Http/Controllers/Client/Internal/ProfilePreviewController';
 import ProfilesController from '@/actions/App/Http/Controllers/Client/Internal/ProfilesController';
+import ReviewController from '@/actions/App/Http/Controllers/Client/Internal/ReviewController';
 import SendingController from '@/actions/App/Http/Controllers/Client/Internal/SendingController';
 import type {
     ApplicationFilters,
@@ -97,18 +98,9 @@ export const endpoints = {
         };
     },
     job: (id: number | string): Endpoint => JobsController.show(id),
-    queueApplications: (): Endpoint => ({
-        url: '/internal/applications',
-        method: 'post',
-    }),
-    reviewDrafts: (): Endpoint => ({
-        url: '/internal/applications/drafts',
-        method: 'post',
-    }),
-    queueReviewed: (): Endpoint => ({
-        url: '/internal/applications/reviewed',
-        method: 'post',
-    }),
+    queueApplications: (): Endpoint => ApplicationsController.store(),
+    reviewDrafts: (): Endpoint => ReviewController.drafts(),
+    queueReviewed: (): Endpoint => ReviewController.reviewed(),
     applications: (filters: ApplicationFilters = {}): Endpoint => {
         const base = ApplicationsController.index();
 

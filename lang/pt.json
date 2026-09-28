@@ -673,7 +673,7 @@
     "send.over_quota.other": "Isso é mais do que os :count envios que você ainda tem hoje.",
     "send.confirm.title.one": "Enviar :count candidatura?",
     "send.confirm.title.other": "Enviar :count candidaturas?",
-    "send.confirm.body": "Elas serão enviadas uma a uma pelo :gmail, a cada 45–120 segundos, aproximadamente. Término estimado: :time.",
+    "send.confirm.body": "Elas serão enviadas uma a uma pelo :gmail, a cada :min–:max segundos, aproximadamente. Término estimado: :time.",
     "send.confirm.cancel": "Cancelar",
     "send.confirm.send": "Enviar",
     "send.confirm.queued.one": ":count candidatura na fila",

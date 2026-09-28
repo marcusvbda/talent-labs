@@ -1,11 +1,9 @@
 import { useRef, useState } from 'react';
 import { DataCard } from '@/components/patterns/data-card';
 import { Button } from '@/components/ui/button';
-import { ErrorState } from '@/components/ui/error-state';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/segmented';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/toast';
 import { useDefaultTemplates } from '@/data/hooks/use-default-templates';

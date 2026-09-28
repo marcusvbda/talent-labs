@@ -9,23 +9,25 @@ import { useT } from '@/i18n/i18n-provider';
 import { useFormat } from '@/lib/format';
 import type { JobCard } from '@/types/contracts';
 
-// Matches the "about every 45–120 seconds" copy.
-const AVERAGE_SPACING_MS = ((45 + 120) / 2) * 1000;
-
 const ConfirmBody = ({
     selected,
     gmail,
+    error,
 }: {
     selected: JobCard[];
     gmail: string;
+    error: string | null;
 }) => {
     const { t } = useT();
     const format = useFormat();
     const { data } = useLiveSending();
     // Captured once per opening; the modal body is unmounted while closed.
     const [now] = useState(() => Date.now());
+    const minSeconds = data?.spacing.minSeconds ?? 0;
+    const maxSeconds = data?.spacing.maxSeconds ?? 0;
+    const averageMs = ((minSeconds + maxSeconds) / 2) * 1000;
     const finish =
-        now + ((data?.queuedCount ?? 0) + selected.length) * AVERAGE_SPACING_MS;
+        now + ((data?.queuedCount ?? 0) + selected.length) * averageMs;
 
     return (
         <div className="flex flex-col gap-5">
@@ -45,9 +47,16 @@ const ConfirmBody = ({
             <p className="text-body text-muted">
                 {t('send.confirm.body', {
                     gmail,
+                    min: minSeconds,
+                    max: maxSeconds,
                     time: format.date(finish, { timeStyle: 'short' }),
                 })}
             </p>
+            {error && (
+                <p role="alert" className="text-label-sm text-danger-text">
+                    {error}
+                </p>
+            )}
         </div>
     );
 };
@@ -68,7 +77,8 @@ export function ConfirmSendModal({
     const { t, plural } = useT();
     const queue = useQueueApplications();
 
-    const onConfirm = () =>
+    const onConfirm = () => {
+        queue.reset();
         queue.mutate(
             { jobIds: selected.map((job) => job.id) },
             {
@@ -89,9 +99,22 @@ export function ConfirmSendModal({
                     );
                     onQueued();
                 },
-                onError: () => toast.error(t('send.confirm.failed')),
+                onError: (error) => {
+                    if (error.status === 403) {
+                        toast.error(error.message);
+                    } else if (error.status !== 422) {
+                        toast.error(t('send.confirm.failed'));
+                    }
+                },
             },
         );
+    };
+
+    const error =
+        queue.error?.status === 422
+            ? (Object.values(queue.error.errors ?? {})[0]?.[0] ??
+              queue.error.message)
+            : null;
 
     return (
         <Modal
@@ -113,7 +136,7 @@ export function ConfirmSendModal({
                 </>
             }
         >
-            <ConfirmBody selected={selected} gmail={gmail} />
+            <ConfirmBody selected={selected} gmail={gmail} error={error} />
         </Modal>
     );
 }

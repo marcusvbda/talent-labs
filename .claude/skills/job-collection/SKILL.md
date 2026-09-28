@@ -59,15 +59,21 @@ descriptionText, publishedAt, raw`.
   with `isEventDispatched: true` and a link to the run view page.
 - "Mark as failed" on pending/running runs: run + unfinished source runs →
   failed, cancel the batch.
-- `sources.interval_minutes` is stored only; nothing is scheduled.
+- `sources.interval_minutes` is stored only. Automatic runs come from the
+  singleton `collection_schedules` row (times + timezone, edited at admin
+  "Collection schedule") via `collection:tick` every minute; one run per slot
+  (`last_slot_key` claimed atomically), missed slots not caught up.
+  `collection:run` starts one manually. Scheduler runs have
+  `triggered_by = null`.
 
 ## Realtime channels (public, ids only)
 
-| Channel               | Event                  | Emitted by                                     |
-| --------------------- | ---------------------- | ---------------------------------------------- |
-| `collection_runs`     | `CollectionRunUpdated` | `CollectionRun` saved/deleted                  |
-| `collection_run_{id}` | `CollectionRunUpdated` | that run or any of its `SourceRun`s saved      |
-| `job_postings`        | `JobPostingsUpdated`   | explicit, once per source run after the upsert |
-| `sources`             | `SourceUpdated`        | `Source` saved/deleted                         |
+| Channel               | Event                       | Emitted by                                     |
+| --------------------- | --------------------------- | ---------------------------------------------- |
+| `collection_runs`     | `CollectionRunUpdated`      | `CollectionRun` saved/deleted                  |
+| `collection_run_{id}` | `CollectionRunUpdated`      | that run or any of its `SourceRun`s saved      |
+| `job_postings`        | `JobPostingsUpdated`        | explicit, once per source run after the upsert |
+| `sources`             | `SourceUpdated`             | `Source` saved/deleted                         |
+| `collection_schedule` | `CollectionScheduleUpdated` | `CollectionSchedule` saved/deleted             |
 
 Never once per posting. Never `->poll()`.

@@ -66,7 +66,7 @@ class SourceForm
                     ->minValue(1)
                     ->default(60)
                     ->required()
-                    ->helperText('Stored for future automatic collection; not used yet'),
+                    ->helperText('Stored only; automatic collection follows the Collection schedule page.'),
 
                 Toggle::make('is_active')
                     ->label('Active')

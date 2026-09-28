@@ -47,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 || ! in_array($status, [403, 404, 419, 500, 503], true)
                 || $request->expectsJson()
                 || $request->hasHeader('X-Livewire')
-                || $request->is('admin', 'admin/*', 'app', 'app/*')) {
+                || $request->is('admin', 'admin/*')) {
                 return null;
             }
 

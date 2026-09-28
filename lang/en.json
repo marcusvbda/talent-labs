@@ -673,7 +673,7 @@
     "send.over_quota.other": "That is more than the :count sends you have left today.",
     "send.confirm.title.one": "Send :count application?",
     "send.confirm.title.other": "Send :count applications?",
-    "send.confirm.body": "They will go out one by one from :gmail, about every 45–120 seconds. Estimated finish :time.",
+    "send.confirm.body": "They will go out one by one from :gmail, about every :min–:max seconds. Estimated finish :time.",
     "send.confirm.cancel": "Cancel",
     "send.confirm.send": "Send",
     "send.confirm.queued.one": ":count application queued",

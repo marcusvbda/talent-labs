@@ -6,12 +6,9 @@ use App\Enums\ConnectedIntegrationStatus;
 use App\Events\Client\Concerns\DispatchesClientEvent;
 use App\Exceptions\ConnectedIntegrationReauthorizationRequired;
 use App\Exceptions\OAuthRefreshTokenRejected;
-use App\Filament\App\Pages\Preferences;
 use App\Models\ConnectedIntegration;
 use App\Models\User;
 use App\Notifications\Client\GmailReauthorizationRequired;
-use Filament\Actions\Action;
-use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
 
@@ -119,19 +116,6 @@ class ConnectedIntegrationTokenManager
         if ($transitioned) {
             // The query-builder update above skips model events, so dispatch explicitly.
             self::dispatchAccountStatusUpdated($integration->user_id);
-
-            $label = $this->registry->get($integration->plugin_key)->label();
-
-            Notification::make()
-                ->title("Reconnect your {$label} to keep sending applications")
-                ->body('Access was revoked or expired. Reconnect it in your preferences.')
-                ->warning()
-                ->actions([
-                    Action::make('reconnect')
-                        ->label("Reconnect {$label}")
-                        ->url(Preferences::getUrl(panel: 'app')),
-                ])
-                ->sendToDatabase($integration->user, isEventDispatched: true);
 
             GmailReauthorizationRequired::send($integration->user, new GmailReauthorizationRequired);
         }

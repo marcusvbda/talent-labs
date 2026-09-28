@@ -1,0 +1,10 @@
+<x-filament-realtime-driver::listener
+    channel="collection_schedule"
+    event="CollectionScheduleUpdated"
+    callback="$wire.$refresh()"
+/>
+<x-filament-realtime-driver::listener
+    channel="collection_runs"
+    event="CollectionRunUpdated"
+    callback="$wire.$refresh()"
+/>

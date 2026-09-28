@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('outreach:dispatch-auto')->everyMinute()->withoutOverlapping()->onOneServer();
+Schedule::command('collection:tick')->everyMinute()->withoutOverlapping()->onOneServer();

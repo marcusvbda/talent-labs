@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { ApiError } from '@/data/api';
+import { apiFetch, type ApiError } from '@/data/api';
+import { endpoints } from '@/data/endpoints';
 import {
     reviewedOverrides,
     validateReviewed,
@@ -14,6 +15,14 @@ type Variables = { jobId: number; subject: string; body: string };
 
 export function useQueueReviewed() {
     const queryClient = useQueryClient();
+    const real = ({ jobId, subject, body }: Variables) => {
+        const e = endpoints.queueReviewed();
+
+        return apiFetch<QueueResult>(e.url, {
+            method: e.method,
+            body: { jobId, subject, body },
+        });
+    };
     const fixture = ({ jobId, subject, body }: Variables) =>
         fixtureCall(async () => {
             validateReviewed(subject, body);
@@ -37,7 +46,7 @@ export function useQueueReviewed() {
         });
 
     return useMutation<QueueResult, ApiError, Variables>({
-        mutationFn: fromSource({ fixture }),
+        mutationFn: fromSource({ real, fixture }),
         onSuccess: () => invalidateAfterQueue(queryClient),
     });
 }

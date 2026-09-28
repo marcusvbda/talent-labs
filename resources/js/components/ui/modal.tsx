@@ -4,20 +4,20 @@ import {
     DialogPanel,
     DialogTitle,
     Description,
-} from "@headlessui/react";
-import { X } from "lucide-react";
-import type { ReactNode } from "react";
-import { useT } from "@/i18n/i18n-provider";
-import { cn } from "@/lib/utils";
-import { IconButton } from "./icon-button";
+} from '@headlessui/react';
+import { X } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useT } from '@/i18n/i18n-provider';
+import { cn } from '@/lib/utils';
+import { IconButton } from './icon-button';
 
-type ModalSize = "sm" | "md" | "lg" | "xl";
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const SIZES: Record<ModalSize, string> = {
-    sm: "md:max-w-sm",
-    md: "md:max-w-lg",
-    lg: "md:max-w-2xl",
-    xl: "md:max-w-4xl",
+    sm: 'md:max-w-sm',
+    md: 'md:max-w-lg',
+    lg: 'md:max-w-2xl',
+    xl: 'md:max-w-4xl',
 };
 
 export function Modal({
@@ -26,7 +26,7 @@ export function Modal({
     title,
     description,
     footer,
-    size = "md",
+    size = 'md',
     children,
 }: {
     open: boolean;
@@ -49,7 +49,7 @@ export function Modal({
                 <DialogPanel
                     transition
                     className={cn(
-                        "flex h-dvh max-h-dvh w-full flex-col gap-6 bg-card p-card shadow-shell transition duration-150 data-closed:scale-95 data-closed:opacity-0 max-md:pt-[max(var(--spacing-card),env(safe-area-inset-top))] max-md:pb-[max(var(--spacing-card),env(safe-area-inset-bottom))] md:h-auto md:max-h-full md:rounded-card",
+                        'flex h-dvh max-h-dvh w-full flex-col gap-6 bg-card p-card shadow-shell transition duration-150 data-closed:scale-95 data-closed:opacity-0 max-md:pt-[max(var(--spacing-card),env(safe-area-inset-top))] max-md:pb-[max(var(--spacing-card),env(safe-area-inset-bottom))] md:h-auto md:max-h-full md:rounded-card',
                         SIZES[size],
                     )}
                 >
@@ -66,12 +66,12 @@ export function Modal({
                         </div>
                         <IconButton
                             icon={X}
-                            label={t("common.close")}
+                            label={t('common.close')}
                             onClick={onClose}
                         />
                     </div>
                     {children ? (
-                        <div className="overflow-y-auto max-md:flex-1 p-1">
+                        <div className="overflow-y-auto p-1 max-md:flex-1">
                             {children}
                         </div>
                     ) : null}
