@@ -62,6 +62,8 @@ class AppServiceProvider extends ServiceProvider
             foreach (['collection', 'contacts', 'ai', 'outreach'] as $queue) {
                 DevCommands::artisan("queue:work database --queue={$queue}", "queue-{$queue}");
             }
+
+            DevCommands::artisan('schedule:work', 'scheduler');
         }
     }
 

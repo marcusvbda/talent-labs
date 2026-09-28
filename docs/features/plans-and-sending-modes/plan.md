@@ -20,10 +20,10 @@ session. Phase status is updated in place in this file.
 | 8     | Pause/resume endpoints                                                   | laravel-backend  | 4, 5          | S    | DONE        |
 | 9     | `POST /internal/applications` (select only) + `QueueResult`              | laravel-backend  | 5             | M    | DONE        |
 | 10    | Review endpoints: drafts and reviewed queueing                           | laravel-backend  | 9             | M    | DONE        |
-| 11    | Automatic-mode dispatcher + scheduler in `composer dev`                  | laravel-backend  | 5             | S    | PENDING     |
-| 12    | Admin Users: usage, sending badge, pause/resume actions                  | filament-admin   | 5             | S    | PENDING     |
-| 13    | Admin Sending monitor page                                               | filament-admin   | 6             | M    | PENDING     |
-| 14    | Frontend: live panel and pause/resume go real                            | inertia-frontend | 4, 8          | S    | PENDING     |
+| 11    | Automatic-mode dispatcher + scheduler in `composer dev`                  | laravel-backend  | 5             | S    | DONE        |
+| 12    | Admin Users: usage, sending badge, pause/resume actions                  | filament-admin   | 5             | S    | DONE        |
+| 13    | Admin Sending monitor page                                               | filament-admin   | 6             | M    | DONE        |
+| 14    | Frontend: live panel and pause/resume go real                            | inertia-frontend | 4, 8          | S    | DONE        |
 | 15    | Frontend: S1/S2/S3 send flows go real                                    | inertia-frontend | 9, 10, 14     | M    | PENDING     |
 | 16    | Remove the legacy Filament `/app` panel                                  | laravel-backend  | 7, 11, 13, 15 | M    | PENDING     |
 | 17    | Focused Pest tests (only with "write tests")                             | laravel-backend  | 6, 9, 10, 11  | M    | PENDING     |
@@ -737,7 +737,21 @@ $posting, $profile)` with `job_url` → `ClientSafeText::JOB_URL_TOKEN` and, per
 
 ### Phase 11 — Automatic-mode dispatcher + scheduler in `composer dev`
 
-Status: PENDING
+Status: DONE
+Evidence: `vendor/bin/pint --dirty --format agent`, `composer lint:check`, `composer types:check
+--memory-limit=1G` (0 errors) all pass. `php artisan schedule:list` shows `outreach:dispatch-auto` due
+every minute. `DispatchAutoApplications` derives auto-mode plan keys dynamically from
+`PlanCatalog::all()` (no hardcoding); pre-filters users with no `queued`/`sending` application, active,
+not paused; per user re-checks `CanSendApplications::check()->ok()`, `remaining > 0`,
+`SendScheduler::isInsideWindow()`; candidates = `MatchingJobPostings::forUser()` within
+`MAX_POSTING_AGE_DAYS`, newest first, limit 20; stops at the first successfully queued posting (at most
+one per user per run); logs one summary line. `QueueApplication::handle()` confirmed unmodified.
+`php artisan outreach:dispatch-auto` could not be runtime-smoke-tested — the dev DB is still missing the
+Phase 2 `sending_paused_at`/etc. columns pending the owner's `php artisan migrate:fresh --seed` (expected
+gap per the plan header, not a defect). `code-reviewer`: APPROVED, no blocking findings; three
+non-blocking notes (ternary-for-side-effects style nit, a harmless duplicate `CanSendApplications::check()`
+call also re-run authoritatively under lock inside `QueueApplication`, and a confirmed-safe double-queue
+race analysis via `QueueApplication`'s own per-user row lock).
 Role: laravel-backend · Depends on: 5 · Covers: AC04 · Size: S
 Spec: B.6
 
@@ -773,7 +787,19 @@ now()->subDays(OutreachLimits::MAX_POSTING_AGE_DAYS))->orderByDesc('job_postings
 
 ### Phase 12 — Admin Users: usage, sending badge, pause/resume actions
 
-Status: PENDING
+Status: DONE
+Evidence: `vendor/bin/pint --dirty --format agent`, `composer lint:check`, `composer types:check
+--memory-limit=1G` (0 errors) all pass. `grep -n "poll" app/Filament/Resources/Users/Tables/UsersTable.php`
+finds nothing. "Sent today" column now formats `"{count} / {limit}"` via `PlanCatalog::for($record)
+->dailyLimit`, existing `withCount` query untouched. New "Sending" badge column: "Active"/success when
+not paused, else the `SendingPauseReason` case's own label/color — confirmed `sending_paused_at`/
+`sending_pause_reason` are always written together by `SendScheduler::pause()`/`resume()`, so no latent
+null-dereference. "Pause sending"/"Resume sending" record actions added with `requiresConfirmation()`,
+correct `visible()` guards, calling `SendScheduler::pause($record, SendingPauseReason::Manual)`/
+`resume($record)`. `UserForm.php` (plan select) untouched. `code-reviewer`: APPROVED, no blocking
+findings; one non-blocking note (a blocked + paused user could still have "Resume sending" clicked since
+`SendScheduler::resume()` doesn't check account status — not required by this phase's contract, flagged
+for awareness only).
 Role: filament-admin · Depends on: 5 · Covers: AC10, AC01 · Size: S
 Spec: B.8 (UserResource)
 
@@ -804,7 +830,20 @@ Spec: B.8 (UserResource)
 
 ### Phase 13 — Admin Sending monitor page
 
-Status: PENDING
+Status: DONE
+Evidence: `vendor/bin/pint --dirty --format agent`, `composer lint:check`, `composer types:check
+--memory-limit=1G` (0 errors) all pass. `grep -rn "poll" app/Filament/Pages app/Filament/Widgets` finds
+nothing. `php artisan route:list --path=admin/sending-monitor` shows
+`GET|HEAD admin/sending-monitor filament.admin.pages.sending-monitor`. `SendingMonitor` (slug
+`sending-monitor`, nav group Outreach) surfaces `InFlightApplications`/`RecentTerminalApplications` only
+via `getFooterWidgets()` — `AdminPanelProvider.php` untouched, so neither widget appears on the main
+dashboard. In-flight table: `queued|sending` across users, nulls-last `scheduled_for` ordering confirmed
+correct Postgres syntax; recent table: latest-50-ids-then-`whereIn` pattern with `paginated(false)`,
+`last_error` truncated+tooltip matching the existing `ApplicationsTable.php` precedent. Both
+`->socket(channel: 'applications', event: 'ApplicationsUpdated')`, no record/header actions.
+`code-reviewer`: APPROVED, no blocking findings; two non-blocking notes (badge-on-nullable-enum
+rendering confirmed safe via `TextColumn`'s blank-state short-circuit, and the tables' intentional lack
+of search/sort/filters for a read-only display).
 Role: filament-admin · Depends on: 6 · Covers: AC10 · Size: M
 Spec: B.8 (Sending monitor)
 
@@ -839,7 +878,20 @@ Spec: B.8 (Sending monitor)
 
 ### Phase 14 — Frontend: live panel and pause/resume go real
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn run types:check` (`tsc --noEmit`) passes clean. `yarn run check` reports formatting issues
+in 18 pre-existing files unrelated to this diff (confirmed via `git status --porcelain` — none of them
+modified by this phase); the 3 touched files are clean. `php artisan wayfinder:generate` regenerated
+`SendingController.ts` with `pause`/`resume` actions (previously stale, only had `show`).
+`endpoints.ts`'s `sending`/`pauseSending`/`resumeSending` now call the generated Wayfinder actions instead
+of hardcoded URLs. `use-live-sending.ts` and `use-pause-sending.ts` gained `real` implementations
+following the exact `use-account-status.ts` pattern; `fromSource` flag-respecting behavior confirmed
+unbroken. `onError` in the shared `useSendingMutation` helper now surfaces `toast.error(error.message)`
+alongside the existing optimistic rollback — confirmed to reach both `live-sending-card.tsx` and
+`auto-banner.tsx` automatically since neither was touched. Realtime wiring (`use-realtime-cache.ts`,
+`handlers.ts`, `use-user-channel.ts`) confirmed already correct, untouched. Nothing from Phase 15's scope
+(`confirm-send-modal.tsx`, `review-modal.tsx`, queue/review hooks) touched. `code-reviewer`: APPROVED, no
+blocking or non-blocking findings.
 Role: inertia-frontend · Depends on: 4, 8 · Covers: AC05, AC06, AC07 · Size: S
 Spec: B.7 (frontend line), client-app-screens S1 (live panel)
 

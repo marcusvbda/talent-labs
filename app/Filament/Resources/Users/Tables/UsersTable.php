@@ -5,8 +5,11 @@ namespace App\Filament\Resources\Users\Tables;
 use App\Actions\Users\AdminGuard;
 use App\Enums\ConnectedIntegrationStatus;
 use App\Enums\PlanKey;
+use App\Enums\SendingPauseReason;
 use App\Enums\UserStatus;
 use App\Models\User;
+use App\Outreach\Support\SendScheduler;
+use App\Plans\PlanCatalog;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -45,6 +48,16 @@ class UsersTable
                     ->badge()
                     ->sortable(),
 
+                TextColumn::make('sending_pause_reason')
+                    ->label('Sending')
+                    ->badge()
+                    ->formatStateUsing(fn (User $record): string => $record->isSendingPaused()
+                        ? $record->sending_pause_reason->getLabel()
+                        : 'Active')
+                    ->color(fn (User $record): string => $record->isSendingPaused()
+                        ? $record->sending_pause_reason->getColor()
+                        : 'success'),
+
                 TextColumn::make('gmailIntegration.status')
                     ->label('Gmail')
                     ->badge()
@@ -55,7 +68,7 @@ class UsersTable
 
                 TextColumn::make('sent_today_count')
                     ->label('Sent today')
-                    ->numeric(),
+                    ->formatStateUsing(fn (string|int $state, User $record): string => $state.' / '.app(PlanCatalog::class)->for($record)->dailyLimit),
 
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -109,6 +122,34 @@ class UsersTable
 
                         Notification::make()
                             ->title('User unblocked.')
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('pauseSending')
+                    ->label('Pause sending')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->visible(fn (User $record): bool => ! $record->isSendingPaused())
+                    ->action(function (User $record): void {
+                        app(SendScheduler::class)->pause($record, SendingPauseReason::Manual);
+
+                        Notification::make()
+                            ->title('Sending paused.')
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('resumeSending')
+                    ->label('Resume sending')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn (User $record): bool => $record->isSendingPaused())
+                    ->action(function (User $record): void {
+                        app(SendScheduler::class)->resume($record);
+
+                        Notification::make()
+                            ->title('Sending resumed.')
                             ->success()
                             ->send();
                     }),

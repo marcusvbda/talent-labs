@@ -11,6 +11,7 @@ import PreferencesController from '@/actions/App/Http/Controllers/Client/Interna
 import ProfileCvController from '@/actions/App/Http/Controllers/Client/Internal/ProfileCvController';
 import ProfilePreviewController from '@/actions/App/Http/Controllers/Client/Internal/ProfilePreviewController';
 import ProfilesController from '@/actions/App/Http/Controllers/Client/Internal/ProfilesController';
+import SendingController from '@/actions/App/Http/Controllers/Client/Internal/SendingController';
 import type {
     ApplicationFilters,
     ChartData,
@@ -76,15 +77,9 @@ export const endpoints = {
 
         return { url: withQuery(base.url, { range }), method: base.method };
     },
-    sending: (): Endpoint => ({ url: '/internal/sending', method: 'get' }),
-    pauseSending: (): Endpoint => ({
-        url: '/internal/sending/pause',
-        method: 'post',
-    }),
-    resumeSending: (): Endpoint => ({
-        url: '/internal/sending/resume',
-        method: 'post',
-    }),
+    sending: (): Endpoint => SendingController.show(),
+    pauseSending: (): Endpoint => SendingController.pause(),
+    resumeSending: (): Endpoint => SendingController.resume(),
     jobs: (filters: JobFilters = {}): Endpoint => {
         const base = JobsController.index();
 
