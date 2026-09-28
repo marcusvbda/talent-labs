@@ -34,9 +34,9 @@ export function UserMenu({ plan }: { plan?: PlanKey }) {
                 <button
                     type="button"
                     aria-label={t('user_menu.open')}
-                    className="inline-flex h-control-sm items-center gap-3 rounded-full bg-tile p-1 transition-colors hover:bg-hairline focus-visible:focus-ring desk:pr-4"
+                    className="inline-flex h-control-lg items-center gap-3 rounded-full bg-tile p-1.5 transition-colors hover:bg-hairline focus-visible:focus-ring desk:pr-4"
                 >
-                    <Avatar initials={user?.initials ?? '?'} size="md" />
+                    <Avatar initials={user?.initials ?? '?'} size="lg" />
                     <span className="hidden max-w-40 truncate text-label-sm text-ink desk:inline">
                         {user?.name ?? ''}
                     </span>

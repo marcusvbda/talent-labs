@@ -31,7 +31,7 @@ export function LanguageSwitcher() {
                 <button
                     type="button"
                     aria-label={t('language_switcher.label')}
-                    className="inline-flex h-control-sm items-center gap-2 rounded-full bg-tile px-4 text-label-sm text-ink transition-colors hover:bg-hairline focus-visible:focus-ring"
+                    className="inline-flex h-control-lg items-center gap-2 rounded-full bg-tile px-4 text-label-sm text-ink transition-colors hover:bg-hairline focus-visible:focus-ring"
                 >
                     <Globe aria-hidden="true" size={20} strokeWidth={1.8} />
                     {locale.toUpperCase()}
