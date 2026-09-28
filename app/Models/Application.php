@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $company_id
  * @property int|null $job_posting_id
  * @property int|null $contact_id
+ * @property int|null $application_profile_id
  * @property string $recipient_email
  * @property string $subject
  * @property string $body
@@ -38,8 +39,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Company $company
  * @property-read JobPosting|null $jobPosting
  * @property-read Contact|null $contact
+ * @property-read ApplicationProfile|null $applicationProfile
  */
-#[Fillable(['user_id', 'company_id', 'job_posting_id', 'contact_id', 'recipient_email', 'subject', 'body', 'origin', 'language', 'status', 'attempts', 'provider_message_id', 'last_error', 'queued_at', 'scheduled_for', 'sent_at'])]
+#[Fillable(['user_id', 'company_id', 'job_posting_id', 'contact_id', 'application_profile_id', 'recipient_email', 'subject', 'body', 'origin', 'language', 'status', 'attempts', 'provider_message_id', 'last_error', 'queued_at', 'scheduled_for', 'sent_at'])]
 class Application extends Model
 {
     use BroadcastsRealtime;
@@ -131,5 +133,13 @@ class Application extends Model
     public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class);
+    }
+
+    /**
+     * @return BelongsTo<ApplicationProfile, $this>
+     */
+    public function applicationProfile(): BelongsTo
+    {
+        return $this->belongsTo(ApplicationProfile::class);
     }
 }

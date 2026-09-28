@@ -2,16 +2,26 @@
 
 namespace App\Outreach\Support;
 
+use App\Enums\ApplicationLanguage;
+use App\Models\ApplicationProfile;
 use App\Models\JobPosting;
 use App\Models\User;
 
 final class ApplicationTemplateRenderer
 {
-    public const ALLOWED_VARIABLES = ['company', 'job_title', 'job_location', 'job_url', 'client_name'];
+    public const ALLOWED_VARIABLES = ['company', 'job_title', 'job_location', 'job_url', 'client_name', 'cover_letter'];
 
     public const DEFAULT_SUBJECT = 'Application — {{ job_title }}';
 
     public const DEFAULT_BODY = "Hello {{ company }} team,\n\nI'd like to apply for the '{{ job_title }}' position {{ job_url }}). My CV is attached.\n\nThank you for your time.\n\nBest regards,\n{{ client_name }}";
+
+    private const DEFAULT_SUBJECT_EN = 'Application: {{ job_title }}';
+
+    private const DEFAULT_BODY_EN = "Hello {{ company }} team,\n\nI'm writing to apply for the {{ job_title }} position ({{ job_url }}).\n\n{{ cover_letter }}\n\nMy CV is attached. Thank you for your time.\n\nBest regards,\n{{ client_name }}";
+
+    private const DEFAULT_SUBJECT_PT = 'Candidatura: {{ job_title }}';
+
+    private const DEFAULT_BODY_PT = "Olá, equipe {{ company }},\n\nGostaria de me candidatar à vaga de {{ job_title }} ({{ job_url }}).\n\n{{ cover_letter }}\n\nMeu currículo está em anexo. Obrigado pelo seu tempo.\n\nAtenciosamente,\n{{ client_name }}";
 
     /**
      * Variable names used in the text that are not allowed.
@@ -25,10 +35,26 @@ final class ApplicationTemplateRenderer
         return array_values(array_unique(array_diff($matches[1], self::ALLOWED_VARIABLES)));
     }
 
+    public static function containsCoverLetterVariable(string $text): bool
+    {
+        return preg_match('/\{\{\s*cover_letter\s*\}\}/', $text) === 1;
+    }
+
+    /**
+     * @return array{subject: string, body: string}
+     */
+    public static function defaultsFor(ApplicationLanguage $language): array
+    {
+        return match ($language) {
+            ApplicationLanguage::En => ['subject' => self::DEFAULT_SUBJECT_EN, 'body' => self::DEFAULT_BODY_EN],
+            ApplicationLanguage::Pt => ['subject' => self::DEFAULT_SUBJECT_PT, 'body' => self::DEFAULT_BODY_PT],
+        };
+    }
+
     /**
      * @return array<string, string>
      */
-    public static function variablesFor(User $user, JobPosting $posting): array
+    public static function variablesFor(User $user, JobPosting $posting, ?ApplicationProfile $profile = null): array
     {
         $location = $posting->location;
 
@@ -36,12 +62,17 @@ final class ApplicationTemplateRenderer
             $location = $posting->is_remote ? 'Remote' : '';
         }
 
-        return [
+        $base = [
             'company' => $posting->company->name ?? $posting->company_name,
             'job_title' => $posting->title,
             'job_location' => $location,
             'job_url' => $posting->url,
             'client_name' => $user->name,
+        ];
+
+        return [
+            ...$base,
+            'cover_letter' => $profile === null ? '' : self::render((string) $profile->cover_letter, $base),
         ];
     }
 
@@ -49,18 +80,25 @@ final class ApplicationTemplateRenderer
      * Replace allowed variables in a single pass (any inner whitespace, same
      * pattern as unknownVariables()). Unknown names are left untouched and
      * substituted values are never re-scanned. Never compiled by Blade.
+     * Line endings are normalized, runs of blank lines collapse to one and
+     * the result is trimmed.
      *
      * @param  array<string, string>  $variables
      */
     public static function render(string $template, array $variables): string
     {
-        return preg_replace_callback(
+        $rendered = preg_replace_callback(
             '/\{\{\s*(.*?)\s*\}\}/',
             fn (array $match): string => in_array(trim($match[1]), self::ALLOWED_VARIABLES, true)
                 ? (string) ($variables[trim($match[1])] ?? '')
                 : $match[0],
             $template,
         ) ?? $template;
+
+        $rendered = str_replace("\r\n", "\n", $rendered);
+        $rendered = preg_replace('/\n(?:[ \t]*\n){2,}/', "\n\n", $rendered) ?? $rendered;
+
+        return trim($rendered);
     }
 
     public static function html(string $text): string

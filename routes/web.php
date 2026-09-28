@@ -17,6 +17,9 @@ use App\Http\Controllers\Client\Internal\JobsController;
 use App\Http\Controllers\Client\Internal\NotificationsController;
 use App\Http\Controllers\Client\Internal\OnboardingBasicsController;
 use App\Http\Controllers\Client\Internal\PreferencesController;
+use App\Http\Controllers\Client\Internal\ProfileCvController;
+use App\Http\Controllers\Client\Internal\ProfilePreviewController;
+use App\Http\Controllers\Client\Internal\ProfilesController;
 use App\Http\Controllers\Client\JobsPageController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
 use App\Http\Controllers\LocaleController;
@@ -62,6 +65,15 @@ Route::middleware(['auth', 'client', 'throttle:120,1'])
         Route::post('/preferences/preview', [PreferencesController::class, 'preview'])
             ->middleware('throttle:60,1,preferences-preview')
             ->name('preferences.preview');
+        Route::get('/profiles', [ProfilesController::class, 'index'])->name('profiles.index');
+        Route::post('/profiles', [ProfilesController::class, 'store'])->name('profiles.store');
+        Route::put('/profiles/{language}', [ProfilesController::class, 'update'])->name('profiles.update');
+        Route::delete('/profiles/{language}', [ProfilesController::class, 'destroy'])->name('profiles.destroy');
+        Route::post('/profiles/{language}/cv', [ProfileCvController::class, 'store'])->name('profiles.cv.store');
+        Route::delete('/profiles/{language}/cv', [ProfileCvController::class, 'destroy'])->name('profiles.cv.destroy');
+        Route::post('/profiles/{language}/preview', ProfilePreviewController::class)
+            ->middleware('throttle:60,1,profiles-preview')
+            ->name('profiles.preview');
     });
 
 Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');

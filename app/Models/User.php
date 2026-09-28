@@ -41,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, ConnectedIntegration> $connectedIntegrations
  * @property-read ConnectedIntegration|null $gmailIntegration
  * @property-read Collection<int, Application> $applications
+ * @property-read Collection<int, ApplicationProfile> $applicationProfiles
  */
 #[Fillable(['name', 'email', 'password', 'is_admin', 'status', 'locale', 'timezone', 'country', 'region', 'plan_key'])]
 #[Hidden(['password', 'remember_token'])]
@@ -105,6 +106,14 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
+    }
+
+    /**
+     * @return HasMany<ApplicationProfile, $this>
+     */
+    public function applicationProfiles(): HasMany
+    {
+        return $this->hasMany(ApplicationProfile::class);
     }
 
     public function preferredLocale(): ?string

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained()->restrictOnDelete();
             $table->foreignId('job_posting_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('contact_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('application_profile_id')->nullable()->constrained()->nullOnDelete();
             $table->string('recipient_email');
             $table->string('subject');
             $table->text('body');
