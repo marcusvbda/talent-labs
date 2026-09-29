@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Cashier\Cashier;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -50,6 +51,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Client JSON contracts have no envelope.
         JsonResource::withoutWrapping();
+
+        // Keep the paid plan while Stripe retries a failed renewal (dunning).
+        Cashier::keepPastDueSubscriptionsActive();
 
         if ($this->app->runningInConsole()) {
             DevCommands::artisan('reverb:start --debug', 'reverb');

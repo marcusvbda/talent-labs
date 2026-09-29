@@ -76,6 +76,48 @@ return [
             'starter' => ['name' => 'Starter', 'mode' => 'select', 'daily_limit' => (int) env('PLAN_STARTER_DAILY_LIMIT', 50)],
             'pro' => ['name' => 'Pro', 'mode' => 'review', 'daily_limit' => (int) env('PLAN_PRO_DAILY_LIMIT', 150)],
         ],
+        // Displayed prices, in minor units per region. 0 = free in that region (no Checkout).
+        'prices' => [
+            'free' => [
+                'br' => (int) env('PRICE_FREE_BRL', 2500),
+                'eu' => (int) env('PRICE_FREE_EUR', 500),
+                'row' => (int) env('PRICE_FREE_USD', 500),
+            ],
+            'starter' => [
+                'br' => (int) env('PRICE_STARTER_BRL', 5000),
+                'eu' => (int) env('PRICE_STARTER_EUR', 900),
+                'row' => (int) env('PRICE_STARTER_USD', 1000),
+            ],
+            'pro' => [
+                'br' => (int) env('PRICE_PRO_BRL', 10000),
+                'eu' => (int) env('PRICE_PRO_EUR', 1900),
+                'row' => (int) env('PRICE_PRO_USD', 2000),
+            ],
+        ],
+        // Charged prices: Stripe Price IDs per plan and region. Keep them equal to `prices`.
+        'stripe_prices' => [
+            'free' => [
+                'br' => env('STRIPE_PRICE_FREE_BRL'),
+                'eu' => env('STRIPE_PRICE_FREE_EUR'),
+                'row' => env('STRIPE_PRICE_FREE_USD'),
+            ],
+            'starter' => [
+                'br' => env('STRIPE_PRICE_STARTER_BRL'),
+                'eu' => env('STRIPE_PRICE_STARTER_EUR'),
+                'row' => env('STRIPE_PRICE_STARTER_USD'),
+            ],
+            'pro' => [
+                'br' => env('STRIPE_PRICE_PRO_BRL'),
+                'eu' => env('STRIPE_PRICE_PRO_EUR'),
+                'row' => env('STRIPE_PRICE_PRO_USD'),
+            ],
+        ],
+        'highlighted' => env('PLAN_HIGHLIGHTED', 'starter'),
+        'contact_email' => env('PLANS_CONTACT_EMAIL'),
+    ],
+
+    'billing' => [
+        'enabled' => (bool) env('BILLING_ENABLED', false),
     ],
 
     'regions' => [

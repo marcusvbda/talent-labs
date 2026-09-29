@@ -54,5 +54,6 @@ export const keys = {
     }) => ['profiles', 'preview', input] as const,
     plansAll: () => ['plans'] as const,
     plans: (region?: RegionKey) => ['plans', region ?? null] as const,
+    billing: () => ['billing'] as const,
     notifications: () => ['notifications'] as const,
 };

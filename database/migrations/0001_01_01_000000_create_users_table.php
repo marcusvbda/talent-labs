@@ -27,6 +27,11 @@ return new class extends Migration
             $table->string('plan_key', 32)->default('free');
             $table->timestamp('sending_paused_at')->nullable();
             $table->string('sending_pause_reason', 32)->nullable();
+            $table->string('stripe_id')->nullable()->index();
+            $table->string('pm_type')->nullable();
+            $table->string('pm_last_four', 4)->nullable();
+            $table->timestamp('trial_ends_at')->nullable();
+            $table->string('plan_source', 16)->default('manual');
             $table->timestamps();
         });
 

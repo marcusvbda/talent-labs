@@ -3,6 +3,7 @@
 namespace App\Actions\Users;
 
 use App\Actions\DisconnectConnectedIntegration;
+use App\Billing\Billing;
 use App\Exceptions\ClientAccountDeletionBlocked;
 use App\Models\Invitation;
 use App\Models\User;
@@ -10,8 +11,10 @@ use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
- * Deletes a client's account: revokes connected integrations, removes the CV folder
- * and deletes the user row (applications cascade, invitations keep a null `used_by`).
+ * Deletes a client's account: revokes connected integrations, removes the CV folder,
+ * cancels a valid Stripe subscription immediately when billing is available (failures
+ * are reported, deletion continues) and deletes the user row (applications cascade,
+ * invitations keep a null `used_by`).
  * Destructive — only the account owner triggers it, through `DELETE /internal/account`.
  */
 final class DeleteClientAccount
@@ -37,6 +40,16 @@ final class DeleteClientAccount
         }
 
         Storage::disk('local')->deleteDirectory('cvs/'.$user->id);
+
+        $subscription = Billing::available() ? $user->subscription('default') : null;
+
+        if ($subscription?->valid()) {
+            try {
+                $subscription->cancelNow();
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
 
         $user->delete();
     }

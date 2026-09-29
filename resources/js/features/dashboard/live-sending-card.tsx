@@ -154,8 +154,8 @@ const CurrentPanel = ({
                         failed
                             ? failedStageIndex(item)
                             : item.stage === 'sent' || item.status === 'sent'
-                            ? steps.length
-                            : stageIndex(item.stage)
+                              ? steps.length
+                              : stageIndex(item.stage)
                     }
                     failedIndex={failed ? failedStageIndex(item) : undefined}
                     subStep={

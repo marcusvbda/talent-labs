@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Users\Pages;
 
 use App\Actions\Users\AdminGuard;
+use App\Enums\PlanKey;
+use App\Enums\PlanSource;
 use App\Enums\UserStatus;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
@@ -82,6 +84,15 @@ class EditUser extends EditRecord
                     ->send();
 
                 throw new Halt;
+            }
+        }
+
+        if (array_key_exists('plan_key', $data)) {
+            $newPlan = $data['plan_key'] instanceof PlanKey ? $data['plan_key']->value : $data['plan_key'];
+            $currentPlan = $record->plan_key->value;
+
+            if ($newPlan !== $currentPlan) {
+                $data['plan_source'] = PlanSource::Manual->value;
             }
         }
 

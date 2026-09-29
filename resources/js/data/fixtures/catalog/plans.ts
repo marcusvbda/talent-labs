@@ -10,9 +10,9 @@ export const PLAN_REGIONS: { key: RegionKey; currency: string }[] = [
 
 // Prices are integer minor units (cents) per region.
 const PRICES: Record<RegionKey, Record<PlanKey, number>> = {
-    br: { free: 0, starter: 4900, pro: 9900 },
-    eu: { free: 0, starter: 1900, pro: 3900 },
-    row: { free: 0, starter: 1900, pro: 3900 },
+    br: { free: 2500, starter: 5000, pro: 10000 },
+    eu: { free: 500, starter: 900, pro: 1900 },
+    row: { free: 500, starter: 1000, pro: 2000 },
 };
 
 const BASE: Omit<PlanOffer, 'price' | 'currency'>[] = [

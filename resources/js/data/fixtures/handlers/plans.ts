@@ -16,5 +16,8 @@ export function plansData(region?: RegionKey): PlansData {
         plans: PLAN_OFFERS[selected].map((plan) => ({ ...plan })),
         current: getDevState().plan,
         billingAvailable: BILLING_AVAILABLE,
+        contactEmail: 'hello@example.com',
+        hasSubscription: false,
+        checkoutBlocked: false,
     };
 }

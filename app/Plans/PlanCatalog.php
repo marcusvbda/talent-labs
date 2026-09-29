@@ -3,6 +3,7 @@
 namespace App\Plans;
 
 use App\Enums\PlanKey;
+use App\Enums\Region;
 use App\Models\User;
 use RuntimeException;
 
@@ -47,6 +48,49 @@ final class PlanCatalog
     public function all(): array
     {
         return array_values($this->catalog());
+    }
+
+    /**
+     * Displayed monthly price in minor units; 0 when not configured (free in that region).
+     */
+    public function priceFor(PlanKey $key, Region $region): int
+    {
+        $price = config("talent.plans.prices.{$key->value}.{$region->value}");
+
+        return is_numeric($price) ? (int) $price : 0;
+    }
+
+    public function stripePriceId(PlanKey $key, Region $region): ?string
+    {
+        $priceId = config("talent.plans.stripe_prices.{$key->value}.{$region->value}");
+
+        return is_string($priceId) && $priceId !== '' ? $priceId : null;
+    }
+
+    /**
+     * Reverse lookup of a Stripe Price ID across every plan and region.
+     */
+    public function planForStripePrice(string $priceId): ?PlanKey
+    {
+        if ($priceId === '') {
+            return null;
+        }
+
+        /** @var array<string, array<string, mixed>> $stripePrices */
+        $stripePrices = config('talent.plans.stripe_prices', []);
+
+        foreach ($stripePrices as $key => $regions) {
+            if (in_array($priceId, $regions, true)) {
+                return PlanKey::tryFrom($key);
+            }
+        }
+
+        return null;
+    }
+
+    public function isHighlighted(PlanKey $key): bool
+    {
+        return config('talent.plans.highlighted') === $key->value;
     }
 
     /**

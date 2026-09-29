@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use App\Enums\PlanKey;
+use App\Enums\PlanSource;
 use App\Enums\UserStatus;
 use App\Models\User;
 use App\Support\RegionResolver;
@@ -47,7 +48,14 @@ class UserForm
                 Select::make('plan_key')
                     ->options(PlanKey::class)
                     ->default(PlanKey::Free)
+                    ->helperText('Changing the plan here makes it manual. An active Stripe subscription keeps billing until it is cancelled in Stripe.')
                     ->required(),
+
+                Select::make('plan_source')
+                    ->label('Billing')
+                    ->options(PlanSource::class)
+                    ->disabled()
+                    ->dehydrated(false),
 
                 Select::make('country')
                     ->options(function (): array {

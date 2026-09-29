@@ -269,15 +269,30 @@ export type PlansData = {
     regions: { key: RegionKey; currency: string }[];
     plans: PlanOffer[];
     current: PlanKey;
-    billingAvailable: boolean; // false until regional-pricing-and-billing ships
+    billingAvailable: boolean; // true when billing is enabled and Stripe keys are set
+    contactEmail: string | null;
+    hasSubscription: boolean;
+    checkoutBlocked: boolean;
 };
+
+export type BillingSummary = {
+    hasCustomer: boolean;
+    source: 'manual' | 'stripe';
+    plan: { key: PlanKey; name: string };
+    status: string | null;
+    renewsAt: string | null;
+    endsAt: string | null;
+};
+
+export type CheckoutResponse = { url: string };
 
 export type NotificationType =
     | 'gmail_reauthorization_required'
     | 'application_failed'
     | 'daily_limit_reached'
     | 'jobs_collected'
-    | 'sending_auto_paused';
+    | 'sending_auto_paused'
+    | 'payment_failed';
 export type NotificationItem = {
     id: string;
     type: NotificationType;

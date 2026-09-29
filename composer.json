@@ -11,6 +11,7 @@
         "helgesverre/toon": "^3.2",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/ai": "^0.10.2",
+        "laravel/cashier": "^16.8.",
         "laravel/framework": "^13.17",
         "laravel/reverb": "^1.0",
         "laravel/tinker": "^3.0",

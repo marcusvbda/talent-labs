@@ -11,11 +11,13 @@ use App\Http\Controllers\Client\Internal\AccountController;
 use App\Http\Controllers\Client\Internal\AccountExportController;
 use App\Http\Controllers\Client\Internal\AccountStatusController;
 use App\Http\Controllers\Client\Internal\ApplicationsController;
+use App\Http\Controllers\Client\Internal\BillingController;
 use App\Http\Controllers\Client\Internal\ChartController;
 use App\Http\Controllers\Client\Internal\DashboardController;
 use App\Http\Controllers\Client\Internal\JobsController;
 use App\Http\Controllers\Client\Internal\NotificationsController;
 use App\Http\Controllers\Client\Internal\OnboardingBasicsController;
+use App\Http\Controllers\Client\Internal\PlansController;
 use App\Http\Controllers\Client\Internal\PreferencesController;
 use App\Http\Controllers\Client\Internal\ProfileCvController;
 use App\Http\Controllers\Client\Internal\ProfilePreviewController;
@@ -69,6 +71,10 @@ Route::middleware(['auth', 'client', 'throttle:120,1'])
         Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password');
         Route::delete('/account', [AccountController::class, 'destroy'])->name('account.destroy');
         Route::get('/account/export', AccountExportController::class)->name('account.export');
+        Route::get('/plans', PlansController::class)->name('plans');
+        Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');
+        Route::post('/billing/checkout', [BillingController::class, 'checkout'])->middleware('throttle:10,1,billing')->name('billing.checkout');
+        Route::post('/billing/portal', [BillingController::class, 'portal'])->middleware('throttle:10,1,billing')->name('billing.portal');
         Route::get('/preferences', [PreferencesController::class, 'show'])->name('preferences.show');
         Route::put('/preferences', [PreferencesController::class, 'update'])->name('preferences.update');
         Route::post('/preferences/preview', [PreferencesController::class, 'preview'])

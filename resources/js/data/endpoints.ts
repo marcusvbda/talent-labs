@@ -2,11 +2,13 @@ import AccountController from '@/actions/App/Http/Controllers/Client/Internal/Ac
 import AccountExportController from '@/actions/App/Http/Controllers/Client/Internal/AccountExportController';
 import AccountStatusController from '@/actions/App/Http/Controllers/Client/Internal/AccountStatusController';
 import ApplicationsController from '@/actions/App/Http/Controllers/Client/Internal/ApplicationsController';
+import BillingController from '@/actions/App/Http/Controllers/Client/Internal/BillingController';
 import ChartController from '@/actions/App/Http/Controllers/Client/Internal/ChartController';
 import DashboardController from '@/actions/App/Http/Controllers/Client/Internal/DashboardController';
 import JobsController from '@/actions/App/Http/Controllers/Client/Internal/JobsController';
 import NotificationsController from '@/actions/App/Http/Controllers/Client/Internal/NotificationsController';
 import OnboardingBasicsController from '@/actions/App/Http/Controllers/Client/Internal/OnboardingBasicsController';
+import PlansController from '@/actions/App/Http/Controllers/Client/Internal/PlansController';
 import PreferencesController from '@/actions/App/Http/Controllers/Client/Internal/PreferencesController';
 import ProfileCvController from '@/actions/App/Http/Controllers/Client/Internal/ProfileCvController';
 import ProfilePreviewController from '@/actions/App/Http/Controllers/Client/Internal/ProfilePreviewController';
@@ -133,10 +135,14 @@ export const endpoints = {
         ProfileCvController.destroy(language),
     templatePreview: (language: JobLanguage): Endpoint =>
         ProfilePreviewController(language),
-    plans: (region?: RegionKey): Endpoint => ({
-        url: withQuery('/internal/plans', { region }),
-        method: 'get',
-    }),
+    plans: (region?: RegionKey): Endpoint => {
+        const base = PlansController();
+
+        return { url: withQuery(base.url, { region }), method: base.method };
+    },
+    billing: (): Endpoint => BillingController.show(),
+    billingCheckout: (): Endpoint => BillingController.checkout(),
+    billingPortal: (): Endpoint => BillingController.portal(),
     notifications: (): Endpoint => NotificationsController.index(),
     markAllNotificationsRead: (): Endpoint => NotificationsController.readAll(),
     account: (): Endpoint => AccountController.show(),

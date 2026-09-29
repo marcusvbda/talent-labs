@@ -124,6 +124,8 @@ export const accountUpdated = (
     qc: QueryClient,
 ): void => {
     qc.setQueryData(keys.account.status(), status);
+    void qc.invalidateQueries({ queryKey: keys.plansAll() });
+    void qc.invalidateQueries({ queryKey: keys.billing() });
 };
 
 export function notificationCreated(
@@ -148,6 +150,7 @@ export function notificationCreated(
 const TOAST_TONES: Partial<Record<NotificationType, 'error' | 'info'>> = {
     gmail_reauthorization_required: 'error',
     sending_auto_paused: 'error',
+    payment_failed: 'error',
     daily_limit_reached: 'info',
 };
 

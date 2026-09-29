@@ -20,10 +20,14 @@ export const PlanCard = ({
     plan,
     cta,
     onSelect,
+    loading = false,
+    disabled = false,
 }: {
     plan: PlanOffer;
     cta: PlanCta;
     onSelect: () => void;
+    loading?: boolean;
+    disabled?: boolean;
 }) => {
     const { t, plural } = useT();
     const format = useFormat();
@@ -75,7 +79,8 @@ export const PlanCard = ({
                 variant={plan.highlighted ? 'primary-ink' : 'secondary-tile'}
                 size="lg"
                 fullWidth
-                disabled={cta === 'current'}
+                disabled={cta === 'current' || disabled}
+                loading={loading}
                 onClick={onSelect}
             >
                 {t(`plans.cta.${cta}`)}

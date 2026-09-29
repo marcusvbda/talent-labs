@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Users\Tables;
 
 use App\Actions\Users\AdminGuard;
+use App\Billing\StripeDashboard;
 use App\Enums\ConnectedIntegrationStatus;
 use App\Enums\PlanKey;
+use App\Enums\PlanSource;
 use App\Enums\SendingPauseReason;
 use App\Enums\UserStatus;
 use App\Models\User;
@@ -48,6 +50,21 @@ class UsersTable
                     ->badge()
                     ->sortable(),
 
+                TextColumn::make('plan_source')
+                    ->label('Billing')
+                    ->badge(),
+
+                TextColumn::make('subscription_status')
+                    ->label('Subscription')
+                    ->placeholder('—')
+                    ->state(fn (User $record): ?string => $record->subscriptions
+                        ->firstWhere('type', 'default')?->getAttribute('stripe_status')),
+
+                TextColumn::make('stripe_id')
+                    ->label('Stripe customer')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->url(fn (User $record): ?string => $record->stripe_id ? StripeDashboard::customerUrl($record->stripe_id) : null, shouldOpenInNewTab: true),
+
                 TextColumn::make('sending_pause_reason')
                     ->label('Sending')
                     ->badge()
@@ -75,7 +92,7 @@ class UsersTable
                     ->sortable(),
             ])
             ->modifyQueryUsing(fn (Builder $query): Builder => $query
-                ->with('gmailIntegration')
+                ->with(['gmailIntegration', 'subscriptions'])
                 ->withCount(['applications as sent_today_count' => fn ($q) => $q->countedToday()]))
             ->filters([
                 SelectFilter::make('status')
@@ -83,6 +100,9 @@ class UsersTable
 
                 SelectFilter::make('plan_key')
                     ->options(PlanKey::class),
+
+                SelectFilter::make('plan_source')
+                    ->options(PlanSource::class),
             ])
             ->recordActions([
                 Action::make('block')

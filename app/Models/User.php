@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\PlanKey;
+use App\Enums\PlanSource;
 use App\Enums\Region;
 use App\Enums\SendingPauseReason;
 use App\Enums\UserStatus;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Laravel\Cashier\Billable;
 
 /**
  * @property int $id
@@ -39,6 +41,11 @@ use Illuminate\Support\Carbon;
  * @property PlanKey $plan_key
  * @property Carbon|null $sending_paused_at
  * @property SendingPauseReason|null $sending_pause_reason
+ * @property string|null $stripe_id
+ * @property string|null $pm_type
+ * @property string|null $pm_last_four
+ * @property Carbon|null $trial_ends_at
+ * @property PlanSource $plan_source
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read JobPreference|null $jobPreference
@@ -47,11 +54,11 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Application> $applications
  * @property-read Collection<int, ApplicationProfile> $applicationProfiles
  */
-#[Fillable(['name', 'email', 'password', 'is_admin', 'status', 'locale', 'timezone', 'country', 'region', 'plan_key'])]
+#[Fillable(['name', 'email', 'password', 'is_admin', 'status', 'locale', 'timezone', 'country', 'region', 'plan_key', 'plan_source'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, HasLocalePreference
 {
-    use DispatchesClientEvent;
+    use Billable, DispatchesClientEvent;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -79,6 +86,8 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference
             'status' => UserStatus::class,
             'region' => Region::class,
             'plan_key' => PlanKey::class,
+            'plan_source' => PlanSource::class,
+            'trial_ends_at' => 'datetime',
             'sending_paused_at' => 'datetime',
             'sending_pause_reason' => SendingPauseReason::class,
         ];

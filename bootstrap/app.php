@@ -30,6 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Readable unencrypted so error pages rendered outside the web group can use it.
         $middleware->encryptCookies(except: ['locale']);
 
+        // Stripe posts signed webhooks to Cashier's route; no CSRF token.
+        $middleware->validateCsrfTokens(except: ['stripe/*']);
+
         $middleware->alias([
             'client' => EnsureActiveClient::class,
             'plan.jobs' => EnsurePlanCanChooseJobs::class,

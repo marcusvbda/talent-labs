@@ -4,6 +4,8 @@ import { PageHeader } from '@/components/patterns/page-header';
 import { endpoints } from '@/data/endpoints';
 import { useAccount } from '@/data/hooks/use-account';
 import { useAccountStatus } from '@/data/hooks/use-account-status';
+import { useBilling } from '@/data/hooks/use-billing';
+import { BillingCard } from '@/features/account/billing-card';
 import { DangerZone } from '@/features/account/danger-zone';
 import { GmailCard } from '@/features/account/gmail-card';
 import { LanguageRegionCard } from '@/features/account/language-region-card';
@@ -16,6 +18,7 @@ export default function AccountPage() {
     const { t } = useT();
     const account = useAccount();
     const status = useAccountStatus();
+    const billing = useBilling();
 
     return (
         <AppLayout>
@@ -48,6 +51,9 @@ export default function AccountPage() {
                         state={status.isError ? 'error' : 'loading'}
                         onRetry={() => void status.refetch()}
                     />
+                )}
+                {billing.data?.hasCustomer && (
+                    <BillingCard billing={billing.data} />
                 )}
                 <PasswordCard />
                 <DataCard title={t('account.data.title')}>
