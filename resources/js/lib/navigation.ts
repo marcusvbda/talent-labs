@@ -1,5 +1,6 @@
 import { usePage } from '@inertiajs/react';
 import type { NavPillItem } from '@/components/patterns/nav-pills';
+import { useCanChooseJobs } from '@/data/hooks/use-account-status';
 import { useT } from '@/i18n/i18n-provider';
 import {
     applications,
@@ -12,6 +13,7 @@ import {
 
 export function useMainNav(): NavPillItem[] {
     const { t } = useT();
+    const canChooseJobs = useCanChooseJobs();
     const { url } = usePage();
     const path = url.split(/[?#]/)[0];
 
@@ -25,12 +27,16 @@ export function useMainNav(): NavPillItem[] {
             href: dashboard().url,
             active: isActive(dashboard().url),
         },
-        {
-            key: 'jobs',
-            label: t('nav.jobs'),
-            href: jobs().url,
-            active: isActive(jobs().url),
-        },
+        ...(canChooseJobs
+            ? [
+                  {
+                      key: 'jobs',
+                      label: t('nav.jobs'),
+                      href: jobs().url,
+                      active: isActive(jobs().url),
+                  },
+              ]
+            : []),
         {
             key: 'applications',
             label: t('nav.applications'),

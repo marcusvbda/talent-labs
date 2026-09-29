@@ -87,21 +87,6 @@ function respaceIfOverdue(soon: boolean): void {
     });
 }
 
-// Auto mode: keep the queue fed with the next matching job.
-function autoQueue(): boolean {
-    if (getDevState().plan !== 'free') {
-        return false;
-    }
-
-    for (const job of fixtureState.matches()) {
-        if (fixtureState.queue([job.id], 'auto').queued.length > 0) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 function queueOneMatch(): boolean {
     for (const job of fixtureState.matches()) {
         if (fixtureState.queue([job.id], 'manual').queued.length > 0) {
@@ -254,16 +239,7 @@ function schedule(): void {
         return;
     }
 
-    let head = fixtureState.queuedItems()[0];
-
-    if (!head && autoQueue()) {
-        head = fixtureState.queuedItems()[0];
-        fixtureState.set((s) => ({
-            ...s,
-            waitStartedAt: new Date().toISOString(),
-        }));
-        emitSending();
-    }
+    const head = fixtureState.queuedItems()[0];
 
     if (!head) {
         wanted = false;

@@ -29,15 +29,25 @@ final class LiveSendingPresenter
     {
         $limit = $this->plans->for($user)->dailyLimit;
 
+        // The pre-checks (recipient, template, CV) record their stage while the row is still
+        // queued; only the delivery itself flips it to sending. Both are "in progress".
         $current = $user->applications()
-            ->where('status', ApplicationStatus::Sending->value)
+            ->where(fn ($in) => $in
+                ->where('status', ApplicationStatus::Sending->value)
+                ->orWhere(fn ($pre) => $pre
+                    ->where('status', ApplicationStatus::Queued->value)
+                    ->whereNotNull('stage')))
             ->with(['company', 'jobPosting.profile'])
+            ->orderByRaw('status = ? desc', [ApplicationStatus::Sending->value])
             ->first();
 
-        $queuedCount = $user->applications()->where('status', ApplicationStatus::Queued->value)->count();
-
-        $queue = $user->applications()
+        $waiting = fn () => $user->applications()
             ->where('status', ApplicationStatus::Queued->value)
+            ->when($current !== null, fn ($query) => $query->whereKeyNot($current->id));
+
+        $queuedCount = $waiting()->count();
+
+        $queue = $waiting()
             ->with(['company', 'jobPosting.profile'])
             ->orderByRaw('scheduled_for IS NULL, scheduled_for ASC')
             ->orderBy('id')
@@ -48,9 +58,7 @@ final class LiveSendingPresenter
         $current?->setRelation('user', $user);
         $queue->each(fn (Application $application) => $application->setRelation('user', $user));
 
-        $nextSendAt = self::parse(
-            $user->applications()->where('status', ApplicationStatus::Queued->value)->min('scheduled_for'),
-        );
+        $nextSendAt = self::parse($waiting()->min('scheduled_for'));
 
         $pending = $current !== null || $queuedCount > 0;
         $state = $this->state($user, $limit, $current !== null, $queuedCount);
@@ -60,7 +68,7 @@ final class LiveSendingPresenter
             ->whereBetween('sent_at', [now()->startOfDay(), now()->endOfDay()])
             ->count();
 
-        $waitStartedAt = $state === 'waiting' ? $this->scheduler->anchor($user) : null;
+        $waitStartedAt = $state === 'waiting' ? $this->waitStartedAt($user, $nextSendAt) : null;
 
         $estimatedFinishAt = $nextSendAt?->copy()->addSeconds(
             max(0, $queuedCount - 1) * OutreachConfig::averageIntervalSeconds(),
@@ -86,6 +94,22 @@ final class LiveSendingPresenter
                 'timezone' => $this->scheduler->timezone($user),
             ] : null,
         ];
+    }
+
+    /**
+     * Where the countdown to the next send begins: the last finished send, but never earlier
+     * than one maximum spacing before it. Queued slots are ignored: the last one lies in the future.
+     */
+    private function waitStartedAt(User $user, ?Carbon $nextSendAt): ?Carbon
+    {
+        if ($nextSendAt === null) {
+            return null;
+        }
+
+        $lastSend = self::parse($user->applications()->max('sent_at'));
+        $earliest = $nextSendAt->copy()->subSeconds(OutreachConfig::intervalMaxSeconds());
+
+        return $lastSend === null || $lastSend->lessThan($earliest) ? $earliest : $lastSend;
     }
 
     /**

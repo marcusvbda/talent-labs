@@ -3,7 +3,7 @@ export type ISODate = string; // YYYY-MM-DD in the user's timezone
 export type Locale = 'en' | 'pt';
 export type JobLanguage = 'en' | 'pt';
 export type PlanKey = 'free' | 'starter' | 'pro';
-export type SendMode = 'auto' | 'select' | 'review';
+export type SendMode = 'random' | 'select' | 'review';
 export type RegionKey = 'br' | 'eu' | 'row';
 export type Seniority =
     | 'intern'

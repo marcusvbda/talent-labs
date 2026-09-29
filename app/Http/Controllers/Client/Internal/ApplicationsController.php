@@ -8,11 +8,13 @@ use App\Enums\ApplicationOrigin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ApplicationFiltersRequest;
 use App\Http\Requests\Client\QueueApplicationsRequest;
+use App\Http\Requests\Client\QueueRandomApplicationsRequest;
 use App\Http\Resources\Client\ApplicationDetailResource;
 use App\Models\Application;
 use App\Models\JobPosting;
 use App\Models\User;
 use App\Outreach\Actions\QueueApplication;
+use App\Outreach\Actions\QueueRandomApplications;
 use App\Outreach\Support\QueueRejectionMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -72,6 +74,20 @@ class ApplicationsController extends Controller
         return response()->json([
             'queued' => $queued,
             'rejected' => $rejected,
+            'quota' => $presenter->quota($user),
+        ]);
+    }
+
+    /**
+     * Queue random matching postings up to today's remaining quota (every plan). Returns the `QueueResult` contract.
+     */
+    public function random(QueueRandomApplicationsRequest $request, QueueRandomApplications $action, AccountStatusPresenter $presenter): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        return response()->json([
+            ...$action->handle($user),
             'quota' => $presenter->quota($user),
         ]);
     }

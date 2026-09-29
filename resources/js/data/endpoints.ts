@@ -99,6 +99,7 @@ export const endpoints = {
     },
     job: (id: number | string): Endpoint => JobsController.show(id),
     queueApplications: (): Endpoint => ApplicationsController.store(),
+    queueRandom: (): Endpoint => ApplicationsController.random(),
     reviewDrafts: (): Endpoint => ReviewController.drafts(),
     queueReviewed: (): Endpoint => ReviewController.reviewed(),
     applications: (filters: ApplicationFilters = {}): Endpoint => {

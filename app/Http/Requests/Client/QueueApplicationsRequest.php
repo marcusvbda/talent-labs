@@ -19,7 +19,7 @@ class QueueApplicationsRequest extends FormRequest
         return match ($plans->for($this->client())->mode) {
             'select' => Response::allow(),
             'review' => Response::deny(__('queue.mode.review_only')),
-            default => Response::deny(__('queue.mode.auto_only')),
+            default => Response::deny(__('queue.mode.select_plans_only')),
         };
     }
 

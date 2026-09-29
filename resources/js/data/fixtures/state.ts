@@ -79,7 +79,7 @@ const SPACING = { minSeconds: 45, maxSeconds: 120 };
 const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 
 const PLAN_CONFIG: Record<PlanKey, { dailyLimit: number; mode: SendMode }> = {
-    free: { dailyLimit: 25, mode: 'auto' },
+    free: { dailyLimit: 25, mode: 'random' },
     starter: { dailyLimit: 50, mode: 'select' },
     pro: { dailyLimit: 150, mode: 'review' },
 };
@@ -617,6 +617,33 @@ const account = (): Account => {
     return { ...data, region: regionForCountry(data.country) };
 };
 
+function queueRandom(): QueueResult {
+    const pool = [...matches()];
+
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+
+    const result: QueueResult = { queued: [], rejected: [], quota: quota() };
+
+    for (const job of pool) {
+        if (quota().remaining === 0) {
+            break;
+        }
+
+        const one = queueJobs([job.id], 'manual');
+
+        result.queued.push(...one.queued);
+        result.rejected.push(...one.rejected);
+    }
+
+    result.quota = quota();
+
+    return result;
+}
+
 export const fixtureState = {
     ...store,
     account,
@@ -627,6 +654,7 @@ export const fixtureState = {
     matches,
     lockedByLanguage,
     queue: queueJobs,
+    queueRandom,
     queuedItems: queuedRows,
     patchApplication,
     addNotification,

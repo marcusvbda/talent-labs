@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureActiveClient;
+use App\Http\Middleware\EnsurePlanCanChooseJobs;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
 use App\Support\I18n\LocaleResolver;
@@ -29,7 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Readable unencrypted so error pages rendered outside the web group can use it.
         $middleware->encryptCookies(except: ['locale']);
 
-        $middleware->alias(['client' => EnsureActiveClient::class]);
+        $middleware->alias([
+            'client' => EnsureActiveClient::class,
+            'plan.jobs' => EnsurePlanCanChooseJobs::class,
+        ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
     })

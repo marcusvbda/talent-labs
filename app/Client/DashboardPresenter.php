@@ -8,6 +8,7 @@ use App\Http\Resources\Client\JobCardResource;
 use App\Models\Application;
 use App\Models\User;
 use App\Outreach\Queries\MatchingJobPostings;
+use App\Plans\PlanCatalog;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 
@@ -18,6 +19,8 @@ final class DashboardPresenter
     private const ACTIVITY_ITEMS = 5;
 
     private const LAST_DAYS = 5;
+
+    public function __construct(private PlanCatalog $plans) {}
 
     /**
      * Build the `DashboardData` contract (resources/js/types/contracts.ts) for the user.
@@ -37,10 +40,15 @@ final class DashboardPresenter
         // Only queued rows: a sending row's schedule is already due, so it isn't a "next" send.
         $nextSendAt = $user->applications()->where('status', ApplicationStatus::Queued->value)->min('scheduled_for');
 
-        $matches = JobPoolQuery::forUser($user)
-            ->with(['profile', 'company'])
-            ->limit(self::MATCH_ITEMS)
-            ->get();
+        // Plans that can't choose jobs get counts only: no postings to pick from.
+        $matches = $this->plans->for($user)->canChooseJobs()
+            ? JobCardResource::collection(
+                JobPoolQuery::forUser($user)
+                    ->with(['profile', 'company'])
+                    ->limit(self::MATCH_ITEMS)
+                    ->get(),
+            )->resolve()
+            : [];
 
         $activity = $user->applications()
             ->with(['company', 'jobPosting.profile'])
@@ -79,7 +87,7 @@ final class DashboardPresenter
             'matches' => [
                 'total' => JobPoolQuery::forUser($user)->reorder()->count(),
                 'newToday' => JobPoolQuery::forUser($user, ['today' => true])->reorder()->count(),
-                'items' => JobCardResource::collection($matches)->resolve(),
+                'items' => $matches,
             ],
             'activity' => ApplicationItemResource::collection($activity)->resolve(),
         ];

@@ -7,7 +7,7 @@ use App\Enums\PlanKey;
 final readonly class Plan
 {
     /**
-     * @param  string  $mode  One of `auto`, `select`, `review`.
+     * @param  string  $mode  One of `random`, `select`, `review`.
      */
     public function __construct(
         public PlanKey $key,
@@ -15,4 +15,12 @@ final readonly class Plan
         public string $mode,
         public int $dailyLimit,
     ) {}
+
+    /**
+     * Starter and Pro browse and pick postings; Free only sends at random.
+     */
+    public function canChooseJobs(): bool
+    {
+        return in_array($this->mode, ['select', 'review'], true);
+    }
 }

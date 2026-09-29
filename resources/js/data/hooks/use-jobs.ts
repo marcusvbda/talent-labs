@@ -8,7 +8,11 @@ import { fromSource } from '@/data/source';
 import type { JobFilters, JobsPage } from '@/types/contracts';
 
 // The screen reads `summary` from the first page.
-export function useJobs(filters: JobFilters, initial?: JobsPage) {
+export function useJobs(
+    filters: JobFilters,
+    initial?: JobsPage,
+    options?: { enabled?: boolean },
+) {
     const real = ({ pageParam }: { pageParam: string | null }) => {
         const e = endpoints.jobs({ ...filters, cursor: pageParam });
 
@@ -22,6 +26,7 @@ export function useJobs(filters: JobFilters, initial?: JobsPage) {
     return useInfiniteQuery({
         queryKey: keys.jobs.list(filters),
         queryFn: fromSource({ real, fixture }),
+        enabled: options?.enabled ?? true,
         initialPageParam: null as string | null,
         getNextPageParam: (last: JobsPage) => last.meta.nextCursor,
         ...(initial === undefined

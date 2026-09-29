@@ -1,12 +1,8 @@
 import { Send } from 'lucide-react';
-import { PlanGate } from '@/components/patterns/plan-gate';
 import { StickyActionBar } from '@/components/patterns/sticky-action-bar';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/i18n/i18n-provider';
 import type { SendMode } from '@/types/contracts';
-import type { PlanKey } from '@/types/plans';
-
-const SELECTION_PLANS: PlanKey[] = ['starter', 'pro'];
 
 type SendBarProps = {
     mode: SendMode;
@@ -63,22 +59,8 @@ const BarContent = ({
     );
 };
 
-/** Selection bar for select / review; auto mode shows the plan gate instead. */
+/** Selection bar for select / review. */
 export function SendBar(props: SendBarProps) {
-    if (props.mode === 'auto') {
-        return (
-            <PlanGate
-                locked
-                requiredPlans={SELECTION_PLANS}
-                featureKey="jobs.gate"
-            >
-                <div className="flex items-center justify-end gap-3 py-6">
-                    <BarContent {...props} count={0} overQuota={false} />
-                </div>
-            </PlanGate>
-        );
-    }
-
     return (
         <StickyActionBar>
             <BarContent {...props} />

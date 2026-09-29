@@ -10,7 +10,6 @@ import { JobDetailSheet } from '@/features/jobs/job-detail-sheet';
 import { JobFilterBar } from '@/features/jobs/job-filters';
 import { JobsList } from '@/features/jobs/jobs-list';
 import { ReviewModal } from '@/features/review/review-modal';
-import { AutoBanner } from '@/features/send/auto-banner';
 import { ConfirmSendModal } from '@/features/send/confirm-send-modal';
 import { SendBar } from '@/features/send/send-bar';
 import { useSelection } from '@/features/send/use-selection';
@@ -61,7 +60,7 @@ export default function Jobs() {
     const summary = jobs.data?.pages[0]?.summary;
     const rows = jobs.data?.pages.flatMap((page) => page.data) ?? [];
     const mode = account?.plan.mode;
-    const selectable = mode !== undefined && mode !== 'auto';
+    const selectable = mode !== undefined;
     const loading = jobs.isPending || !account;
 
     return (
@@ -84,12 +83,6 @@ export default function Jobs() {
                 }
             />
             <div className="flex min-w-0 flex-col gap-gap pb-24 md:pb-0">
-                {mode === 'auto' && account && (
-                    <AutoBanner
-                        left={account.quota.remaining}
-                        paused={account.sending.paused}
-                    />
-                )}
                 <JobFilterBar
                     filters={filters}
                     onChange={setFilters}

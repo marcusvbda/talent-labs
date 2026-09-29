@@ -32,7 +32,7 @@ Route::inertia('/', 'landing')->name('home');
 Route::get('/dashboard', DashboardPageController::class)->middleware(['auth', 'client'])->name('dashboard');
 Route::inertia('/onboarding', 'onboarding')->middleware(['auth', 'client'])->name('onboarding');
 
-Route::get('/jobs', JobsPageController::class)->middleware(['auth', 'client'])->name('jobs');
+Route::get('/jobs', JobsPageController::class)->middleware(['auth', 'client', 'plan.jobs'])->name('jobs');
 Route::get('/applications', ApplicationsPageController::class)->middleware(['auth', 'client'])->name('applications');
 
 Route::inertia('/profiles', 'profiles')->middleware(['auth', 'client'])->name('profiles');
@@ -50,10 +50,11 @@ Route::middleware(['auth', 'client', 'throttle:120,1'])
         Route::put('/onboarding/basics', OnboardingBasicsController::class)->name('onboarding.basics');
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::get('/dashboard/chart', ChartController::class)->name('dashboard.chart');
-        Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
-        Route::get('/jobs/{id}', [JobsController::class, 'show'])->whereNumber('id')->name('jobs.show');
+        Route::get('/jobs', [JobsController::class, 'index'])->middleware('plan.jobs')->name('jobs.index');
+        Route::get('/jobs/{id}', [JobsController::class, 'show'])->whereNumber('id')->middleware('plan.jobs')->name('jobs.show');
         Route::get('/applications', [ApplicationsController::class, 'index'])->name('applications.index');
         Route::post('/applications', [ApplicationsController::class, 'store'])->name('applications.store');
+        Route::post('/applications/random', [ApplicationsController::class, 'random'])->name('applications.random');
         Route::post('/applications/drafts', [ReviewController::class, 'drafts'])->name('applications.drafts');
         Route::post('/applications/reviewed', [ReviewController::class, 'reviewed'])->name('applications.reviewed');
         Route::get('/applications/counts', [ApplicationsController::class, 'counts'])->name('applications.counts');

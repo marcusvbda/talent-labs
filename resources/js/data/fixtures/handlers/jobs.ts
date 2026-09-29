@@ -1,4 +1,5 @@
 import { toJobCard } from '@/data/fixtures/handlers/cards';
+import { getDevState } from '@/data/fixtures/dev-state';
 import { fixtureState } from '@/data/fixtures/state';
 import type {
     JobDetail,
@@ -40,6 +41,10 @@ export function listJobs(
     filters: JobFilters,
     cursor: string | null = null,
 ): JobsPage {
+    if (getDevState().plan === 'free') {
+        return emptyJobsPage();
+    }
+
     const { jobs, profiles } = fixtureState.get();
     const active = profiles
         .filter((profile) => profile.active && profile.complete)
@@ -122,5 +127,9 @@ export function listJobs(
 }
 
 export function findJob(id: number): JobDetail | null {
+    if (getDevState().plan === 'free') {
+        return null;
+    }
+
     return fixtureState.get().jobs.find((job) => job.id === id) ?? null;
 }

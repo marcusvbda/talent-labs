@@ -19,7 +19,7 @@ const BASE: Omit<PlanOffer, 'price' | 'currency'>[] = [
     {
         key: 'free',
         name: 'Free',
-        mode: 'auto',
+        mode: 'random',
         dailyLimit: 25,
         interval: 'month',
         highlighted: false,

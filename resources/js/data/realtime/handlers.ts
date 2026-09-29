@@ -64,19 +64,48 @@ export function applicationProgressed(
         },
     );
 
-    qc.setQueryData<LiveSending>(
-        keys.sending(),
-        (data) =>
-            data && {
-                ...data,
-                current:
-                    data.current?.id === application.id
-                        ? application
-                        : data.current,
-            },
-    );
+    // The pre-checks record stages while the row is still queued, so the first
+    // stage event of an application is what puts it in the live panel: waiting
+    // for `sending.updated` would skip every step but the last.
+    const inProgress =
+        application.status === 'sending' ||
+        (application.status === 'queued' && application.stage !== null);
+
+    qc.setQueryData<LiveSending>(keys.sending(), (data) => {
+        if (!data) {
+            return data;
+        }
+
+        if (data.current?.id === application.id) {
+            return { ...data, current: application };
+        }
+
+        if (!inProgress) {
+            return data;
+        }
+
+        return {
+            ...data,
+            current: application,
+            queue: data.queue.filter(({ id }) => id !== application.id),
+            queuedCount: Math.max(0, data.queuedCount - 1),
+        };
+    });
+
+    // The panel's queue, countdown and state come from the server: re-read them
+    // whenever an application takes the panel or settles, so a dropped
+    // `sending.updated` can never leave the card stuck.
+    const takesPanel =
+        inProgress &&
+        qc.getQueryData<LiveSending>(keys.sending())?.current?.id ===
+            application.id;
+
+    if (takesPanel && application.stage === 'validating_recipient') {
+        void qc.invalidateQueries({ queryKey: keys.sending() });
+    }
 
     if (SETTLED.includes(application.status)) {
+        void qc.invalidateQueries({ queryKey: keys.sending() });
         void qc.invalidateQueries({ queryKey: keys.dashboards() });
         void qc.invalidateQueries({ queryKey: keys.charts() });
         void qc.invalidateQueries({ queryKey: keys.account.status() });

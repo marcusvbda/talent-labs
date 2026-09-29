@@ -16,6 +16,12 @@ const real = () => {
 
 const fixture = () => fixtureCall(() => fixtureState.accountStatus());
 
+export function useCanChooseJobs(): boolean {
+    const mode = useAccountStatus().data?.plan.mode;
+
+    return mode === 'select' || mode === 'review';
+}
+
 export function useAccountStatus(initial?: AccountStatus) {
     return useQuery({
         queryKey: keys.account.status(),

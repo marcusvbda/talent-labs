@@ -5,6 +5,7 @@ import {
     localDateKey,
     startOfDay,
 } from '@/data/fixtures/handlers/dates';
+import { getDevState } from '@/data/fixtures/dev-state';
 import { fixtureState } from '@/data/fixtures/state';
 import type {
     ApplicationItem,
@@ -106,7 +107,10 @@ export function buildDashboard(
         matches: {
             total: matches.length,
             newToday: matches.filter((job) => job.collectedToday).length,
-            items: matches.slice(0, 4).map(toJobCard),
+            items:
+                getDevState().plan === 'free'
+                    ? []
+                    : matches.slice(0, 4).map(toJobCard),
         },
         activity: [...items]
             .sort((a, b) => latestStamp(b) - latestStamp(a))

@@ -1,5 +1,4 @@
 import { CompanyLogo } from '@/components/patterns/company-logo';
-import { PlanGate } from '@/components/patterns/plan-gate';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
 import { ErrorState } from '@/components/ui/error-state';
@@ -9,9 +8,6 @@ import { useJob } from '@/data/hooks/use-job';
 import { useT } from '@/i18n/i18n-provider';
 import { useFormat } from '@/lib/format';
 import type { JobCard } from '@/types/contracts';
-import type { PlanKey } from '@/types/plans';
-
-const SELECTION_PLANS: PlanKey[] = ['starter', 'pro'];
 
 const Fact = ({ label, value }: { label: string; value: string | null }) =>
     value ? (
@@ -104,22 +100,14 @@ const DetailBody = ({
             ) : (
                 <Skeleton shape="line" className="w-1/2" />
             )}
-            <PlanGate
-                locked={!selectable}
-                requiredPlans={SELECTION_PLANS}
-                featureKey="jobs.gate"
+            <Button
+                variant={selected ? 'secondary-tile' : 'primary-ink'}
+                className="w-full"
+                disabled={!selectable}
+                onClick={() => onToggle(job)}
             >
-                <Button
-                    variant={selected ? 'secondary-tile' : 'primary-ink'}
-                    className="w-full"
-                    disabled={!selectable}
-                    onClick={() => onToggle(job)}
-                >
-                    {selected
-                        ? t('jobs.detail.deselect')
-                        : t('jobs.detail.select')}
-                </Button>
-            </PlanGate>
+                {selected ? t('jobs.detail.deselect') : t('jobs.detail.select')}
+            </Button>
         </div>
     );
 };

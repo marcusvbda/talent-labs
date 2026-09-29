@@ -16,7 +16,10 @@ import { StatTile } from '@/components/patterns/stat-tile';
 import { Button } from '@/components/ui/button';
 import { IconButton } from '@/components/ui/icon-button';
 import { Segmented } from '@/components/ui/segmented';
-import { useAccountStatus } from '@/data/hooks/use-account-status';
+import {
+    useAccountStatus,
+    useCanChooseJobs,
+} from '@/data/hooks/use-account-status';
 import { useDashboard } from '@/data/hooks/use-dashboard';
 import { useLiveSending } from '@/data/hooks/use-live-sending';
 import { ActivityCard } from '@/features/dashboard/activity-card';
@@ -68,6 +71,7 @@ export default function Dashboard() {
     } = usePage<DashboardPageProps>().props;
     const [period, setPeriod] = useState<DashboardPeriod>('today');
     const status = useAccountStatus();
+    const canChooseJobs = useCanChooseJobs();
     const dashboard = useDashboard(
         period,
         period === 'today' ? dashboardProp : undefined,
@@ -148,9 +152,11 @@ export default function Dashboard() {
                                 },
                             ]}
                         />
-                        <Button size="lg" iconLeft={Plus} href={jobs().url}>
-                            {t('dashboard.browse')}
-                        </Button>
+                        {canChooseJobs && (
+                            <Button size="lg" iconLeft={Plus} href={jobs().url}>
+                                {t('dashboard.browse')}
+                            </Button>
+                        )}
                     </>
                 }
             />

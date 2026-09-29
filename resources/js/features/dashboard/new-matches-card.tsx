@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { IconButton } from '@/components/ui/icon-button';
 import { ReviewModal } from '@/features/review/review-modal';
 import { ConfirmSendModal } from '@/features/send/confirm-send-modal';
+import { RandomSendModal } from '@/features/send/random-send-modal';
 import { useSelection } from '@/features/send/use-selection';
 import { useT } from '@/i18n/i18n-provider';
 import { useFormat } from '@/lib/format';
@@ -31,10 +32,13 @@ export function NewMatchesCard({
     const format = useFormat();
     const selection = useSelection(remaining);
     const [confirming, setConfirming] = useState(false);
+    const [randomOpen, setRandomOpen] = useState(false);
     const [reviewIds, setReviewIds] = useState<number[] | null>(null);
-    const locked = mode === 'auto';
+    const locked = mode === 'random';
+    const canChoose = !locked;
     const items = matches.items.slice(0, MAX_SHOWN);
-    const count = locked ? 0 : selection.selected.length;
+    const count = canChoose ? selection.selected.length : 0;
+    const randomCount = Math.min(remaining, matches.total);
 
     return (
         <DataCard
@@ -42,12 +46,14 @@ export function NewMatchesCard({
             subtitle={t('dashboard.matches.subtitle', {
                 count: matches.total,
             })}
-            state={items.length === 0 ? 'empty' : 'ready'}
+            state={matches.total === 0 ? 'empty' : 'ready'}
             actions={
-                <IconButton
-                    icon={ArrowUpRight}
-                    label={t('dashboard.matches.open')}
-                />
+                canChoose ? (
+                    <IconButton
+                        icon={ArrowUpRight}
+                        label={t('dashboard.matches.open')}
+                    />
+                ) : undefined
             }
             className="flex flex-col"
         >
@@ -75,7 +81,7 @@ export function NewMatchesCard({
                 </div>
             </PlanGate>
             <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-6">
-                {!locked && (
+                {canChoose && (
                     <p className="text-body text-muted">
                         <b className="font-medium text-ink">
                             {t('dashboard.matches.selected', { count })}
@@ -88,12 +94,12 @@ export function NewMatchesCard({
                 )}
                 <div
                     className={
-                        locked
-                            ? 'flex w-full flex-wrap items-center justify-end gap-3 max-md:justify-stretch'
-                            : 'flex flex-wrap items-center gap-3 max-md:w-full'
+                        canChoose
+                            ? 'flex flex-wrap items-center gap-3 max-md:w-full'
+                            : 'flex w-full flex-wrap items-center justify-end gap-3 max-md:justify-stretch'
                     }
                 >
-                    {!locked && (
+                    {canChoose && (
                         <>
                             <Button
                                 variant="secondary-tile"
@@ -128,15 +134,23 @@ export function NewMatchesCard({
                         </>
                     )}
                     <Button
-                        variant={locked ? 'primary-ink' : 'secondary-tile'}
+                        variant={canChoose ? 'secondary-tile' : 'primary-ink'}
                         size="lg"
                         iconLeft={Shuffle}
                         className="max-md:flex-1"
+                        disabled={randomCount === 0}
+                        onClick={() => setRandomOpen(true)}
                     >
                         {t('dashboard.matches.send_random')}
                     </Button>
                 </div>
             </div>
+            <RandomSendModal
+                open={randomOpen}
+                onClose={() => setRandomOpen(false)}
+                count={randomCount}
+                gmail={accountEmail}
+            />
             <ConfirmSendModal
                 open={confirming}
                 onClose={() => setConfirming(false)}

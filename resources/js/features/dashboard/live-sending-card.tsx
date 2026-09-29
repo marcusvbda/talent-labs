@@ -151,7 +151,11 @@ const CurrentPanel = ({
                 <LiveStepper
                     steps={steps}
                     activeIndex={
-                        failed ? failedStageIndex(item) : stageIndex(item.stage)
+                        failed
+                            ? failedStageIndex(item)
+                            : item.stage === 'sent' || item.status === 'sent'
+                            ? steps.length
+                            : stageIndex(item.stage)
                     }
                     failedIndex={failed ? failedStageIndex(item) : undefined}
                     subStep={
@@ -233,7 +237,18 @@ export function LiveSendingCard({
     const { state } = sending;
     const running = state === 'sending' || state === 'waiting';
     const failedItem = useFailureHold(sending.current, activity, running);
-    const shown = failedItem ?? sending.current;
+    // Between two sends of a run the panel keeps the application the countdown
+    // started from (all steps done). A send from an earlier run is not shown.
+    const latestSent = activity.find((item) => item.status === 'sent');
+    const lastSent =
+        latestSent?.sentAt &&
+        sending.waitStartedAt &&
+        Math.abs(
+            Date.parse(latestSent.sentAt) - Date.parse(sending.waitStartedAt),
+        ) < 1000
+            ? latestSent
+            : null;
+    const shown = failedItem ?? sending.current ?? lastSent;
     const clock = (hhmm: string) => {
         const [hours, minutes] = hhmm.split(':').map(Number);
         const date = new Date();
@@ -290,7 +305,11 @@ export function LiveSendingCard({
                             {shown && (
                                 <CurrentPanel
                                     item={shown}
-                                    progress={sending.progress}
+                                    progress={
+                                        shown === sending.current
+                                            ? sending.progress
+                                            : null
+                                    }
                                     failed={failedItem !== null}
                                 />
                             )}
@@ -359,9 +378,9 @@ export function LiveSendingCard({
             )}
             {state === 'idle' && (
                 <Empty title={t('dashboard.live.idle.title')}>
-                    {mode === 'auto' ? (
+                    {mode === 'random' ? (
                         <p className="text-body text-dark-muted">
-                            {t('dashboard.live.idle.auto')}
+                            {t('dashboard.live.idle.random')}
                         </p>
                     ) : (
                         <Button

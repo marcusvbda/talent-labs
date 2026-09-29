@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
+import { useCanChooseJobs } from '@/data/hooks/use-account-status';
 import { useLiveSending } from '@/data/hooks/use-live-sending';
 import { useJobs } from '@/data/hooks/use-jobs';
 import {
@@ -47,7 +48,10 @@ export function CommandPalette({
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
     const debouncedQuery = useDebouncedValue(query, JOBS_SEARCH_DEBOUNCE_MS);
-    const jobsQuery = useJobs({ q: debouncedQuery });
+    const canChooseJobs = useCanChooseJobs();
+    const jobsQuery = useJobs({ q: debouncedQuery }, undefined, {
+        enabled: canChooseJobs,
+    });
     const liveSending = useLiveSending();
     const pauseSending = usePauseSending();
     const resumeSending = useResumeSending();
@@ -86,7 +90,9 @@ export function CommandPalette({
     }, [mainNav, needle, onClose, t]);
 
     const jobRows = useMemo<PaletteRow[]>(() => {
-        const results = jobsQuery.data?.pages[0]?.data ?? [];
+        const results = canChooseJobs
+            ? (jobsQuery.data?.pages[0]?.data ?? [])
+            : [];
 
         return results.slice(0, MAX_JOB_RESULTS).map((job) => ({
             id: `job-${job.id}`,
@@ -99,7 +105,7 @@ export function CommandPalette({
                 router.visit(jobs({ query: { q: debouncedQuery } }).url);
             },
         }));
-    }, [jobsQuery.data, onClose, debouncedQuery]);
+    }, [jobsQuery.data, canChooseJobs, onClose, debouncedQuery]);
 
     const actionRows = useMemo<PaletteRow[]>(() => {
         const isPaused = liveSending.data?.state === 'paused';
@@ -176,7 +182,9 @@ export function CommandPalette({
 
     const groups: { key: PaletteRow['group']; title: string }[] = [
         { key: 'pages', title: t('palette.group.pages') },
-        { key: 'jobs', title: t('palette.group.jobs') },
+        ...(canChooseJobs
+            ? [{ key: 'jobs' as const, title: t('palette.group.jobs') }]
+            : []),
         { key: 'actions', title: t('palette.group.actions') },
     ];
 

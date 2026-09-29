@@ -17,6 +17,7 @@ import { Popover } from '@/components/ui/popover';
 import { Sheet } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusDisc } from '@/components/ui/status-disc';
+import { useCanChooseJobs } from '@/data/hooks/use-account-status';
 import {
     useMarkAllRead,
     useNotifications,
@@ -25,7 +26,7 @@ import { useT } from '@/i18n/i18n-provider';
 import type { Params } from '@/i18n/translate';
 import { useFormat } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { account, applications, jobs, plans } from '@/routes';
+import { account, applications, dashboard, jobs, plans } from '@/routes';
 import type { NotificationItem, NotificationType } from '@/types/contracts';
 
 type IconTint = {
@@ -41,7 +42,7 @@ const TYPE_VISUALS: Record<NotificationType, IconTint> = {
     sending_auto_paused: { icon: PauseCircle, tint: 'neutral' },
 };
 
-const targetFor = (type: NotificationType): string => {
+const targetFor = (type: NotificationType, canChooseJobs: boolean): string => {
     switch (type) {
         case 'gmail_reauthorization_required':
             return account().url;
@@ -50,7 +51,7 @@ const targetFor = (type: NotificationType): string => {
         case 'daily_limit_reached':
             return plans().url;
         case 'jobs_collected':
-            return jobs().url;
+            return canChooseJobs ? jobs().url : dashboard().url;
         case 'sending_auto_paused':
             return account().url;
     }
@@ -58,6 +59,7 @@ const targetFor = (type: NotificationType): string => {
 
 const NotificationRow = ({ row }: { row: NotificationItem }) => {
     const { t } = useT();
+    const canChooseJobs = useCanChooseJobs();
     const format = useFormat();
     const visual = TYPE_VISUALS[row.type];
     const unread = row.readAt === null;
@@ -66,7 +68,7 @@ const NotificationRow = ({ row }: { row: NotificationItem }) => {
     return (
         <button
             type="button"
-            onClick={() => router.visit(targetFor(row.type))}
+            onClick={() => router.visit(targetFor(row.type, canChooseJobs))}
             className="flex w-full items-start gap-3 rounded-tile p-2.5 text-left transition-colors hover:bg-tile focus-visible:focus-ring"
         >
             <span className="relative shrink-0">

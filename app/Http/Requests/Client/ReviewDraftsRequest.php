@@ -18,9 +18,11 @@ class ReviewDraftsRequest extends FormRequest
         /** @var User $user */
         $user = $this->user();
 
-        return $plans->for($user)->mode === 'review'
-            ? Response::allow()
-            : Response::deny(__('review.mode.denied'));
+        return match ($plans->for($user)->mode) {
+            'review' => Response::allow(),
+            'select' => Response::deny(__('review.mode.denied')),
+            default => Response::deny(__('queue.mode.select_plans_only')),
+        };
     }
 
     /**
