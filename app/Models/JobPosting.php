@@ -112,4 +112,12 @@ class JobPosting extends Model
             ->where('status', ProfileStatus::Done)
             ->where('schema_version', ExtractJobPostingProfile::CACHE_SCHEMA_VERSION));
     }
+
+    /**
+     * The job link the application email renders as `{{ job_url }}`; the only source of that URL.
+     */
+    public function applicationUrl(): ?string
+    {
+        return trim($this->url) === '' ? null : $this->url;
+    }
 }

@@ -78,6 +78,26 @@ const refOf = (job: JobDetail): JobDetail['company'] => {
 };
 const companyIdOf = (job: JobDetail): number => companyOf(job).id;
 
+const slugify = (value: string): string =>
+    value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+export const fixtureJobUrl = (
+    company: { name: string },
+    jobId: number,
+    title: string | null,
+): string => {
+    const titleSlug = title === null ? '' : slugify(title);
+
+    return `https://careers.${slugify(company.name)}.example/jobs/${
+        titleSlug === '' ? jobId : `${jobId}-${titleSlug}`
+    }`;
+};
+
 const draft = (
     job: JobDetail,
 ): Pick<ApplicationItem, 'company' | 'title' | 'language' | 'origin'> => ({
@@ -195,6 +215,7 @@ const historySeeds = (): ApplicationSeed[] => {
                         queuedAt: queuedAt.toISOString(),
                         scheduledFor: null,
                         sentAt: sentAt.toISOString(),
+                        jobUrl: fixtureJobUrl(refOf(job), job.id, job.title),
                     },
                 });
             });
@@ -252,6 +273,7 @@ const todaySeeds = (): ApplicationSeed[] => {
                 subStep: null,
                 lastError: ERR_CV,
                 sentAt: null,
+                jobUrl: null,
             };
         } else if (i === 11 || i === 16) {
             item = {
@@ -261,6 +283,7 @@ const todaySeeds = (): ApplicationSeed[] => {
                 subStep: null,
                 lastError: i === 11 ? ERR_UNCONFIRMED : ERR_REJECTED,
                 sentAt: null,
+                jobUrl: null,
             };
         } else {
             item = {
@@ -270,6 +293,7 @@ const todaySeeds = (): ApplicationSeed[] => {
                 subStep: null,
                 lastError: null,
                 sentAt: minutesAgoToday(minutesBack),
+                jobUrl: fixtureJobUrl(refOf(job), job.id, job.title),
             };
         }
 
@@ -294,6 +318,7 @@ const todaySeeds = (): ApplicationSeed[] => {
                 queuedAt: minutesAgoToday(12 - i * 0.8),
                 scheduledFor: new Date(scheduled).toISOString(),
                 sentAt: null,
+                jobUrl: null,
             },
         });
 

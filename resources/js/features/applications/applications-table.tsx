@@ -1,7 +1,10 @@
+import { ArrowUpRight } from 'lucide-react';
 import { ActivityRow } from '@/components/patterns/activity-row';
 import type { ActivityStatus } from '@/components/patterns/activity-row';
 import { CompanyLogo } from '@/components/patterns/company-logo';
 import { Button } from '@/components/ui/button';
+import { IconButton } from '@/components/ui/icon-button';
+import { Tooltip } from '@/components/ui/tooltip';
 import { useT } from '@/i18n/i18n-provider';
 import { useFormat } from '@/lib/format';
 import type { ApplicationItem, ApplicationStatus } from '@/types/contracts';
@@ -35,6 +38,17 @@ export function ApplicationsTable({
     const format = useFormat();
     const role = (item: ApplicationItem) =>
         item.title ?? t('applications.no_title');
+    const jobLink = (item: ApplicationItem) =>
+        item.jobUrl ? (
+            <Tooltip content={t('applications.open_job_page')}>
+                <IconButton
+                    icon={ArrowUpRight}
+                    label={t('applications.open_job_page')}
+                    externalHref={item.jobUrl}
+                    onClick={(event) => event.stopPropagation()}
+                />
+            </Tooltip>
+        ) : null;
 
     return (
         <div className="flex flex-col gap-3">
@@ -45,7 +59,7 @@ export function ApplicationsTable({
                             <th className="w-[26%] px-4 py-2 font-medium">
                                 {t('applications.col.company')}
                             </th>
-                            <th className="w-[26%] px-4 py-2 font-medium">
+                            <th className="w-[22%] px-4 py-2 font-medium">
                                 {t('applications.col.role')}
                             </th>
                             <th className="w-[10%] px-4 py-2 font-medium">
@@ -54,9 +68,13 @@ export function ApplicationsTable({
                             <th className="w-[20%] px-4 py-2 font-medium">
                                 {t('applications.col.status')}
                             </th>
-                            <th className="w-[18%] px-4 py-2 font-medium">
+                            <th className="w-[14%] px-4 py-2 font-medium">
                                 {t('applications.col.time')}
                             </th>
+                            <th
+                                aria-label={t('applications.col.job_page')}
+                                className="w-[8%] px-4 py-2"
+                            />
                         </tr>
                     </thead>
                     <tbody>
@@ -111,6 +129,7 @@ export function ApplicationsTable({
                                         })}
                                     </time>
                                 </td>
+                                <td className="px-4 py-3">{jobLink(item)}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -119,16 +138,25 @@ export function ApplicationsTable({
             <ul className="flex flex-col gap-3 md:hidden">
                 {items.map((item) => (
                     <li key={item.id}>
-                        <button
-                            type="button"
-                            onClick={() => onOpen(item)}
-                            className="flex w-full flex-col gap-2 rounded-tile bg-tile p-card-sm text-left focus-visible:focus-ring"
-                        >
+                        <div className="relative flex flex-col gap-2 rounded-tile bg-tile p-card-sm focus-within:focus-ring">
+                            <button
+                                type="button"
+                                onClick={() => onOpen(item)}
+                                aria-label={`${item.company.name} — ${role(item)}`}
+                                className="absolute inset-0 rounded-tile"
+                            />
                             <ActivityRow
                                 status={ACTIVITY[item.status]}
                                 title={item.company.name}
                                 subtitle={role(item)}
                                 time={timeOf(item)}
+                                trailingAction={
+                                    item.jobUrl ? (
+                                        <span className="relative z-10">
+                                            {jobLink(item)}
+                                        </span>
+                                    ) : undefined
+                                }
                             />
                             <div className="flex flex-wrap items-center gap-2">
                                 <StatusBadge status={item.status} />
@@ -138,7 +166,7 @@ export function ApplicationsTable({
                                     </span>
                                 )}
                             </div>
-                        </button>
+                        </div>
                     </li>
                 ))}
             </ul>

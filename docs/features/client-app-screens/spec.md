@@ -33,7 +33,9 @@
 - **The client never sees data that lets them apply outside the product:**
   no job URLs, no recipient email addresses, no company websites/domains.
   Where the email template contains `{{ job_url }}`, previews show a
-  "job link" chip instead of the URL.
+  "job link" chip instead of the URL. Exception (`applied-job-link`): after
+  an application is **sent**, the Applications screen shows the official job
+  page link (`ApplicationItem.jobUrl`). Before sending, no job URL anywhere.
 - **Honest live sending:** the stages shown are the real pipeline steps
   (`validating_recipient → adapting_template → attaching_cv → sending →
 sent`), narrated with real sub-steps. Fixtures simulate them with the same
@@ -185,6 +187,7 @@ export type ApplicationItem = {
     queuedAt: ISODateTime;
     scheduledFor: ISODateTime | null;
     sentAt: ISODateTime | null;
+    jobUrl: string | null; // official job page; non-null only when status === 'sent'
 };
 export type ApplicationDetail = ApplicationItem & {
     subject: string;
@@ -591,7 +594,9 @@ cards. Row click → **Application detail** `Sheet`: status, timeline of
 stages with times, subject and body snapshot (read-only, job link chip), CV
 file name, failure reason and what it means ("won't retry" for
 `ambiguous`: "We could not confirm delivery, so we will not send it again
-to avoid a duplicate"). Rows update live.
+to avoid a duplicate"). Rows update live. After an application is
+sent, the row and the detail sheet link to the official job page — see
+`applied-job-link` B.4.
 
 **S5 Profiles** (`pages/profiles.tsx`) — application content per language:
 
@@ -741,8 +746,9 @@ type for values inside a field), error messages. Portuguese is Brazilian.
   the item appears under "Needs attention".
 - **AC07** Selecting more jobs than the remaining quota blocks sending with
   an inline message; one job per company is enforced in the selection.
-- **AC08** No screen shows a job URL, a recipient email address or a company
-  domain; template previews show the "job link" chip.
+- **AC08** No screen shows a job URL **before the application is sent** (sent
+  applications show it on the Applications screen only), a recipient email
+  address or a company domain; template previews show the "job link" chip.
 - **AC09** Profiles: create/delete language, upload/replace/remove CV (PDF
   only, ≤ 5 MB, validated client-side), edit subject/body/cover letter with
   variable chips, live preview, unsaved-changes guard; Jobs shows the

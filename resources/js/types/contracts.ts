@@ -139,6 +139,7 @@ export type ApplicationItem = {
     queuedAt: ISODateTime;
     scheduledFor: ISODateTime | null;
     sentAt: ISODateTime | null;
+    jobUrl: string | null; // official job page; non-null only when status === 'sent'
 };
 export type ApplicationDetail = ApplicationItem & {
     subject: string;

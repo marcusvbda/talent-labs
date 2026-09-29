@@ -27,6 +27,8 @@
    status is real. Sending _modes_ are enforced in `plans-and-sending-modes`.
 6. **The client must never receive** job URLs, recipient email addresses or
    company domains in any response (`client-app-screens` Part 0).
+   Exception: `ApplicationItem.jobUrl` for sent applications
+   (`applied-job-link`).
 7. Migrations: edit the existing `create_*` migrations (development mode,
    owner runs `migrate:fresh --seed`). No `alter` migrations.
 8. `CLAUDE.md` hard rules apply. Filament `/app` keeps working until spec 6.
@@ -225,7 +227,8 @@ autoPausedReason: null }` until spec 6; onboarding steps: `basics` =
 - `PUT /internal/onboarding/basics` → saves country (+ derived region),
   locale, timezone → returns `AccountStatus`.
 - Resources never include: `url`, `apply_url`, `company_website`, `domain`,
-  `recipient_email`, `contact` data, `raw`, `description_html`.
+  `recipient_email`, `contact` data, `raw`, `description_html`. Exception:
+  `ApplicationItem.jobUrl` for sent applications (`applied-job-link`).
 
 **Initial props:** the Inertia routes `dashboard`, `jobs`, `applications`
 become controller actions passing `dashboard` + `chart`, `jobs` (first
@@ -306,7 +309,8 @@ Disconnect from the new UI uses the existing DELETE route via `useMutation`.
   against `contracts.ts` by comparing keys in a manual run) and only the
   current user's data.
 - **AC06** No endpoint returns URLs, recipient emails, domains or raw
-  errors (grep the Resources; manual check of responses).
+  errors (grep the Resources; manual check of responses). Exception:
+  `ApplicationItem.jobUrl` for sent applications (`applied-job-link`).
 - **AC07** `PlanCatalog` drives the daily limit everywhere;
   `OutreachLimits::DAILY_SEND_LIMIT` no longer exists.
 - **AC08** New profiles get `language`; jobs with null/`other` language are

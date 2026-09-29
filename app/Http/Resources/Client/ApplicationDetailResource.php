@@ -22,7 +22,7 @@ class ApplicationDetailResource extends ApplicationItemResource
     public function toArray(Request $request): array
     {
         $application = $this->resource;
-        $jobUrl = $application->jobPosting?->url;
+        $jobUrl = $application->jobPosting?->applicationUrl();
 
         return [
             ...parent::toArray($request),

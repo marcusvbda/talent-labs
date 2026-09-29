@@ -112,7 +112,7 @@ class QueueApplication
         }
 
         $variables = ApplicationTemplateRenderer::variablesFor($user, $posting, $profile);
-        $reviewedVariables = ['job_url' => (string) $posting->url];
+        $reviewedVariables = ['job_url' => (string) $posting->applicationUrl()];
 
         $application = Application::query()->create([
             'user_id' => $user->id,

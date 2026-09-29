@@ -2,14 +2,16 @@
 
 namespace App\Http\Resources\Client;
 
+use App\Enums\ApplicationStatus;
 use App\Models\Application;
 use App\Outreach\Support\ClientErrorMessage;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * The `ApplicationItem` contract. Expects `company`, `jobPosting.profile` and `user` loaded.
- * Never exposes the recipient, contact data, provider ids or the raw `last_error`.
+ * The `ApplicationItem` contract. Expects `company`, `jobPosting` (with `profile`) and `user` loaded.
+ * Never exposes the recipient, contact data, provider ids or the raw `last_error`. The only URL
+ * is `jobUrl`, and only for sent applications (`applied-job-link`).
  *
  * @property Application $resource
  */
@@ -40,6 +42,9 @@ class ApplicationItemResource extends JsonResource
             'queuedAt' => $application->queued_at?->toIso8601String(),
             'scheduledFor' => $application->scheduled_for?->toIso8601String(),
             'sentAt' => $application->sent_at?->toIso8601String(),
+            'jobUrl' => $application->status === ApplicationStatus::Sent
+                ? self::safeUrl($application->jobPosting?->applicationUrl())
+                : null,
         ];
     }
 
@@ -64,6 +69,28 @@ class ApplicationItemResource extends JsonResource
         $locale = $application->user->locale;
 
         return in_array($locale, ['en', 'pt'], true) ? $locale : 'en';
+    }
+
+    private static function safeUrl(?string $url): ?string
+    {
+        if ($url === null || $url === '') {
+            return null;
+        }
+
+        $parts = parse_url($url);
+
+        if (! is_array($parts)) {
+            return null;
+        }
+
+        $scheme = isset($parts['scheme']) ? strtolower($parts['scheme']) : null;
+        $host = $parts['host'] ?? null;
+
+        if (! in_array($scheme, ['http', 'https'], true) || ! is_string($host) || $host === '') {
+            return null;
+        }
+
+        return $url;
     }
 
     private static function initials(string $name): string

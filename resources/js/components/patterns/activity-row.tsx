@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { StatusDisc } from '@/components/ui/status-disc';
 import { useFormat } from '@/lib/format';
 
@@ -16,12 +17,14 @@ export function ActivityRow({
     subtitle,
     time,
     timeFormat = 'relative',
+    trailingAction,
 }: {
     status: ActivityStatus;
     title: string;
     subtitle: string;
     time: string;
     timeFormat?: 'relative' | 'clock';
+    trailingAction?: ReactNode;
 }) {
     const format = useFormat();
     const date = new Date(time);
@@ -50,6 +53,9 @@ export function ActivityRow({
                         })
                       : format.relativeTime(time)}
             </time>
+            {trailingAction ? (
+                <div className="shrink-0">{trailingAction}</div>
+            ) : null}
         </div>
     );
 }

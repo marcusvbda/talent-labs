@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import { forwardRef } from 'react';
-import type { ButtonHTMLAttributes } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, Ref } from 'react';
 import { cn } from '@/lib/utils';
 
 type IconButtonSize = 60 | 46;
@@ -32,6 +32,7 @@ type IconButtonProps = Omit<
     size?: IconButtonSize;
     bg?: IconButtonBg;
     dot?: boolean;
+    externalHref?: string;
 };
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
@@ -44,24 +45,21 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
             dot = false,
             className,
             type = 'button',
+            externalHref,
             ...props
         },
         ref,
     ) {
-        return (
-            <button
-                ref={ref}
-                type={type}
-                aria-label={label}
-                className={cn(
-                    'relative inline-grid shrink-0 place-items-center rounded-full text-ink transition-colors disabled:pointer-events-none disabled:opacity-50',
-                    SIZES[size],
-                    BGS[bg],
-                    RINGS[bg],
-                    className,
-                )}
-                {...props}
-            >
+        const classes = cn(
+            'relative inline-grid shrink-0 place-items-center rounded-full text-ink transition-colors disabled:pointer-events-none disabled:opacity-50',
+            SIZES[size],
+            BGS[bg],
+            RINGS[bg],
+            className,
+        );
+
+        const content = (
+            <>
                 <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
                 {dot ? (
                     <span
@@ -69,6 +67,34 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
                         className="absolute top-4 right-4 size-2.5 rounded-full border-2 border-card bg-accent"
                     />
                 ) : null}
+            </>
+        );
+
+        if (externalHref !== undefined) {
+            return (
+                <a
+                    {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}
+                    ref={ref as Ref<HTMLAnchorElement>}
+                    href={externalHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className={classes}
+                >
+                    {content}
+                </a>
+            );
+        }
+
+        return (
+            <button
+                ref={ref}
+                type={type}
+                aria-label={label}
+                className={classes}
+                {...props}
+            >
+                {content}
             </button>
         );
     },

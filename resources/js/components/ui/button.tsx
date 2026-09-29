@@ -68,6 +68,7 @@ type ButtonProps = {
     iconRight?: LucideIcon;
     fullWidth?: boolean;
     href?: string;
+    external?: boolean;
     disabled?: boolean;
     className?: string;
     children: ReactNode;
@@ -85,6 +86,7 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
         iconRight: IconRight,
         fullWidth = false,
         href,
+        external = false,
         disabled = false,
         className,
         children,
@@ -134,6 +136,25 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
                 onClick?.(event);
             }
         };
+
+        if (external) {
+            return (
+                <a
+                    {...anchorProps}
+                    ref={ref as Ref<HTMLAnchorElement>}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-disabled={inactive || undefined}
+                    aria-busy={loading || undefined}
+                    tabIndex={inactive ? -1 : undefined}
+                    className={classes}
+                    onClick={guard}
+                >
+                    {content}
+                </a>
+            );
+        }
 
         return (
             <Link

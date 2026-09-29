@@ -62,7 +62,7 @@ final class ApplicationTemplateRenderer
             'company' => $posting->company->name ?? $posting->company_name,
             'job_title' => $posting->title,
             'job_location' => $location,
-            'job_url' => $posting->url,
+            'job_url' => (string) $posting->applicationUrl(),
             'client_name' => $user->name,
         ];
 

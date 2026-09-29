@@ -1,5 +1,6 @@
 import { devEmitter, registerSimulation } from '@/data/realtime/dev-emitter';
 import { getDevState, subscribeDevState } from '@/data/fixtures/dev-state';
+import { fixtureJobUrl } from '@/data/fixtures/catalog/applications';
 import { SEND_STEPS, STEP_DELAY_MS } from '@/data/fixtures/send-steps';
 import { fixtureState } from '@/data/fixtures/state';
 import { useFixtures } from '@/data/source';
@@ -130,6 +131,7 @@ function begin(item: ApplicationItem): void {
 function finish(id: number, outcome: 'sent' | 'failed'): void {
     const failed = outcome === 'failed';
     const data = fixtureState.get();
+    const stored = data.applications.find((row) => row.item.id === id);
     const application = fixtureState.patchApplication(id, {
         status: outcome,
         stage: outcome,
@@ -137,6 +139,14 @@ function finish(id: number, outcome: 'sent' | 'failed'): void {
         subStep: failed ? data.currentSubStep : null,
         lastError: failed ? CV_ERROR : null,
         sentAt: failed ? null : new Date().toISOString(),
+        jobUrl:
+            failed || !stored
+                ? null
+                : fixtureJobUrl(
+                      stored.item.company,
+                      stored.jobId,
+                      stored.item.title,
+                  ),
     });
 
     fixtureState.set((s) => ({

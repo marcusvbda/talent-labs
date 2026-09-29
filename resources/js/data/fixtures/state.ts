@@ -544,6 +544,7 @@ function queueJobs(jobIds: number[], origin: 'auto' | 'manual'): QueueResult {
             queuedAt: new Date().toISOString(),
             scheduledFor: new Date(slot).toISOString(),
             sentAt: null,
+            jobUrl: null,
         };
 
         store.set((s) => ({
