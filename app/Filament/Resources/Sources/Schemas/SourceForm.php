@@ -17,6 +17,9 @@ class SourceForm
      * Supported `settings` keys per adapter value; adapters not listed use no settings.
      */
     private const SETTINGS_HINTS = [
+        'greenhouse' => 'Keys: locations (comma list, keep postings whose location contains any term; empty = all), website (company URL used for domain resolution).',
+        'lever' => 'Keys: locations (comma list, keep postings whose location contains any term; empty = all), website (company URL used for domain resolution).',
+        'ashby' => 'Keys: locations (comma list, keep postings whose location contains any term; empty = all), website (company URL used for domain resolution).',
         'remotive' => 'Keys: category, search, limit.',
         'remote_ok' => 'Key: tags (comma list, max 10, one request per tag). Empty = the whole feed.',
         'arbeitnow' => 'Keys: pages (1-5), remote ("true" = remote jobs only). Empty = first page only.',
@@ -24,6 +27,7 @@ class SourceForm
         'himalayas' => 'Keys: queries (comma list), pages, country, worldwide, seniority.',
         'we_work_remotely' => 'Key: categories (comma list of feed slugs).',
         'working_nomads' => 'Key: categories (comma list, matched against the category name).',
+        'adzuna' => 'Keys: country (e.g. br), queries (comma list), pages (1-3). Needs ADZUNA_APP_ID / ADZUNA_APP_KEY in .env. Max 10 requests per run.',
     ];
 
     public static function configure(Schema $schema): Schema

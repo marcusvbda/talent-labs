@@ -110,6 +110,42 @@ trait InteractsWithJobBoardApi
     }
 
     /**
+     * Whether a posting location passes the `locations` setting: an empty list keeps
+     * everything; otherwise the location must contain any term (case-insensitive), and a
+     * null location never matches.
+     *
+     * @param  list<string>  $terms
+     */
+    protected function matchesLocations(?string $location, array $terms): bool
+    {
+        if ($terms === []) {
+            return true;
+        }
+
+        if ($location === null) {
+            return false;
+        }
+
+        foreach ($terms as $term) {
+            if (mb_stripos($location, $term) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * The `website` setting (company URL), or null when not set.
+     */
+    protected function websiteSetting(Source $source): ?string
+    {
+        $settings = is_array($source->settings) ? $source->settings : [];
+
+        return $this->stringOrNull($settings['website'] ?? null);
+    }
+
+    /**
      * The board identifier (company slug) these adapters cannot work without.
      */
     protected function requireIdentifier(Source $source): string

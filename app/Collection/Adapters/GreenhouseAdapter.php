@@ -14,6 +14,8 @@ class GreenhouseAdapter implements JobSourceAdapter
     public function fetch(Source $source): iterable
     {
         $identifier = $this->requireIdentifier($source);
+        $locations = $this->settingList($source, 'locations');
+        $website = $this->websiteSetting($source);
 
         $response = $this->http()->get(
             'https://boards-api.greenhouse.io/v1/boards/'.rawurlencode($identifier).'/jobs',
@@ -29,6 +31,12 @@ class GreenhouseAdapter implements JobSourceAdapter
                 continue;
             }
 
+            $location = $this->stringOrNull(data_get($item, 'location.name'));
+
+            if (! $this->matchesLocations($location, $locations)) {
+                continue;
+            }
+
             $content = $this->stringOrNull($item['content'] ?? null);
             $html = $content === null ? null : html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
@@ -36,7 +44,7 @@ class GreenhouseAdapter implements JobSourceAdapter
                 externalId: $externalId,
                 title: $title,
                 companyName: $this->stringOrNull($item['company_name'] ?? null) ?? $source->name,
-                location: $this->stringOrNull(data_get($item, 'location.name')),
+                location: $location,
                 isRemote: null,
                 department: $this->stringOrNull(data_get($item, 'departments.0.name')),
                 employmentType: null,
@@ -46,6 +54,7 @@ class GreenhouseAdapter implements JobSourceAdapter
                 descriptionText: $this->htmlToText($html),
                 publishedAt: $this->parseDate($item['first_published'] ?? null) ?? $this->parseDate($item['updated_at'] ?? null),
                 raw: $item,
+                companyWebsite: $website,
             );
         }
     }

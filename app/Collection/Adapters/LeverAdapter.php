@@ -15,6 +15,8 @@ class LeverAdapter implements JobSourceAdapter
     public function fetch(Source $source): iterable
     {
         $identifier = $this->requireIdentifier($source);
+        $locations = $this->settingList($source, 'locations');
+        $website = $this->websiteSetting($source);
 
         $response = $this->http()->get(
             'https://api.lever.co/v0/postings/'.rawurlencode($identifier),
@@ -30,13 +32,19 @@ class LeverAdapter implements JobSourceAdapter
                 continue;
             }
 
+            $location = $this->stringOrNull(data_get($item, 'categories.location'));
+
+            if (! $this->matchesLocations($location, $locations)) {
+                continue;
+            }
+
             $createdAt = $item['createdAt'] ?? null;
 
             yield new JobPostingData(
                 externalId: $externalId,
                 title: $title,
                 companyName: $source->name,
-                location: $this->stringOrNull(data_get($item, 'categories.location')),
+                location: $location,
                 isRemote: array_key_exists('workplaceType', $item) ? $item['workplaceType'] === 'remote' : null,
                 department: $this->stringOrNull(data_get($item, 'categories.team')),
                 employmentType: $this->stringOrNull(data_get($item, 'categories.commitment')),
@@ -49,6 +57,7 @@ class LeverAdapter implements JobSourceAdapter
                 ], "\n\n"),
                 publishedAt: is_numeric($createdAt) ? CarbonImmutable::createFromTimestampMs((int) $createdAt) : null,
                 raw: $item,
+                companyWebsite: $website,
             );
         }
     }

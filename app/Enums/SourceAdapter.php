@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Collection\Adapters\AdzunaAdapter;
 use App\Collection\Adapters\ArbeitnowAdapter;
 use App\Collection\Adapters\AshbyAdapter;
 use App\Collection\Adapters\GreenhouseAdapter;
@@ -30,6 +31,7 @@ enum SourceAdapter: string implements HasColor, HasLabel
     case WeWorkRemotely = 'we_work_remotely';
     case WorkingNomads = 'working_nomads';
     case HackerNews = 'hacker_news';
+    case Adzuna = 'adzuna';
 
     public function getLabel(): string
     {
@@ -45,6 +47,7 @@ enum SourceAdapter: string implements HasColor, HasLabel
             self::WeWorkRemotely => 'We Work Remotely',
             self::WorkingNomads => 'Working Nomads',
             self::HackerNews => 'Hacker News',
+            self::Adzuna => 'Adzuna',
         };
     }
 
@@ -54,7 +57,7 @@ enum SourceAdapter: string implements HasColor, HasLabel
             self::Greenhouse => 'success',
             self::Lever => 'info',
             self::Ashby => 'warning',
-            self::Remotive, self::RemoteOk, self::Arbeitnow, self::Jobicy, self::Himalayas, self::WeWorkRemotely, self::WorkingNomads, self::HackerNews => 'gray',
+            self::Remotive, self::RemoteOk, self::Arbeitnow, self::Jobicy, self::Himalayas, self::WeWorkRemotely, self::WorkingNomads, self::HackerNews, self::Adzuna => 'gray',
         };
     }
 
@@ -62,7 +65,7 @@ enum SourceAdapter: string implements HasColor, HasLabel
     {
         return match ($this) {
             self::Greenhouse, self::Lever, self::Ashby => true,
-            self::Remotive, self::RemoteOk, self::Arbeitnow, self::Jobicy, self::Himalayas, self::WeWorkRemotely, self::WorkingNomads, self::HackerNews => false,
+            self::Remotive, self::RemoteOk, self::Arbeitnow, self::Jobicy, self::Himalayas, self::WeWorkRemotely, self::WorkingNomads, self::HackerNews, self::Adzuna => false,
         };
     }
 
@@ -77,6 +80,7 @@ enum SourceAdapter: string implements HasColor, HasLabel
             self::WeWorkRemotely => 'via We Work Remotely',
             self::WorkingNomads => 'via Working Nomads',
             self::HackerNews => 'via HN Who is hiring',
+            self::Adzuna => 'via Adzuna',
             default => $this->getLabel(),
         };
     }
@@ -95,6 +99,7 @@ enum SourceAdapter: string implements HasColor, HasLabel
             self::WeWorkRemotely => WeWorkRemotelyAdapter::class,
             self::WorkingNomads => WorkingNomadsAdapter::class,
             self::HackerNews => HackerNewsAdapter::class,
+            self::Adzuna => AdzunaAdapter::class,
         });
     }
 }

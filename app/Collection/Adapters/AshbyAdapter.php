@@ -14,6 +14,8 @@ class AshbyAdapter implements JobSourceAdapter
     public function fetch(Source $source): iterable
     {
         $identifier = $this->requireIdentifier($source);
+        $locations = $this->settingList($source, 'locations');
+        $website = $this->websiteSetting($source);
 
         $response = $this->http()->get(
             'https://api.ashbyhq.com/posting-api/job-board/'.rawurlencode($identifier),
@@ -33,11 +35,17 @@ class AshbyAdapter implements JobSourceAdapter
                 continue;
             }
 
+            $location = $this->stringOrNull($item['location'] ?? null);
+
+            if (! $this->matchesLocations($location, $locations)) {
+                continue;
+            }
+
             yield new JobPostingData(
                 externalId: $externalId,
                 title: $title,
                 companyName: $source->name,
-                location: $this->stringOrNull($item['location'] ?? null),
+                location: $location,
                 isRemote: $this->boolOrNull($item['isRemote'] ?? null),
                 department: $this->stringOrNull($item['department'] ?? null),
                 employmentType: $this->stringOrNull($item['employmentType'] ?? null),
@@ -47,6 +55,7 @@ class AshbyAdapter implements JobSourceAdapter
                 descriptionText: $this->stringOrNull($item['descriptionPlain'] ?? null),
                 publishedAt: $this->parseDate($item['publishedAt'] ?? null),
                 raw: $item,
+                companyWebsite: $website,
             );
         }
     }
