@@ -739,7 +739,6 @@
     "applications.stage.sending": "Sending",
     "applications.stage.sent": "Sent",
     "applications.stage.failed": "Failed",
-    "applications.detail.timeline": "Timeline",
     "applications.detail.subject": "Subject",
     "applications.detail.body": "Message",
     "applications.detail.cv": "CV",

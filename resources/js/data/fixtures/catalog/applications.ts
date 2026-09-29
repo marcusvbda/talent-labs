@@ -1,9 +1,7 @@
 import type {
     ApplicationDetail,
     ApplicationItem,
-    ISODateTime,
     JobDetail,
-    SendStage,
 } from '../../../types/contracts';
 import { JOBS } from './jobs';
 import { defaultTemplates } from './profiles';
@@ -356,55 +354,6 @@ const fill = (template: string, values: Record<string, string>): string =>
         (_, key: string) => values[key],
     );
 
-const STAGE_ORDER: SendStage[] = [
-    'validating_recipient',
-    'adapting_template',
-    'attaching_cv',
-    'sending',
-    'sent',
-];
-
-const STEP_MS = 1200;
-
-const timelineFor = (item: ApplicationItem): ApplicationDetail['timeline'] => {
-    const at = (base: number, steps: number): ISODateTime =>
-        new Date(base + steps * STEP_MS).toISOString();
-
-    if (item.status === 'sent' && item.sentAt) {
-        const end = new Date(item.sentAt).getTime();
-
-        return STAGE_ORDER.map((stage, index) => ({
-            stage,
-            at: at(end, index - (STAGE_ORDER.length - 1)),
-        }));
-    }
-
-    const start = new Date(item.queuedAt).getTime();
-
-    if (item.status === 'failed') {
-        const stages: SendStage[] = [
-            'validating_recipient',
-            'adapting_template',
-            'attaching_cv',
-            'failed',
-        ];
-
-        return stages.map((stage, index) => ({
-            stage,
-            at: at(start, index + 1),
-        }));
-    }
-
-    if (item.status === 'ambiguous') {
-        return STAGE_ORDER.slice(0, 4).map((stage, index) => ({
-            stage,
-            at: at(start, index + 1),
-        }));
-    }
-
-    return [];
-};
-
 export const detailFor = (
     item: ApplicationItem,
     jobId?: number,
@@ -429,6 +378,5 @@ export const detailFor = (
         subject: fill(template.subject, values),
         body: fill(template.body, values),
         cvFileName: item.language === 'pt' ? null : CV_FILE_NAME,
-        timeline: timelineFor(item),
     };
 };

@@ -145,7 +145,6 @@ export type ApplicationDetail = ApplicationItem & {
     subject: string;
     body: string; // client-safe (job links replaced by the chip token)
     cvFileName: string | null;
-    timeline: { stage: SendStage; at: ISODateTime }[];
 };
 export type ApplicationFilters = {
     status?: 'all' | 'in_progress' | 'sent' | 'attention'; // in_progress = queued+sending, attention = failed+ambiguous

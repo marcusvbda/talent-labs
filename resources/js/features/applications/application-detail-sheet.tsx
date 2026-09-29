@@ -1,16 +1,14 @@
-import { ArrowUpRight } from "lucide-react";
-import { Fragment } from "react";
-import { Button } from "@/components/ui/button";
-import { Chip } from "@/components/ui/chip";
-import { ErrorState } from "@/components/ui/error-state";
-import { Sheet } from "@/components/ui/sheet";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useApplication } from "@/data/hooks/use-application";
-import { JOB_URL_TOKEN } from "@/features/review/body-editor";
-import { useT } from "@/i18n/i18n-provider";
-import { useFormat } from "@/lib/format";
-import type { ApplicationItem } from "@/types/contracts";
-import { StatusBadge } from "./status-badge";
+import { ArrowUpRight } from 'lucide-react';
+import { Fragment } from 'react';
+import { Button } from '@/components/ui/button';
+import { Chip } from '@/components/ui/chip';
+import { ErrorState } from '@/components/ui/error-state';
+import { Sheet } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useApplication } from '@/data/hooks/use-application';
+import { JOB_URL_TOKEN } from '@/features/review/body-editor';
+import { useT } from '@/i18n/i18n-provider';
+import type { ApplicationItem } from '@/types/contracts';
 
 // Read-only body: the job link stays a token, shown as a chip.
 const SnapshotBody = ({ body }: { body: string }) => {
@@ -21,7 +19,7 @@ const SnapshotBody = ({ body }: { body: string }) => {
             {body.split(JOB_URL_TOKEN).map((part, index) => (
                 <Fragment key={index}>
                     {index > 0 && (
-                        <Chip variant="plan">{t("review.job_link")}</Chip>
+                        <Chip variant="plan">{t('review.job_link')}</Chip>
                     )}
                     {part}
                 </Fragment>
@@ -39,7 +37,7 @@ const DetailBody = ({ item }: { item: ApplicationItem }) => {
 
     return (
         <div className="flex flex-col gap-6">
-            {(status === "failed" || status === "ambiguous") && (
+            {(status === 'failed' || status === 'ambiguous') && (
                 <div
                     role="note"
                     className="flex flex-col gap-1 rounded-tile bg-tile p-card-sm text-body text-ink"
@@ -47,7 +45,7 @@ const DetailBody = ({ item }: { item: ApplicationItem }) => {
                     <p>{t(`applications.${status}.explain`)}</p>
                     {lastError && (
                         <p className="text-muted">
-                            {t("applications.reason", { reason: lastError })}
+                            {t('applications.reason', { reason: lastError })}
                         </p>
                     )}
                 </div>
@@ -58,7 +56,7 @@ const DetailBody = ({ item }: { item: ApplicationItem }) => {
                 <div
                     role="status"
                     aria-busy="true"
-                    aria-label={t("common.loading")}
+                    aria-label={t('common.loading')}
                     className="flex flex-col gap-3"
                 >
                     <Skeleton shape="line" />
@@ -69,10 +67,10 @@ const DetailBody = ({ item }: { item: ApplicationItem }) => {
                     {data.jobUrl && (
                         <section className="flex flex-col gap-2">
                             <h3 className="text-label-sm text-muted">
-                                {t("applications.detail.strengthen.title")}
+                                {t('applications.detail.strengthen.title')}
                             </h3>
                             <p className="text-body text-muted">
-                                {t("applications.detail.strengthen.text")}
+                                {t('applications.detail.strengthen.text')}
                             </p>
                             <Button
                                 variant="secondary-tile"
@@ -80,26 +78,26 @@ const DetailBody = ({ item }: { item: ApplicationItem }) => {
                                 external
                                 iconRight={ArrowUpRight}
                             >
-                                {t("applications.open_job_page")}
+                                {t('applications.open_job_page')}
                             </Button>
                         </section>
                     )}
                     <section className="flex flex-col gap-2">
                         <h3 className="text-label-sm text-muted">
-                            {t("applications.detail.subject")}
+                            {t('applications.detail.subject')}
                         </h3>
                         <p className="text-body text-ink">{data.subject}</p>
                     </section>
                     <section className="flex flex-col gap-2">
                         <h3 className="text-label-sm text-muted">
-                            {t("applications.detail.body")}
+                            {t('applications.detail.body')}
                         </h3>
                         <SnapshotBody body={data.body} />
                     </section>
                     {data.cvFileName && (
                         <section className="flex flex-col gap-2">
                             <h3 className="text-label-sm text-muted">
-                                {t("applications.detail.cv")}
+                                {t('applications.detail.cv')}
                             </h3>
                             <p className="text-body break-all text-ink">
                                 {data.cvFileName}
@@ -124,7 +122,7 @@ export function ApplicationDetailSheet({
             open={item !== null}
             onClose={onClose}
             side="right"
-            title={item?.company.name ?? ""}
+            title={item?.company.name ?? ''}
         >
             {item && <DetailBody item={item} />}
         </Sheet>

@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\Client;
 
-use App\Enums\ApplicationStatus;
 use App\Models\Application;
 use App\Outreach\Support\ClientSafeText;
 use Illuminate\Http\Request;
@@ -29,31 +28,6 @@ class ApplicationDetailResource extends ApplicationItemResource
             'subject' => ClientSafeText::tokenizeJobUrl($application->subject, $jobUrl),
             'body' => ClientSafeText::tokenizeJobUrl($application->body, $jobUrl),
             'cvFileName' => $application->applicationProfile?->cv_original_name,
-            'timeline' => $this->timeline(),
         ];
-    }
-
-    /**
-     * Derived only from what is recorded; no step is ever invented.
-     *
-     * @return list<array{stage: string, at: string|null}>
-     */
-    private function timeline(): array
-    {
-        $application = $this->resource;
-
-        if ($application->stage_log !== []) {
-            return array_values($application->stage_log);
-        }
-
-        if ($application->sent_at !== null) {
-            return [['stage' => 'sent', 'at' => $application->sent_at->toIso8601String()]];
-        }
-
-        if ($application->status === ApplicationStatus::Failed) {
-            return [['stage' => 'failed', 'at' => $application->updated_at?->toIso8601String()]];
-        }
-
-        return [];
     }
 }
