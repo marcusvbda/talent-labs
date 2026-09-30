@@ -20,7 +20,6 @@ class LandingController extends Controller
             'plans' => $this->plans($catalog),
             'defaultRegion' => $this->defaultRegion($request)->value,
             'betaClosed' => (bool) config('talent.landing.beta_closed'),
-            'pricesAreIllustrative' => (bool) config('talent.landing.prices_illustrative'),
             'contactEmail' => is_string($contactEmail) && $contactEmail !== '' ? $contactEmail : null,
             'legal' => [
                 'privacy' => Route::has('privacy') ? route('privacy') : null,

@@ -1,8 +1,8 @@
-import { usePage } from '@inertiajs/react';
-import { useEffect } from 'react';
-import type { ReactNode } from 'react';
-import { useFlashToasts } from '@/lib/use-flash-toasts';
-import type { SharedProps } from '@/types/shared';
+import { usePage } from "@inertiajs/react";
+import { useEffect } from "react";
+import type { ReactNode } from "react";
+import { useFlashToasts } from "@/lib/use-flash-toasts";
+import type { SharedProps } from "@/types/shared";
 
 export function PublicLayout({
     header,
@@ -24,7 +24,7 @@ export function PublicLayout({
     return (
         <div className="flex min-h-screen w-full flex-col bg-shell text-ink">
             {header}
-            <main className="mx-auto w-full max-w-container flex-1 px-4 md:px-8 desk:px-shell-x">
+            <main className="mx-auto w-full max-w-shell flex-1 px-4 md:px-8 desk:px-shell-x">
                 {children}
             </main>
             {footer}

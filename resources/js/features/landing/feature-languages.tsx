@@ -1,16 +1,16 @@
-import { FileText } from 'lucide-react';
-import { Fragment, useState } from 'react';
-import type { ReactNode } from 'react';
-import { Card } from '@/components/ui/card';
-import { Chip } from '@/components/ui/chip';
-import { Tabs } from '@/components/ui/tabs';
-import { useT } from '@/i18n/i18n-provider';
-import type { JobLanguage } from '@/types/contracts';
-import { cn } from '@/lib/utils';
-import { JOB_LINK_TOKEN, SAMPLE_CV_FILE, SAMPLE_EMAILS } from './demo-data';
-import { useReveal } from './use-reveal';
+import { FileText } from "lucide-react";
+import { Fragment, useState } from "react";
+import type { ReactNode } from "react";
+import { Card } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
+import { Tabs } from "@/components/ui/tabs";
+import { useT } from "@/i18n/i18n-provider";
+import type { JobLanguage } from "@/types/contracts";
+import { cn } from "@/lib/utils";
+import { JOB_LINK_TOKEN, SAMPLE_CV_FILE, SAMPLE_EMAILS } from "./demo-data";
+import { useReveal } from "./use-reveal";
 
-const SAMPLE_LANGUAGES: JobLanguage[] = ['en', 'pt'];
+const SAMPLE_LANGUAGES: JobLanguage[] = ["en", "pt"];
 
 const Reveal = ({
     index,
@@ -43,7 +43,7 @@ const WithJobLink = ({ text }: { text: string }) => {
                 <Fragment key={index}>
                     {index > 0 ? (
                         <Chip variant="plan" className="align-middle">
-                            {t('profiles.job_link')}
+                            {t("profiles.job_link")}
                         </Chip>
                     ) : null}
                     {part}
@@ -92,12 +92,12 @@ export function FeatureLanguages() {
     const [selected, setSelected] = useState(0);
 
     return (
-        <section aria-labelledby="languages-title" className="py-12 md:py-16">
+        <section aria-labelledby="languages-title">
             <div className="grid grid-cols-1 items-center gap-gap xl:grid-cols-2">
-                <div className="flex flex-col items-start gap-5">
+                <div className="flex flex-col items-start gap-5 self-baseline">
                     <Reveal index={0}>
                         <p className="text-label text-accent">
-                            {t('landing.languages.eyebrow')}
+                            {t("landing.languages.eyebrow")}
                         </p>
                     </Reveal>
                     <Reveal index={1}>
@@ -105,19 +105,19 @@ export function FeatureLanguages() {
                             id="languages-title"
                             className="text-landing-section-sm text-ink md:text-landing-section"
                         >
-                            {t('landing.languages.title')}
+                            {t("landing.languages.title")}
                         </h2>
                     </Reveal>
                     <Reveal index={2}>
                         <p className="max-w-2xl text-landing-body text-muted">
-                            {t('landing.languages.text')}
+                            {t("landing.languages.text")}
                         </p>
                     </Reveal>
                 </div>
                 <Reveal index={2}>
                     <Card tone="light">
                         <Tabs
-                            ariaLabel={t('landing.languages.title')}
+                            ariaLabel={t("landing.languages.title")}
                             selectedIndex={selected}
                             onChange={setSelected}
                             tabs={SAMPLE_LANGUAGES.map((language) => ({

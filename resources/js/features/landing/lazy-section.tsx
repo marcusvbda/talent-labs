@@ -1,19 +1,19 @@
-import { Suspense, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
-import { cn } from '@/lib/utils';
-import { MOUNT_ALL_EVENT } from './scroll-to-hash';
-import { useInView } from './use-in-view';
+import { Suspense, useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
+import { MOUNT_ALL_EVENT } from "./scroll-to-hash";
+import { useInView } from "./use-in-view";
 
 /** Resolves the `--lazy-margin` token; IntersectionObserver rejects `var()`. */
 const lazyMargin = (): string => {
     const value =
-        typeof document === 'undefined'
-            ? ''
+        typeof document === "undefined"
+            ? ""
             : getComputedStyle(document.documentElement)
-                  .getPropertyValue('--lazy-margin')
+                  .getPropertyValue("--lazy-margin")
                   .trim();
 
-    return `${value || '0px'} 0px`;
+    return `${value || "0px"} 0px`;
 };
 
 /**
@@ -28,7 +28,7 @@ export function LazySection({
 }: {
     id?: string;
     /** Min-height tokens for the placeholder. */
-    className: string;
+    className?: string;
     children: ReactNode;
 }) {
     const [rootMargin] = useState(lazyMargin);
@@ -47,7 +47,7 @@ export function LazySection({
         <div
             ref={ref}
             id={id}
-            className={cn('scroll-mt-anchor-offset', className)}
+            className={cn("scroll-mt-anchor-offset", className)}
         >
             {near || forced ? (
                 <Suspense fallback={null}>{children}</Suspense>

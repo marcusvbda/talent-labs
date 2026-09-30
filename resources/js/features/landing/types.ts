@@ -1,4 +1,4 @@
-import type { PlanKey, RegionKey, SendMode } from '@/types/contracts';
+import type { PlanKey, RegionKey, SendMode } from "@/types/contracts";
 
 export type LandingPlan = {
     key: PlanKey;
@@ -19,7 +19,6 @@ export type LandingProps = {
     plans: LandingPlan[];
     defaultRegion: RegionKey;
     betaClosed: boolean;
-    pricesAreIllustrative: boolean;
     contactEmail: string | null;
     legal: LandingLegal;
 };

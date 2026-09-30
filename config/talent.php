@@ -173,7 +173,6 @@ return [
         // Closed beta: the public landing page shows "request access" instead of open signup.
         'beta_closed' => (bool) env('LANDING_BETA_CLOSED', true),
         // Shows a note that the displayed plan prices are illustrative, not final.
-        'prices_illustrative' => (bool) env('LANDING_PRICES_ILLUSTRATIVE', true),
     ],
 
     // Public contact address shown on the landing page. Empty/unset = hidden.

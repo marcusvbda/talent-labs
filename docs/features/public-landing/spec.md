@@ -125,9 +125,6 @@ Decisions that bind this spec:
       service.
     - `betaClosed: bool` from `config('talent.landing.beta_closed')`
       (`LANDING_BETA_CLOSED`, default `true`).
-    - `pricesAreIllustrative: bool` from `talent.landing.prices_illustrative`
-      (`LANDING_PRICES_ILLUSTRATIVE`, default `true`) — shows the "illustrative
-      prices" note.
     - `contactEmail`: `config('talent.contact_email')` (add the key, env
       `TALENT_CONTACT_EMAIL`, default null; the footer omits it when null).
     - `legal`: `{ privacy: bool, terms: bool, optOut: bool }` = whether the
