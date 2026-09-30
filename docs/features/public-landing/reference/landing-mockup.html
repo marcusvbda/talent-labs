@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<style>
+@font-face{font-family:'Geist';src:url('/fonts/geist/Geist-Variable.woff2') format('woff2');font-weight:100 900}
+:root{
+  --canvas:#d6d2cb; --shell:#eeece8; --card:#fff; --tile:#f5f4f1; --ink:#121212; --muted:#6e6b65; --faint:#a29e96; --hair:#e6e3dd;
+  --accent:#f26a1b; --accent-deep:#b44108; --accent-soft:#fff1e6; --accent-line:#f9b98f;
+  --dark:#1a1917; --dark2:#24231f; --dark-line:#33322d; --dark-muted:#a19d93; --dark-soft:#d8d4ca;
+  --ok:#1e9e5a; --ok-bg:#ddefe4; --ok-text:#177844; --danger:#d64545; --danger-bg:#f7deda; --danger-text:#b23a2a;
+  --disc-orange:#ffe4d0; --disc-neutral:#e3e0d8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;background:var(--shell);color:var(--ink);font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-0.012em}
+.pad{padding:0 64px}
+/* nav */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:26px 64px}
+.brand{display:flex;align-items:center;gap:12px;font-size:23px;letter-spacing:-0.03em}
+.brand b{font-weight:700}.brand span{font-weight:400}
+.mk{position:relative;width:34px;height:34px;font-weight:800;font-size:38px;line-height:30px}
+.mk i{position:absolute;right:-4px;top:-2px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.navpill{display:flex;background:#fff;border-radius:999px;padding:6px;gap:2px}
+.navpill span{padding:12px 24px;border-radius:999px;font-size:16px}
+.navpill span.on{background:var(--ink);color:#fff}
+.navr{display:flex;gap:10px;align-items:center}
+.circ{height:56px;border-radius:999px;background:#fff;display:flex;align-items:center;padding:0 22px;font-size:15px;gap:8px}
+.btn{height:56px;border-radius:999px;padding:0 28px;display:inline-flex;align-items:center;gap:10px;font-weight:500;font-size:17px}
+.btn.dk{background:var(--ink);color:#fff}.btn.wh{background:#fff}.btn.ac{background:var(--accent);color:#fff}.btn.tile{background:var(--tile)}
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 700px;gap:40px;padding:48px 64px 20px;align-items:start}
+.date{font-size:16px;color:var(--muted);margin-bottom:22px;display:flex;gap:10px;align-items:center}
+.live-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(242,106,27,.2);display:inline-block}
+h1{font-size:88px;line-height:.98;font-weight:500;letter-spacing:-0.055em}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{font-size:21px;line-height:1.5;color:var(--muted);margin:30px 0 36px;max-width:540px;letter-spacing:-0.01em}
+.ctas{display:flex;gap:12px}
+.tiny{margin-top:26px;font-size:14px;color:var(--faint);display:flex;gap:22px}
+.tiny span:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:1px}
+/* hero visual */
+.vis{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.hc{grid-column:1/3;border-radius:36px;padding:28px;color:var(--ink);position:relative;overflow:hidden;background:linear-gradient(155deg,#ff7c33 0%,#f26a1b 45%,#df4e08 100%);height:300px}
+.hc:before{content:"";position:absolute;right:-60px;top:-60px;width:230px;height:230px;border-radius:50%;background:rgba(255,255,255,.07)}
+.pill{display:inline-flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:11px 18px;font-size:15px;font-weight:500}
+.hc .arrow{position:absolute;right:26px;top:26px;width:52px;height:52px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:20px}
+.hc .big{position:absolute;left:26px;top:96px;font-size:150px;line-height:1;font-weight:500;letter-spacing:-0.06em}
+.hc .big small{font-size:46px;letter-spacing:-0.03em;font-weight:400;margin-left:8px;color:rgba(18,18,18,.6)}
+.hc .cap{position:absolute;left:28px;top:246px;font-size:16px}
+.hc .bars{position:absolute;right:56px;top:100px;display:flex;gap:16px;align-items:flex-end;height:120px}
+.hc .bars div{width:22px;border-radius:9px 9px 3px 3px;background:repeating-linear-gradient(135deg,rgba(255,255,255,.55) 0 2.5px,transparent 2.5px 7px),rgba(255,255,255,.14)}
+.hc .bars div.n{height:120px}
+.dark{border-radius:36px;background:var(--dark);color:#fff;padding:26px;grid-column:1/2;height:340px}
+.dk-top{display:flex;justify-content:space-between;align-items:center}
+.dk-ic{display:flex;gap:12px;align-items:center}
+.dk-ic i{width:44px;height:44px;border-radius:50%;background:#fff;color:var(--ink);display:grid;place-items:center;font-style:normal;font-size:16px}
+.dk-ic b{font-size:22px;font-weight:500;display:block;letter-spacing:-0.02em}
+.dk-ic span{font-size:13px;color:var(--dark-muted)}
+.dpill{background:var(--dark2);border-radius:999px;padding:9px 16px;font-size:14px;display:flex;gap:8px;align-items:center}
+.cur{margin-top:20px;background:var(--dark2);border-radius:22px;padding:18px}
+.cur .t{font-size:18px;font-weight:500}.cur .c{font-size:14px;color:var(--dark-muted);margin-top:2px}
+.stp{display:flex;gap:5px;margin:16px 0 8px}.stp i{flex:1;height:6px;border-radius:6px;background:var(--dark-line)}.stp i.d{background:var(--accent)}.stp i.h{background:linear-gradient(90deg,var(--accent) 50%,var(--dark-line) 50%)}
+.stn{display:flex;justify-content:space-between;font-size:11px;color:var(--dark-muted)}.stn .a{color:#fff}
+.nx{margin-top:14px;font-size:12px;color:var(--dark-muted);letter-spacing:.06em;text-transform:uppercase}
+.q{display:flex;justify-content:space-between;align-items:center;background:var(--dark2);border-radius:18px;padding:12px 16px;margin-top:8px;font-size:14px}
+.q .l{background:var(--dark-line);border-radius:999px;padding:3px 10px;font-size:12px;margin-right:10px}
+.q em{font-style:normal;color:var(--dark-muted)}
+.side{display:grid;gap:16px;grid-template-rows:1fr 1fr}
+.tl{background:#fff;border-radius:32px;padding:22px}
+.tl .lb{font-size:14px;color:var(--muted);display:flex;justify-content:space-between}
+.tl .n{font-size:66px;font-weight:500;letter-spacing:-0.05em;line-height:1;margin-top:16px}.tl .n small{font-size:20px;color:var(--muted);letter-spacing:0;font-weight:400}
+.ticks{display:flex;gap:3px;margin-top:14px;height:24px;align-items:flex-end}.ticks i{width:9px;height:22px;border-radius:3px;background:var(--accent)}.ticks i.o{background:var(--accent-soft)}
+.act{background:#fff;border-radius:32px;padding:20px 22px}
+.act .h{display:flex;justify-content:space-between;font-size:16px;font-weight:500}
+.lv{background:var(--tile);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:400;display:flex;gap:6px;align-items:center}
+.ar{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--hair);font-size:14px}.ar:last-child{border:0}
+.disc{width:34px;height:34px;border-radius:50%;background:var(--ok-bg);color:var(--ok-text);display:grid;place-items:center;font-size:15px;flex:none}
+.ar .s{color:var(--muted);font-size:13px}.ar .tm{margin-left:auto;color:var(--muted);font-size:13px}
+/* guarantees */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:44px 64px 0}
+.gt{background:#fff;border-radius:28px;padding:22px 24px;display:flex;gap:14px;align-items:center}
+.gt i{width:44px;height:44px;border-radius:50%;background:var(--disc-orange);display:grid;place-items:center;font-style:normal;color:var(--accent-deep);font-size:18px;flex:none}
+.gt b{font-weight:500;font-size:17px;display:block;letter-spacing:-0.02em}.gt span{font-size:13px;color:var(--muted)}
+/* generic section */
+.sec{padding:120px 64px 0}
+.eyebrow{font-size:15px;color:var(--muted);margin-bottom:16px}
+h2{font-size:64px;line-height:1.02;font-weight:500;letter-spacing:-0.05em}
+.p{font-size:19px;line-height:1.55;color:var(--muted);margin-top:22px;max-width:480px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.split.r .txt{order:2}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.chip{background:#fff;border-radius:999px;padding:11px 18px;font-size:15px}.chip b{color:var(--accent);font-weight:500}
+/* mock cards */
+.panel{background:#fff;border-radius:36px;padding:28px}
+.ph{display:flex;justify-content:space-between;align-items:end}
+.ph h4{font-size:26px;font-weight:500;letter-spacing:-0.03em}.ph span{font-size:14px;color:var(--muted)}
+.row{display:flex;align-items:center;gap:14px;background:var(--tile);border-radius:24px;padding:14px 18px;margin-top:10px}
+.row.sel{background:var(--accent-soft);outline:1.5px solid var(--accent-line);outline-offset:-1.5px}
+.ck{width:24px;height:24px;border-radius:8px;background:#fff;border:1.5px solid #d7d3cb;flex:none;display:grid;place-items:center;color:#fff;font-size:14px}
+.row.sel .ck{background:var(--accent);border-color:var(--accent)}
+.lg{width:44px;height:44px;border-radius:16px;display:grid;place-items:center;font-weight:600;font-size:16px;flex:none}
+.rt{font-size:16px;font-weight:500;letter-spacing:-0.02em}.rs{font-size:13px;color:var(--muted);margin-top:2px}
+.tg{margin-left:auto;display:flex;gap:6px;align-items:center}
+.tg u{text-decoration:none;font-size:12px;border:1px solid var(--hair);background:#fff;border-radius:999px;padding:5px 11px;color:var(--muted)}
+.tg b{background:var(--ink);color:#fff;border-radius:999px;font-size:12px;padding:6px 11px;font-weight:500}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-size:14px;color:var(--muted)}
+.bar .b{background:var(--ink);color:#fff;border-radius:999px;padding:13px 22px;font-size:15px;font-weight:500}
+.seg{display:flex;gap:8px;margin:20px 0 4px}
+.seg u{text-decoration:none;background:var(--tile);border-radius:999px;padding:9px 16px;font-size:14px;color:var(--muted)}.seg u.on{background:var(--ink);color:#fff}
+.mail{background:var(--tile);border-radius:24px;padding:22px;margin-top:16px;font-size:15px;line-height:1.6}
+.mail .h{font-weight:500;margin-bottom:10px;font-size:16px}
+.lk{background:var(--accent-soft);color:var(--accent-deep);border-radius:999px;padding:2px 12px;font-size:13px;font-weight:500}
+.tabs{display:flex;gap:8px}.tabs .t{display:flex;align-items:center;gap:8px;background:var(--tile);border-radius:999px;padding:10px 18px;font-size:15px}.tabs .t.on{background:var(--ink);color:#fff}
+.file{display:flex;align-items:center;gap:12px;background:var(--tile);border-radius:22px;padding:14px 18px;margin-top:16px;font-size:15px}
+.file .s{font-size:13px;color:var(--muted)}
+/* dark band */
+.band-d{margin:120px 64px 0;background:var(--dark);border-radius:52px;padding:80px 72px;color:#fff;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.band-d h2{color:#fff}.band-d .p{color:var(--dark-muted)}
+.band-d .eyebrow{color:var(--dark-muted)}
+.big-live{background:var(--dark2);border-radius:36px;padding:30px}
+.bl-h{display:flex;justify-content:space-between;align-items:center}
+.bl-h .pill{background:var(--dark);color:#fff}
+.stepper{display:flex;justify-content:space-between;margin:26px 0 8px;position:relative}
+.stepper .s{display:flex;flex-direction:column;align-items:center;gap:10px;font-size:13px;color:var(--dark-muted);width:20%}
+.stepper .s i{width:30px;height:30px;border-radius:50%;border:2px solid var(--dark-line);display:grid;place-items:center;font-style:normal;font-size:13px}
+.stepper .s.d i{background:var(--accent);border-color:var(--accent);color:#fff}
+.stepper .s.a i{border-color:var(--accent);color:var(--accent)}
+.stepper .s.a,.stepper .s.d{color:#fff}
+.subn{background:var(--dark);border-radius:20px;padding:16px 20px;font-size:15px;display:flex;gap:12px;align-items:center;margin-top:18px}
+.spin{width:16px;height:16px;border-radius:50%;border:2.5px solid var(--dark-line);border-top-color:var(--accent);flex:none}
+.cd{display:flex;justify-content:space-between;align-items:end;margin-top:22px}
+.cd .k{font-size:14px;color:var(--dark-muted)}.cd .v{font-size:54px;font-weight:500;letter-spacing:-0.05em;line-height:1}
+.cdb{height:8px;border-radius:8px;background:var(--dark-line);margin-top:14px;overflow:hidden}.cdb i{display:block;height:100%;width:62%;background:var(--accent);border-radius:8px}
+.mini3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
+.mini3 div{background:var(--dark);border-radius:20px;padding:16px}
+.mini3 b{font-size:28px;font-weight:500;letter-spacing:-0.04em;display:block}.mini3 span{font-size:12px;color:var(--dark-muted)}
+/* pricing */
+.ph2{display:flex;justify-content:space-between;align-items:end;margin-bottom:44px}
+.reg{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--muted)}
+.seg2{display:flex;background:#fff;border-radius:999px;padding:6px}.seg2 span{padding:10px 20px;border-radius:999px;font-size:15px;color:var(--ink)}.seg2 span.on{background:var(--ink);color:#fff}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.plan{background:#fff;border-radius:40px;padding:38px;position:relative}
+.plan.hl{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px}
+.plan h5{font-size:26px;font-weight:500;letter-spacing:-0.03em}
+.plan .pr{font-size:76px;font-weight:500;letter-spacing:-0.06em;margin:18px 0 6px;line-height:1}.plan .pr small{font-size:18px;color:var(--muted);font-weight:400;letter-spacing:0;margin-left:6px}
+.plan .b1{font-size:17px;font-weight:500;margin-top:16px}.plan .b2{font-size:16px;color:var(--muted);margin-top:4px}
+.plan hr{border:0;border-top:1px solid var(--hair);margin:26px 0}
+.plan li{list-style:none;font-size:16px;padding:8px 0;display:flex;gap:12px;align-items:center}.plan li:before{content:"✓";color:var(--accent-deep);font-size:16px}
+.plan .cta{margin-top:26px;height:64px;border-radius:999px;background:var(--tile);display:grid;place-items:center;font-weight:500;font-size:17px}
+.plan.hl .cta{background:var(--ink);color:#fff}
+.rec{position:absolute;top:32px;right:32px;background:var(--accent);color:#fff;font-size:13px;font-weight:500;border-radius:999px;padding:7px 14px}
+.fine{text-align:center;color:var(--faint);font-size:14px;margin-top:20px}
+/* faq */
+.faq{display:grid;grid-template-columns:1fr 1.3fr;gap:64px}
+.qa{background:#fff;border-radius:28px;padding:24px 28px;margin-bottom:12px}
+.qa .q1{display:flex;justify-content:space-between;font-size:20px;font-weight:500;letter-spacing:-0.025em;background:none;padding:0;margin:0}
+.qa .q1 i{font-style:normal;width:36px;height:36px;border-radius:50%;background:var(--tile);display:grid;place-items:center;font-size:20px}
+.qa p{color:var(--muted);font-size:16px;line-height:1.55;margin-top:12px;max-width:640px}
+/* cta */
+.cta-b{margin:120px 64px 0;border-radius:52px;padding:84px 72px;color:var(--ink);position:relative;overflow:hidden;background:linear-gradient(155deg,#ff7c33 0%,#f26a1b 45%,#df4e08 100%);display:flex;justify-content:space-between;align-items:center}
+.cta-b:before{content:"";position:absolute;right:-90px;top:-110px;width:420px;height:420px;border-radius:50%;background:rgba(255,255,255,.07)}
+.cta-b h2{font-size:72px;max-width:760px;position:relative}
+.cta-b .btn{background:var(--ink);color:#fff;height:68px;font-size:19px;padding:0 36px;position:relative}
+footer{display:flex;justify-content:space-between;padding:56px 64px 64px;font-size:15px;color:var(--muted)}
+footer div:last-child{display:flex;gap:28px}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="brand"><div class="mk">t<i></i></div><span>Talent</span><b>Labs</b></div>
+  <div class="navpill"><span class="on">Produto</span><span>Como funciona</span><span>Idiomas</span><span>Planos</span><span>FAQ</span></div>
+  <div class="navr"><div class="circ">🌐 PT</div><div class="btn wh">Entrar</div><div class="btn dk">Pedir acesso</div></div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div style="padding-top:30px">
+    <div class="date"><span class="live-dot"></span>Beta fechada · acesso por convite</div>
+    <h1>Candidaturas<br>enviadas por<br><em>você</em>, sem<br>abrir 40 abas.</h1>
+    <p class="lead">Encontramos vagas de desenvolvimento, filtramos pelo que você procura e enviamos a candidatura do seu próprio Gmail, uma empresa por vez, no idioma da vaga.</p>
+    <div class="ctas"><div class="btn ac">Pedir acesso →</div><div class="btn wh">Ver como funciona</div></div>
+    <div class="tiny"><span>Sai do seu Gmail</span><span>1 e-mail por empresa</span><span>Você no controle</span></div>
+  </div>
+
+  <div class="vis">
+    <div class="hc">
+      <div class="pill">✈ Envios de hoje</div><div class="arrow">↗</div>
+      <div class="big">18<small>/ 50</small></div>
+      <div class="bars"><div style="height:52px"></div><div style="height:74px"></div><div style="height:60px"></div><div style="height:92px"></div><div style="height:80px"></div><div class="n"></div></div>
+      <div class="cap">candidaturas enviadas hoje · 32 restantes no seu plano</div>
+    </div>
+    <div class="dark">
+      <div class="dk-top"><div class="dk-ic"><i>◉</i><div><b>Envio ao vivo</b><span>Uma candidatura por vez</span></div></div><div class="dpill"><span class="live-dot"></span>Ao vivo</div></div>
+      <div class="cur"><div class="t">Backend Engineer</div><div class="c">Northwind Systems · EN</div>
+        <div class="stp"><i class="d"></i><i class="d"></i><i class="h"></i><i></i><i></i></div>
+        <div class="stn"><span>Validando</span><span>Adaptando</span><span class="a">Anexando CV</span><span>Enviando</span><span>Enviado</span></div></div>
+      <div class="nx">A seguir · 12 na fila</div>
+      <div class="q"><span><u class="l" style="text-decoration:none">PT</u>Analista de Dados Júnior</span><em>em 26 s</em></div>
+      <div class="q"><span><u class="l" style="text-decoration:none">EN</u>Platform Engineer</span><em>em 1 min</em></div>
+    </div>
+    <div class="side">
+      <div class="tl"><div class="lb"><span>Limite diário</span><span>◔</span></div><div class="n">18<small> / 50</small></div><div class="ticks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i class="o"></i></div></div>
+      <div class="act"><div class="h"><span>Atividade recente</span><span class="lv"><span class="live-dot" style="width:7px;height:7px;box-shadow:none"></span>Ao vivo</span></div>
+        <div class="ar"><div class="disc">✓</div><div><div>Enviado</div><div class="s">Full-stack Developer</div></div><div class="tm">14:02</div></div>
+        <div class="ar"><div class="disc">✓</div><div><div>Enviado</div><div class="s">Frontend Developer</div></div><div class="tm">13:58</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GUARANTEES -->
+<div class="strip">
+  <div class="gt"><i>✉</i><div><b>Sai do seu Gmail</b><span>Você aparece como você</span></div></div>
+  <div class="gt"><i>1</i><div><b>Uma por empresa</b><span>Nunca repete o envio</span></div></div>
+  <div class="gt"><i>⏱</i><div><b>Envio espaçado</b><span>Um por vez, sem rajada</span></div></div>
+  <div class="gt"><i>✓</i><div><b>Você no controle</b><span>Pausa e revisa quando quiser</span></div></div>
+</div>
+
+<!-- FEATURE 1 -->
+<div class="sec">
+  <div class="split">
+    <div class="txt">
+      <div class="eyebrow">Preferências</div>
+      <h2>Só as vagas<br>que combinam.</h2>
+      <p class="p">Defina cargo, senioridade, stack e onde quer trabalhar. Dentro de cada campo vale qualquer valor; entre os campos, todos precisam bater. Você vê na hora quantas vagas encaixam.</p>
+      <div class="chips"><div class="chip">Backend <b>×</b></div><div class="chip">Sênior <b>×</b></div><div class="chip">Laravel <b>×</b></div><div class="chip">Remoto ou Lisboa <b>×</b></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><h4>Novas vagas</h4><span>11 combinam com você</span></div>
+      <div class="row sel"><div class="ck">✓</div><div class="lg" style="background:#ddefe4">NW</div><div><div class="rt">Backend Engineer</div><div class="rs">Northwind · Remoto · há 2 h</div></div><div class="tg"><u>laravel</u><u>php</u><b>EN</b></div></div>
+      <div class="row"><div class="ck"></div><div class="lg" style="background:#ffe4d0">LD</div><div><div class="rt">Platform Engineer</div><div class="rs">Lumen Data · Portugal · há 5 h</div></div><div class="tg"><u>python</u><u>aws</u><b>EN</b></div></div>
+      <div class="row"><div class="ck"></div><div class="lg" style="background:#e3e0d8">VC</div><div><div class="rt">Ingeniero Backend</div><div class="rs">Vía Cloud · España · há 1 d</div></div><div class="tg"><u>node</u><u>sql</u><b>ES</b></div></div>
+      <div class="bar"><span><b style="color:var(--ink);font-weight:500">1 selecionada</b> · 49 envios restantes hoje</span><span class="b">Enviar 1 candidatura</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURE 2 -->
+<div class="sec" style="padding-top:110px">
+  <div class="split r">
+    <div class="txt">
+      <div class="eyebrow">Idiomas</div>
+      <h2>Um perfil para<br>cada idioma.</h2>
+      <p class="p">Currículo, assunto e carta de apresentação em inglês, português e espanhol. A vaga em espanhol recebe o seu perfil em espanhol, e você vê o e-mail pronto antes de qualquer envio.</p>
+    </div>
+    <div class="panel">
+      <div class="tabs"><div class="t on">✓ English</div><div class="t">✓ Português</div><div class="t">＋ Español</div></div>
+      <div class="file"><span>📄</span><div><div>ana-silva-cv.pdf</div><div class="s">0,3 MB · enviado em 18 set</div></div></div>
+      <div class="mail"><div class="h">Application: Backend Engineer</div>Hello Northwind team,<br>I'm writing to apply for the Backend Engineer position <span class="lk">job link</span>.<br><br>I'm a backend-leaning engineer with six years of experience building reliable web products. My CV is attached.<br><br>Best regards,<br>Ana Silva</div>
+    </div>
+  </div>
+</div>
+
+<!-- DARK BAND -->
+<div class="band-d">
+  <div>
+    <div class="eyebrow">Envio ao vivo</div>
+    <h2>Você vê cada<br>passo acontecer.</h2>
+    <p class="p">Cada candidatura mostra a etapa real em que está. Se algo falha, você vê onde e por quê, sem caixa-preta. Sem F5, tudo atualiza sozinho.</p>
+    <div class="ctas" style="margin-top:32px"><div class="btn ac">Pedir acesso →</div></div>
+  </div>
+  <div class="big-live">
+    <div class="bl-h"><div class="pill">◉ Envio ao vivo</div><div class="dpill" style="background:var(--dark)"><span class="live-dot"></span>Ao vivo</div></div>
+    <div style="margin-top:22px;font-size:30px;font-weight:500;letter-spacing:-0.035em">Backend Engineer</div>
+    <div style="color:var(--dark-muted);font-size:16px;margin-top:2px">Northwind Systems · Remoto · EN</div>
+    <div class="stepper">
+      <div class="s d"><i>✓</i>Validando</div><div class="s d"><i>✓</i>Adaptando</div><div class="s a"><i>3</i>Anexando CV</div><div class="s"><i>4</i>Enviando</div><div class="s"><i>5</i>Enviado</div>
+    </div>
+    <div class="subn"><div class="spin"></div>Anexando o currículo em inglês ao e-mail…</div>
+    <div class="cd"><div><div class="k">Próximo envio em</div><div class="v">01:42</div></div><div class="k">12 na fila · término previsto 16:12</div></div>
+    <div class="cdb"><i></i></div>
+    <div class="mini3"><div><b>18</b><span>enviadas hoje</span></div><div><b>12</b><span>na fila</span></div><div><b>0</b><span>com falha</span></div></div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="sec">
+  <div class="ph2">
+    <div><div class="eyebrow">Planos</div><h2>Escolha quanto controle<br>você quer ter.</h2></div>
+    <div class="reg"><span>Preços para</span><div class="seg2"><span class="on">Brasil</span><span>Europa</span><span>Global</span></div></div>
+  </div>
+  <div class="plans">
+    <div class="plan"><h5>Free</h5><div class="pr">Grátis</div>
+      <div class="b1">25 candidaturas por dia</div><div class="b2">Envia dentro das suas preferências</div><hr>
+      <ul><li>Sai do seu próprio Gmail</li><li>Vagas filtradas pelas suas preferências</li><li>Perfis em EN, PT e ES</li></ul><div class="cta">Pedir acesso</div></div>
+    <div class="plan hl"><div class="rec">Recomendado</div><h5>Starter</h5><div class="pr">R$ 50<small>/ mês</small></div>
+      <div class="b1">50 candidaturas por dia</div><div class="b2">Você escolhe para quais vagas aplicar</div><hr>
+      <ul><li>Sai do seu próprio Gmail</li><li>Escolha exatamente o que enviar</li><li>Perfis em EN, PT e ES</li></ul><div class="cta">Pedir acesso</div></div>
+    <div class="plan"><h5>Pro</h5><div class="pr">R$ 100<small>/ mês</small></div>
+      <div class="b1">150 candidaturas por dia</div><div class="b2">Você revisa e edita cada e-mail antes de sair</div><hr>
+      <ul><li>Sai do seu próprio Gmail</li><li>Revise e edite cada e-mail</li><li>Perfis em EN, PT e ES</li></ul><div class="cta">Pedir acesso</div></div>
+  </div>
+  <div class="fine">Valores de exemplo para ilustrar o layout. Preços finais por região (BRL, EUR, USD) definidos no lançamento.</div>
+</div>
+
+<!-- FAQ -->
+<div class="sec">
+  <div class="faq">
+    <div><div class="eyebrow">FAQ</div><h2>Perguntas<br>frequentes.</h2></div>
+    <div>
+      <div class="qa"><div class="q1" style="display:flex"><span>Vocês leem a minha caixa de entrada?</span><i>−</i></div><p>Não. Pedimos ao Google apenas a permissão de enviar e-mails. Nunca lemos, listamos ou apagamos mensagens.</p></div>
+      <div class="qa"><div class="q1" style="display:flex"><span>Posso enviar duas vezes para a mesma empresa?</span><i>＋</i></div></div>
+      <div class="qa"><div class="q1" style="display:flex"><span>E se eu quiser revisar antes de enviar?</span><i>＋</i></div></div>
+      <div class="qa"><div class="q1" style="display:flex"><span>Como uma empresa pede para não receber candidaturas?</span><i>＋</i></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-b"><h2>Comece com acesso por convite.</h2><div class="btn">Pedir acesso →</div></div>
+
+<footer><div>© Talent Labs · contato@seudominio.com</div><div><span>Privacidade</span><span>Termos</span><span>Opt-out para empresas</span></div></footer>
+</body>
+</html>
