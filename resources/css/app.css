@@ -198,6 +198,15 @@
     --animate-reveal: reveal 350ms ease-out both;
     --reveal-stagger: 60ms;
     --spacing-anchor-offset: 96px;
+    --spacing-lazy-feature: 640px;
+    --spacing-lazy-feature-sm: 1000px;
+    --spacing-lazy-band: 700px;
+    --spacing-lazy-band-sm: 1100px;
+    --spacing-lazy-plans: 720px;
+    --spacing-lazy-plans-sm: 1500px;
+    --spacing-lazy-faq: 700px;
+    --spacing-lazy-cta: 400px;
+    --lazy-margin: 600px;
 
     @keyframes fade-in {
         from {
@@ -269,6 +278,16 @@
     background-color: rgba(255, 255, 255, 0.07);
 }
 
+@utility accordion-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 250ms ease-out;
+
+    &[data-open='true'] {
+        grid-template-rows: 1fr;
+    }
+}
+
 @utility border-row {
     border-width: 1.5px;
 }
@@ -295,4 +314,9 @@
         animation: none !important;
         transition: none !important;
     }
+}
+
+/* Landing hero demo: the real dashboard patterns shown at a compact scale. */
+@utility demo-compact {
+    zoom: 0.7;
 }

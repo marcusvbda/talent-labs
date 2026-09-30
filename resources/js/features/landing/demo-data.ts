@@ -96,3 +96,42 @@ export const DEMO_INITIAL_ACTIVITY: DemoActivity[] = [
     { id: 'seed-2', job: DEMO_JOBS[4], at: DEMO_EPOCH - 200_000 },
     { id: 'seed-3', job: DEMO_JOBS[3], at: DEMO_EPOCH - 330_000 },
 ];
+
+/** Stack tags for the static preferences panel, keyed by `DEMO_JOBS` id. */
+export const DEMO_MATCH_STACK: Record<string, string[]> = {
+    'job-1': ['laravel', 'php'],
+    'job-2': ['python', 'aws'],
+    'job-3': ['node', 'sql'],
+};
+
+/** Token marking where the job link goes in a sample email. */
+export const JOB_LINK_TOKEN = ':job_link';
+
+/** Sample emails, fixed per sample language and independent of the UI language. */
+export const SAMPLE_EMAILS: Record<
+    JobLanguage,
+    { subject: string; lines: string[] }
+> = {
+    en: {
+        subject: 'Application: Backend Engineer',
+        lines: [
+            'Hello Northwind team,',
+            `I'm writing to apply for the Backend Engineer position ${JOB_LINK_TOKEN}.`,
+            "I'm a backend-leaning engineer with six years of experience building reliable web products. My CV is attached.",
+            'Best regards,',
+            'Ana Silva',
+        ],
+    },
+    pt: {
+        subject: 'Candidatura: Engenheiro Backend',
+        lines: [
+            'Olá, equipe Northwind,',
+            `Escrevo para me candidatar à vaga de Engenheiro Backend ${JOB_LINK_TOKEN}.`,
+            'Sou engenheira com foco em backend e seis anos de experiência construindo produtos web confiáveis. Meu currículo está em anexo.',
+            'Atenciosamente,',
+            'Ana Silva',
+        ],
+    },
+};
+
+export const SAMPLE_CV_FILE = 'ana-silva-cv.pdf';

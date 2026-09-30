@@ -1,5 +1,12 @@
 import type { MouseEvent } from 'react';
 
+export const MOUNT_ALL_EVENT = 'landing:mount-all';
+
+/** Asks every lazy section to mount now, so anchors resolve against real heights. */
+export const requestMountAll = (): void => {
+    window.dispatchEvent(new Event(MOUNT_ALL_EVENT));
+};
+
 /** Smooth (or instant, under reduced motion) in-page scroll; falls through when the target is missing. */
 export const scrollToHash = (hash: string): boolean => {
     const target = document.getElementById(hash.slice(1));
@@ -7,6 +14,8 @@ export const scrollToHash = (hash: string): boolean => {
     if (!target) {
         return false;
     }
+
+    requestMountAll();
 
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 

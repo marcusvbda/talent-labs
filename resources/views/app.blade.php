@@ -12,8 +12,24 @@
         <x-inertia::head>
             <title>{{ config('talent.brand.name') }}</title>
         </x-inertia::head>
+        @if ($page['component'] === 'landing')
+            @php
+                $landingBrand = (string) config('talent.brand.name');
+                $landingStrings = \App\Support\I18n\Translations::for(app()->getLocale());
+                $landingEssentials = [
+                    'brand' => $landingBrand,
+                    'description' => str_replace(':brand', $landingBrand, $landingStrings['landing.meta.description'] ?? ''),
+                    'gmailNote' => str_replace(':brand', $landingBrand, $landingStrings['landing.gmail.note'] ?? ''),
+                ];
+            @endphp
+            {{-- Keyed like Inertia-managed head tags so the client <Head> replaces it: one description after hydration. --}}
+            <meta name="description" data-inertia="description" content="{{ $landingEssentials['description'] }}">
+        @endif
     </head>
     <body class="font-sans antialiased">
+        @if ($page['component'] === 'landing')
+            @include('partials.landing-essentials', $landingEssentials)
+        @endif
         <x-inertia::app />
     </body>
 </html>

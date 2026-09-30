@@ -41,7 +41,7 @@ export function LandingNav({ betaClosed }: { betaClosed: boolean }) {
             <div className="mx-auto flex w-full max-w-container items-center justify-between gap-3 px-4 py-3 md:px-8 desk:px-shell-x">
                 <Logo href={home().url} />
                 <div
-                    className="hidden md:block"
+                    className="hidden lg:block"
                     onClick={(event) => {
                         const hash = anchorHash(event);
 
@@ -54,13 +54,15 @@ export function LandingNav({ betaClosed }: { betaClosed: boolean }) {
                 </div>
                 <div className="flex items-center gap-2">
                     <LanguageSwitcher scope="public" />
-                    <Button variant="secondary-tile" href={account.href}>
-                        {account.label}
-                    </Button>
-                    <div className="hidden md:block">
+                    <div className="hidden lg:block">
+                        <Button variant="secondary-tile" href={account.href}>
+                            {account.label}
+                        </Button>
+                    </div>
+                    <div className="hidden sm:block">
                         <BetaCta betaClosed={betaClosed} />
                     </div>
-                    <div className="md:hidden">
+                    <div className="lg:hidden">
                         <IconButton
                             icon={Menu}
                             label={t('topbar.menu')}
@@ -101,6 +103,11 @@ export function LandingNav({ betaClosed }: { betaClosed: boolean }) {
                                 </a>
                             </li>
                         ))}
+                        <li className="lg:hidden">
+                            <a href={account.href} className={ITEM}>
+                                {account.label}
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </Sheet>

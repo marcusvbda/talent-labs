@@ -82,7 +82,9 @@ already (`UserSeeder`); the first admin is created with a documented
 
 ### B.4 Public pages for Google verification
 
-- **Homepage requirement:** Google needs a public homepage that clearly
+- **Homepage requirement:** the homepage is delivered by the
+  `public-landing` feature; this section then only owns Privacy, Terms and
+  the opt-out page. Google needs a public homepage that clearly
   describes the app. The minimal "closed beta" landing is not enough.
   Extend `landing` (still small): one paragraph "What <brand> does" (collects
   developer jobs, matches them to your preferences, sends applications from
@@ -152,7 +154,7 @@ already (`UserSeeder`); the first admin is created with a documented
 - **AC02** Outbound port 25 works from the server (a `contacts:backfill`
   sample yields `smtp_verified` contacts; `mx_only` share is not ~100%).
 - **AC03** Realtime works over `wss` on the production domain.
-- **AC04** Landing (with the "What it does" paragraph), Privacy and Terms are
+- **AC04** Landing content is owned by `public-landing`. Privacy and Terms are
   public in EN/PT and linked from the landing and the OAuth consent
   screen.
 - **AC05** Opt-out: confirming the email link suppresses the domain; its

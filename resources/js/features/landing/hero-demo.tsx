@@ -202,7 +202,7 @@ const RecentActivity = () => {
             }
         >
             <div className="flex flex-col">
-                {activity.map((item) => (
+                {activity.slice(0, 2).map((item) => (
                     <div
                         key={item.id}
                         className="border-b border-hairline py-4 first:pt-0 last:border-b-0 last:pb-0"
@@ -234,12 +234,18 @@ export function HeroDemo() {
                 ref={ref}
                 aria-hidden="true"
                 inert
-                className="flex flex-col gap-gap"
+                className="grid grid-cols-1 gap-gap md:grid-cols-5 xl:demo-compact"
             >
-                <HeroStats />
-                <LiveSending />
-                <LimitTile />
-                <RecentActivity />
+                <div className="md:col-span-5">
+                    <HeroStats />
+                </div>
+                <div className="md:col-span-3">
+                    <LiveSending />
+                </div>
+                <div className="flex flex-col gap-gap md:col-span-2">
+                    <LimitTile />
+                    <RecentActivity />
+                </div>
             </div>
             <p className="mt-4 text-label-sm text-muted">
                 {t('landing.demo.caption')}

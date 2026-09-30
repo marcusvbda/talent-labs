@@ -1,15 +1,45 @@
 import { Head, usePage } from '@inertiajs/react';
+import { lazy, useEffect } from 'react';
 import { DemoLoopProvider } from '@/features/landing/demo-loop-context';
 import { GuaranteesStrip } from '@/features/landing/guarantees-strip';
 import { Hero } from '@/features/landing/hero';
 import { HeroDemo } from '@/features/landing/hero-demo';
 import { LandingFooter } from '@/features/landing/landing-footer';
 import { LandingNav } from '@/features/landing/landing-nav';
+import { LazySection } from '@/features/landing/lazy-section';
+import { requestMountAll } from '@/features/landing/scroll-to-hash';
 import type { LandingProps } from '@/features/landing/types';
 import { useT } from '@/i18n/i18n-provider';
 import { PublicLayout } from '@/layouts/public-layout';
 import { home } from '@/routes';
 import type { Locale, SharedProps } from '@/types/shared';
+
+const CtaBanner = lazy(() =>
+    import('@/features/landing/cta-banner').then((m) => ({
+        default: m.CtaBanner,
+    })),
+);
+const Faq = lazy(() =>
+    import('@/features/landing/faq').then((m) => ({ default: m.Faq })),
+);
+const FeatureLanguages = lazy(() =>
+    import('@/features/landing/feature-languages').then((m) => ({
+        default: m.FeatureLanguages,
+    })),
+);
+const FeatureMatching = lazy(() =>
+    import('@/features/landing/feature-matching').then((m) => ({
+        default: m.FeatureMatching,
+    })),
+);
+const LiveBand = lazy(() =>
+    import('@/features/landing/live-band').then((m) => ({
+        default: m.LiveBand,
+    })),
+);
+const Pricing = lazy(() =>
+    import('@/features/landing/pricing').then((m) => ({ default: m.Pricing })),
+);
 
 const OG_LOCALES: Record<Locale, string> = {
     en: 'en_US',
@@ -24,6 +54,9 @@ const canonicalUrl = (): string =>
         : new URL(home().url, window.location.origin).toString();
 
 export default function Landing({
+    plans,
+    defaultRegion,
+    pricesAreIllustrative,
     betaClosed,
     contactEmail,
     legal,
@@ -34,6 +67,13 @@ export default function Landing({
     const description = t('landing.meta.description', {
         brand: app.brand.name,
     });
+
+    useEffect(() => {
+        // Landing on a deep link: mount every section so the anchor resolves.
+        if (window.location.hash) {
+            requestMountAll();
+        }
+    }, []);
 
     return (
         <PublicLayout
@@ -51,7 +91,42 @@ export default function Landing({
             <DemoLoopProvider>
                 <Hero betaClosed={betaClosed} demo={<HeroDemo />} />
                 <GuaranteesStrip />
+                <LazySection
+                    id="product"
+                    className="min-h-lazy-feature-sm xl:min-h-lazy-feature"
+                >
+                    <FeatureMatching />
+                </LazySection>
+                <LazySection
+                    id="languages"
+                    className="min-h-lazy-feature-sm xl:min-h-lazy-feature"
+                >
+                    <FeatureLanguages />
+                </LazySection>
+                <LazySection
+                    id="how"
+                    className="min-h-lazy-band-sm xl:min-h-lazy-band"
+                >
+                    <LiveBand betaClosed={betaClosed} />
+                </LazySection>
             </DemoLoopProvider>
+            <LazySection
+                id="plans"
+                className="min-h-lazy-plans-sm md:min-h-lazy-plans"
+            >
+                <Pricing
+                    plans={plans}
+                    defaultRegion={defaultRegion}
+                    pricesAreIllustrative={pricesAreIllustrative}
+                    betaClosed={betaClosed}
+                />
+            </LazySection>
+            <LazySection id="faq" className="min-h-lazy-faq">
+                <Faq legal={legal} />
+            </LazySection>
+            <LazySection className="min-h-lazy-cta">
+                <CtaBanner betaClosed={betaClosed} />
+            </LazySection>
         </PublicLayout>
     );
 }

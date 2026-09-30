@@ -43,8 +43,9 @@ export function Hero({
 
     return (
         <section
+            aria-labelledby="hero-title"
             className={cn(
-                'grid items-center gap-gap py-12 md:py-16',
+                'grid grid-cols-1 items-start gap-gap py-12 md:py-16',
                 demo && 'xl:grid-cols-2',
             )}
         >
@@ -55,7 +56,10 @@ export function Hero({
                     </Pill>
                 </Reveal>
                 <Reveal index={1}>
-                    <h1 className="text-landing-hero-sm text-ink md:text-landing-hero">
+                    <h1
+                        id="hero-title"
+                        className="text-landing-hero-sm text-ink md:text-landing-hero"
+                    >
                         {t('landing.hero.title.a')}{' '}
                         <em className="text-accent not-italic">
                             {t('landing.hero.title.em')}
@@ -99,7 +103,7 @@ export function Hero({
                     </ul>
                 </Reveal>
             </div>
-            {demo && <div>{demo}</div>}
+            {demo && <div className="min-w-0">{demo}</div>}
         </section>
     );
 }
