@@ -53,7 +53,7 @@ export function LandingNav({ betaClosed }: { betaClosed: boolean }) {
                     <NavPills items={items} />
                 </div>
                 <div className="flex items-center gap-2">
-                    <LanguageSwitcher scope="public" />
+                    <LanguageSwitcher />
                     <div className="hidden lg:block">
                         <Button variant="secondary-tile" href={account.href}>
                             {account.label}

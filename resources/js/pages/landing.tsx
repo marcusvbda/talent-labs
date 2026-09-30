@@ -44,7 +44,6 @@ const Pricing = lazy(() =>
 const OG_LOCALES: Record<Locale, string> = {
     en: "en_US",
     pt: "pt_BR",
-    es: "es_ES",
 };
 
 /** Absolute canonical URL; falls back to the relative path when no origin exists (server). */

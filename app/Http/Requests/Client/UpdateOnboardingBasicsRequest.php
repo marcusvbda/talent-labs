@@ -20,7 +20,7 @@ class UpdateOnboardingBasicsRequest extends FormRequest
     {
         return [
             'country' => ['required', 'string', 'size:2'],
-            'locale' => ['required', Rule::in(config('talent.app_locales'))],
+            'locale' => ['required', Rule::in(config('talent.locales'))],
             'timezone' => ['required', 'string', 'timezone'],
         ];
     }

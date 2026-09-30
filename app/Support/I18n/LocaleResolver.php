@@ -12,11 +12,8 @@ final class LocaleResolver
      */
     public static function resolve(Request $request): string
     {
-        // Signed-in users are limited to the locales the app is translated to.
         /** @var list<string> $supported */
-        $supported = $request->hasSession() && $request->user()
-            ? config('talent.app_locales', ['en'])
-            : config('talent.locales', ['en']);
+        $supported = config('talent.locales', ['en']);
 
         $candidates = [];
 

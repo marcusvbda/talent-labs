@@ -7,29 +7,22 @@ import { useT } from '@/i18n/i18n-provider';
 import type { SharedProps } from '@/types/shared';
 
 /** Locale options as menu entries; the current one carries a check icon. */
-export function useLocaleEntries(
-    prefix = '',
-    scope: 'app' | 'public' = 'app',
-): MenuEntry[] {
+export function useLocaleEntries(prefix = ''): MenuEntry[] {
     const { t } = useT();
-    const { locale, locales, appLocales } = usePage<SharedProps>().props;
+    const { locale, locales } = usePage<SharedProps>().props;
     const setLocale = useSetLocale();
 
-    return (scope === 'app' ? appLocales : locales).map((key) => ({
+    return locales.map((key) => ({
         label: `${prefix}${t(`locale.${key}`)}`,
         icon: key === locale ? Check : undefined,
         onSelect: () => setLocale.mutate(key),
     }));
 }
 
-export function LanguageSwitcher({
-    scope = 'app',
-}: {
-    scope?: 'app' | 'public';
-}) {
+export function LanguageSwitcher() {
     const { t } = useT();
     const { locale } = usePage<SharedProps>().props;
-    const entries = useLocaleEntries('', scope);
+    const entries = useLocaleEntries();
 
     return (
         <Menu

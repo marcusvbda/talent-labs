@@ -38,8 +38,7 @@ Decisions that bind this spec:
    Fixtures mode for the frontend-first phases (B.7).
 5. **No Inertia SSR Node process.** Server data arrives through Inertia props.
 6. **i18n from day 1:** English and Portuguese. No hardcoded UI
-   strings, including this spec's components. Spanish is available on public pages only, see
-   `public-landing`.
+   strings, including this spec's components.
 7. **Filament `/app` panel is NOT removed here.** It keeps working until
    `plans-and-sending-modes` removes it. New client routes must not collide
    with `/app/*` (B.9).

@@ -1,7 +1,6 @@
 {
     "locale.en": "English",
     "locale.pt": "Português",
-    "locale.es": "Español",
     "auth.failed": "These credentials do not match our records.",
     "auth.throttle": "Too many login attempts. Please try again in :seconds seconds.",
     "auth.inactive": "Your account is not active. Contact support if you think this is a mistake.",
@@ -875,7 +874,6 @@
     "landing.guarantee.3.desc": "One at a time, no bursts",
     "landing.guarantee.4.title": "You're in control",
     "landing.guarantee.4.desc": "Pause and review whenever you want",
-    "landing.demo.caption": "Illustrative demo with fictional jobs and companies.",
     "landing.matching.eyebrow": "Preferences",
     "landing.matching.title": "Only the jobs that match.",
     "landing.matching.text": "Set role, seniority, stack and where you want to work. Any value inside a field matches; across fields, all must match. You see how many jobs fit right away.",
@@ -910,7 +908,6 @@
     "landing.plans.feature.select": "Choose exactly what to send",
     "landing.plans.feature.review": "Review and edit each email",
     "landing.plans.feature.profiles": "Profiles in EN and PT",
-    "landing.plans.note": "Illustrative prices. Final prices per region are set at launch.",
     "landing.faq.eyebrow": "FAQ",
     "landing.faq.title": "Frequently asked questions",
     "landing.faq.1.q": "Do you read my inbox?",

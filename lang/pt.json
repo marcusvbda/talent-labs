@@ -1,7 +1,6 @@
 {
     "locale.en": "English",
     "locale.pt": "Português",
-    "locale.es": "Español",
     "auth.failed": "Essas credenciais não correspondem aos nossos registros.",
     "auth.throttle": "Muitas tentativas de login. Tente novamente em :seconds segundos.",
     "auth.inactive": "Sua conta não está ativa. Fale com o suporte se achar que isso é um engano.",
@@ -875,7 +874,6 @@
     "landing.guarantee.3.desc": "Um por vez, sem rajada",
     "landing.guarantee.4.title": "Você no controle",
     "landing.guarantee.4.desc": "Pausa e revisa quando quiser",
-    "landing.demo.caption": "Demonstração ilustrativa com vagas e empresas fictícias.",
     "landing.matching.eyebrow": "Preferências",
     "landing.matching.title": "Só as vagas que combinam.",
     "landing.matching.text": "Defina cargo, senioridade, stack e onde quer trabalhar. Dentro de cada campo vale qualquer valor; entre os campos, todos precisam bater. Você vê na hora quantas vagas encaixam.",
@@ -910,7 +908,6 @@
     "landing.plans.feature.select": "Escolha exatamente o que enviar",
     "landing.plans.feature.review": "Revise e edite cada e-mail",
     "landing.plans.feature.profiles": "Perfis em EN e PT",
-    "landing.plans.note": "Valores de exemplo. Os preços finais por região são definidos no lançamento.",
     "landing.faq.eyebrow": "FAQ",
     "landing.faq.title": "Perguntas frequentes",
     "landing.faq.1.q": "Vocês leem a minha caixa de entrada?",
