@@ -88,7 +88,7 @@ class UserForm
                 Select::make('locale')
                     ->options(function (): array {
                         /** @var list<string> $locales */
-                        $locales = config('talent.locales');
+                        $locales = config('talent.app_locales');
 
                         return collect($locales)->mapWithKeys(fn (string $locale): array => [$locale => strtoupper($locale)])->all();
                     })

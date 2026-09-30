@@ -34,6 +34,14 @@ const VARIANTS: Record<ButtonVariant, string> = {
     'on-accent-white': 'bg-card text-ink hover:bg-tile active:bg-hairline',
 };
 
+const INTERACTIVE_CLASS = /^(hover|active):/;
+
+const inertVariant = (variant: ButtonVariant): string =>
+    VARIANTS[variant]
+        .split(' ')
+        .filter((token) => !INTERACTIVE_CLASS.test(token))
+        .join(' ');
+
 const SIZES: Record<ButtonSize, string> = {
     lg: 'h-control-lg px-7',
     md: 'h-control-md px-6',
@@ -70,6 +78,7 @@ type ButtonProps = {
     href?: string;
     external?: boolean;
     disabled?: boolean;
+    inert?: boolean;
     className?: string;
     children: ReactNode;
 } & Omit<
@@ -88,6 +97,7 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
         href,
         external = false,
         disabled = false,
+        inert = false,
         className,
         children,
         type = 'button',
@@ -121,6 +131,24 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
             ) : null}
         </>
     );
+
+    if (inert) {
+        return (
+            <span
+                ref={ref as Ref<HTMLSpanElement>}
+                aria-disabled="true"
+                className={cn(
+                    'inline-flex items-center justify-center gap-2.5 rounded-full text-label font-medium whitespace-nowrap',
+                    SIZES[size],
+                    inertVariant(variant),
+                    fullWidth && 'w-full',
+                    className,
+                )}
+            >
+                {content}
+            </span>
+        );
+    }
 
     if (href !== undefined) {
         const anchorProps = pickAnchorAttrs(props);

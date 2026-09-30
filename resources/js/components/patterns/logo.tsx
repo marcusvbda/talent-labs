@@ -30,17 +30,19 @@ export function Logo({
     tone = 'default',
     size = 'md',
     className,
+    href = '/dashboard',
 }: {
     variant?: LogoVariant;
     tone?: LogoTone;
     size?: LogoSize;
     className?: string;
+    href?: string;
 }) {
     const { app } = usePage<SharedProps>().props;
     const [regular, bold] = app.brand.wordmark;
 
     return (
-        <Link href="/dashboard">
+        <Link href={href}>
             <span
                 role="img"
                 aria-label={app.brand.name}

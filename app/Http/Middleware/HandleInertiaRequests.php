@@ -62,6 +62,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'locale' => $locale,
             'locales' => config('talent.locales'),
+            'appLocales' => config('talent.app_locales'),
             'translations' => Translations::for($locale),
             'flash' => [
                 'success' => session('success'),

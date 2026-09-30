@@ -19,7 +19,7 @@ class UpdateLocaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'locale' => ['required', 'string', Rule::in(config('talent.locales'))],
+            'locale' => ['required', 'string', Rule::in($this->user() ? config('talent.app_locales') : config('talent.locales'))],
         ];
     }
 }

@@ -7,6 +7,8 @@ export type NavPillItem = {
     href?: string;
     active?: boolean;
     disabled?: boolean;
+    /** Renders a plain `<a>` (in-page anchor) instead of an Inertia link. */
+    anchor?: boolean;
 };
 
 const BASE =
@@ -52,6 +54,14 @@ export function NavPills({ items }: { items: NavPillItem[] }) {
                             >
                                 {item.label}
                             </span>
+                        ) : item.anchor ? (
+                            <a
+                                href={item.href}
+                                aria-current={item.active ? 'page' : undefined}
+                                className={cn(BASE, tone)}
+                            >
+                                {item.label}
+                            </a>
                         ) : (
                             <Link
                                 href={item.href as string}

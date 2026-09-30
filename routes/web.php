@@ -26,10 +26,11 @@ use App\Http\Controllers\Client\Internal\ReviewController;
 use App\Http\Controllers\Client\Internal\SendingController;
 use App\Http\Controllers\Client\JobsPageController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'landing')->name('home');
+Route::get('/', LandingController::class)->name('home');
 
 Route::get('/dashboard', DashboardPageController::class)->middleware(['auth', 'client'])->name('dashboard');
 Route::inertia('/onboarding', 'onboarding')->middleware(['auth', 'client'])->name('onboarding');

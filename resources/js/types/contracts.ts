@@ -1,6 +1,6 @@
 export type ISODateTime = string;
 export type ISODate = string; // YYYY-MM-DD in the user's timezone
-export type Locale = 'en' | 'pt';
+export type Locale = 'en' | 'pt' | 'es';
 export type JobLanguage = 'en' | 'pt';
 export type PlanKey = 'free' | 'starter' | 'pro';
 export type SendMode = 'random' | 'select' | 'review';

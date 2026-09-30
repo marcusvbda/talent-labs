@@ -11,7 +11,11 @@ return [
         'use_fixtures' => (bool) env('VITE_USE_FIXTURES', false),
     ],
 
-    'locales' => ['en', 'pt'],
+    // `locales`: everything that can be resolved/cookied (public pages).
+    // `app_locales`: locales the logged-in app is translated to.
+    'locales' => ['en', 'pt', 'es'],
+
+    'app_locales' => ['en', 'pt'],
 
     'seed' => [
         'admin' => [
@@ -164,4 +168,14 @@ return [
     'invitations' => [
         'default_expiry_days' => (int) env('INVITE_EXPIRY_DAYS', 14),
     ],
+
+    'landing' => [
+        // Closed beta: the public landing page shows "request access" instead of open signup.
+        'beta_closed' => (bool) env('LANDING_BETA_CLOSED', true),
+        // Shows a note that the displayed plan prices are illustrative, not final.
+        'prices_illustrative' => (bool) env('LANDING_PRICES_ILLUSTRATIVE', true),
+    ],
+
+    // Public contact address shown on the landing page. Empty/unset = hidden.
+    'contact_email' => env('TALENT_CONTACT_EMAIL'),
 ];

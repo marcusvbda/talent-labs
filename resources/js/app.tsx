@@ -34,7 +34,11 @@ router.on('navigate', (event) => {
 
 void createInertiaApp({
     title: (title) => {
-        return title ? `${title} - ${brand}` : brand;
+        if (!title) {
+            return brand;
+        }
+
+        return title.includes(brand) ? title : `${title} - ${brand}`;
     },
     withApp(app, { page }) {
         brand = page.props.app.brand.name;

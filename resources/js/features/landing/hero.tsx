@@ -1,0 +1,105 @@
+import { Check, Lock } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Button } from '@/components/ui/button';
+import { Pill } from '@/components/ui/pill';
+import { useT } from '@/i18n/i18n-provider';
+import { cn } from '@/lib/utils';
+import { BetaCta } from './beta-cta';
+import { anchorHash, scrollToHash } from './scroll-to-hash';
+import { useReveal } from './use-reveal';
+
+const TRUST = [1, 2, 3] as const;
+
+const Reveal = ({
+    index,
+    className,
+    children,
+}: {
+    index: number;
+    className?: string;
+    children: ReactNode;
+}) => {
+    const reveal = useReveal<HTMLDivElement>(index);
+
+    return (
+        <div
+            ref={reveal.ref}
+            style={reveal.style}
+            className={cn(reveal.className, className)}
+        >
+            {children}
+        </div>
+    );
+};
+
+export function Hero({
+    betaClosed,
+    demo,
+}: {
+    betaClosed: boolean;
+    demo?: ReactNode;
+}) {
+    const { t } = useT();
+
+    return (
+        <section
+            className={cn(
+                'grid items-center gap-gap py-12 md:py-16',
+                demo && 'xl:grid-cols-2',
+            )}
+        >
+            <div className="flex flex-col items-start gap-6">
+                <Reveal index={0}>
+                    <Pill icon={Lock} tone="tile">
+                        {t('landing.hero.badge')}
+                    </Pill>
+                </Reveal>
+                <Reveal index={1}>
+                    <h1 className="text-landing-hero-sm text-ink md:text-landing-hero">
+                        {t('landing.hero.title.a')}{' '}
+                        <em className="text-accent not-italic">
+                            {t('landing.hero.title.em')}
+                        </em>
+                        {t('landing.hero.title.b')}
+                    </h1>
+                </Reveal>
+                <Reveal index={2}>
+                    <p className="max-w-2xl text-landing-lead text-muted">
+                        {t('landing.hero.lead')}
+                    </p>
+                </Reveal>
+                <Reveal index={3} className="flex flex-wrap gap-3">
+                    <BetaCta betaClosed={betaClosed} size="lg" />
+                    <div
+                        onClick={(event) => {
+                            const hash = anchorHash(event);
+
+                            if (hash !== null && scrollToHash(hash)) {
+                                event.preventDefault();
+                            }
+                        }}
+                    >
+                        <Button variant="secondary-tile" size="lg" href="#how">
+                            {t('landing.hero.secondary')}
+                        </Button>
+                    </div>
+                </Reveal>
+                <Reveal index={4}>
+                    <ul className="flex flex-wrap gap-x-6 gap-y-2 text-label-sm text-muted">
+                        {TRUST.map((n) => (
+                            <li key={n} className="flex items-center gap-2">
+                                <Check
+                                    aria-hidden="true"
+                                    strokeWidth={1.8}
+                                    className="size-4 shrink-0 text-accent"
+                                />
+                                {t(`landing.hero.trust.${n}`)}
+                            </li>
+                        ))}
+                    </ul>
+                </Reveal>
+            </div>
+            {demo && <div>{demo}</div>}
+        </section>
+    );
+}

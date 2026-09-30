@@ -7,49 +7,49 @@ session. Phase status is updated in place in this file.
 
 ## Status board
 
-| Phase | Title                                                   | Role             | Depends on | Size | Status       |
-| ----- | ------------------------------------------------------- | ---------------- | ---------- | ---- | ------------ |
-| 1     | `app_locales` split on the backend (no behavior change) | laravel-backend  | none       | S    | PENDING      |
-| 2     | Frontend locale types and app-scoped language switcher  | inertia-frontend | 1          | S    | PENDING      |
-| 3     | Enable Spanish for guests + `lang/es.json`              | laravel-backend  | 1, 2       | M    | PENDING      |
-| 4     | `LandingController`, config flags and page props        | laravel-backend  | none       | S    | PENDING      |
-| 5     | Marketing tokens, `PublicLayout`, `BetaCta`             | inertia-frontend | 3, 4       | M    | PENDING      |
-| 6     | Nav, footer, page skeleton, `Head`/SEO                  | inertia-frontend | 5          | M    | PENDING      |
-| 7     | Hero copy, guarantees strip, reveal-on-scroll           | inertia-frontend | 6          | M    | PENDING      |
-| 8     | Demo engine and hero demo cards                         | inertia-frontend | 7          | M    | PENDING      |
-| 9     | Preferences section (`#product`)                        | inertia-frontend | 7          | S    | PENDING      |
-| 10    | Languages section (`#languages`)                        | inertia-frontend | 7          | S    | PENDING      |
-| 11    | Live band (`#how`)                                      | inertia-frontend | 8          | S    | PENDING      |
-| 12    | Pricing (`#plans`)                                      | inertia-frontend | 7          | M    | PENDING      |
-| 13    | FAQ and CTA banner                                      | inertia-frontend | 7          | S    | PENDING      |
-| 14    | No-JS / server-rendered essentials in the Blade view    | laravel-backend  | 6          | S    | PENDING      |
-| 15    | Lazy mounting, responsive and accessibility pass        | inertia-frontend | 8–13       | M    | PENDING      |
-| 16    | Doc edits in sibling specs (AC12)                       | laravel-backend  | none       | S    | PENDING      |
-| 17    | Verification and report                                 | qa-tester        | 1–16       | M    | PENDING      |
+| Phase | Title                                                   | Role             | Depends on | Size | Status  |
+| ----- | ------------------------------------------------------- | ---------------- | ---------- | ---- | ------- |
+| 1     | `app_locales` split on the backend (no behavior change) | laravel-backend  | none       | S    | DONE    |
+| 2     | Frontend locale types and app-scoped language switcher  | inertia-frontend | 1          | S    | DONE    |
+| 3     | Enable Spanish for guests + `lang/es.json`              | laravel-backend  | 1, 2       | M    | DONE    |
+| 4     | `LandingController`, config flags and page props        | laravel-backend  | none       | S    | DONE    |
+| 5     | Marketing tokens, `PublicLayout`, `BetaCta`             | inertia-frontend | 3, 4       | M    | DONE    |
+| 6     | Nav, footer, page skeleton, `Head`/SEO                  | inertia-frontend | 5          | M    | DONE    |
+| 7     | Hero copy, guarantees strip, reveal-on-scroll           | inertia-frontend | 6          | M    | DONE    |
+| 8     | Demo engine and hero demo cards                         | inertia-frontend | 7          | M    | DONE    |
+| 9     | Preferences section (`#product`)                        | inertia-frontend | 7          | S    | PENDING |
+| 10    | Languages section (`#languages`)                        | inertia-frontend | 7          | S    | PENDING |
+| 11    | Live band (`#how`)                                      | inertia-frontend | 8          | S    | PENDING |
+| 12    | Pricing (`#plans`)                                      | inertia-frontend | 7          | M    | PENDING |
+| 13    | FAQ and CTA banner                                      | inertia-frontend | 7          | S    | PENDING |
+| 14    | No-JS / server-rendered essentials in the Blade view    | laravel-backend  | 6          | S    | PENDING |
+| 15    | Lazy mounting, responsive and accessibility pass        | inertia-frontend | 8–13       | M    | PENDING |
+| 16    | Doc edits in sibling specs (AC12)                       | laravel-backend  | none       | S    | PENDING |
+| 17    | Verification and report                                 | qa-tester        | 1–16       | M    | PENDING |
 
 ## Audit — 2026-09-30
 
-| Check | Result |
-| ----- | ------ |
-| Stack | Laravel 13.33, PHP 8.4, Inertia Laravel 3.3 / `@inertiajs/react` 3, React 19.2 (React Compiler), Tailwind 4, `@headlessui/react` 2, `lucide-react`, Vite+ (`vp`). No animation library, none needed. |
-| Verification commands that exist | `composer lint:check`, `composer types:check`, `composer test`, `composer ci:check`, `yarn check`, `yarn check:fix`, `yarn types:check`, `yarn build`, `vendor/bin/pint --dirty --format agent`. No Lighthouse CLI in the repo (AC10 is manual / Chrome DevTools). |
-| Spec acceptance criteria | Present (AC01–AC12), no placeholders. |
-| `routes/web.php` | `Route::inertia('/', 'landing')->name('home')`. `register`, `login`, `dashboard`, `locale.update` exist. Routes `privacy`, `terms`, `opt-out` do **not** exist → `legal` is all-off today; FAQ item 5 and footer legal links stay hidden. |
-| `config/talent.php` | `locales` is `['en','pt']` (spec says "keep `['en','pt','es']`" — it has to be **added**). No `app_locales`, `landing.*`, `contact_email`. `brand.name` / `brand.wordmark` exist. Plan catalog modes are `random` / `select` / `review` (spec calls the first one "auto"). `plans.highlighted` = `starter`. |
-| `.env` / `.env.example` | No `LANDING_BETA_CLOSED`, `LANDING_PRICES_ILLUSTRATIVE`, `TALENT_CONTACT_EMAIL` keys (append to `.env.example` only; defaults make `.env` optional). `PRICE_FREE_*` defaults are non-zero, so "Free" renders a price until the owner sets 0 (spec D-FREEPRICE, accepted). |
-| Consumers of `talent.locales` | `LocaleResolver`, `Translations`, `HandleInertiaRequests`, `UpdateLocaleRequest`, **`UpdateOnboardingBasicsRequest`, `UpdateAccountRequest`, `Filament/Resources/Users/Schemas/UserForm`** (the last three are not listed in the spec and would accept `es` for users if left alone). |
-| `lang/` | `en.json`, `pt.json` (848 lines each), no `es.json`. Old keys `landing.status/subtitle/login/dashboard` present. `locale.en`, `locale.pt` present; `locale.es` missing. |
-| i18n interpolation | `translate.ts` replaces `:name`, not `{name}`. Spec placeholders `{brand}`, `{n}`, `{job_link}` are written as `:brand`, `:n`, `:job_link` in the lang files. |
-| Frontend types | `Locale = 'en' \| 'pt'`, `JobLanguage = 'en' \| 'pt'`, `RegionKey`, `SendMode`, `SendStage`, `SubStep`, `PlanOffer` in `types/contracts.ts`. `SharedProps.locales` only. `INTL_LOCALES` has no `es`. |
-| **Application languages in the product** | `App\Enums\ApplicationLanguage` has only `En`, `Pt`; `JobLanguage` and the profiles workspace are EN/PT only. The spec's landing copy claims Spanish profiles ("CV, subject and cover letter in English, Portuguese and Spanish", "Profiles in EN, PT and ES", a Spanish preview tab) while Part 0 item 7 says every claimed capability must exist today → **D1**. |
-| Patterns the landing reuses | `hero-card`, `dark-card`, `live-stepper`, `queue-row`, `activity-row`, `stat-tile`, `job-row`, `company-logo`, `nav-pills`, `ui/{tick-meter,pill,chip,tabs,segmented,sheet,button,card}` are presentational (only `useT` / `useFormat`). Data-coupled: `language-switcher` (`usePage` + `useSetLocale` → `PUT /locale`, acceptable: not `/internal`), `logo` (`usePage` brand; link hardcoded to `/dashboard`), `mobile-nav` (logout button + app locales; landing builds its own `Sheet` content with the same item styles), `countdown-bar` (own `setInterval`, needs a controlled mode for reduced motion). `HeroCard` always renders a focusable corner arrow → demo wrappers need `inert`. |
-| `Segmented` / `Tabs` | Headless UI `RadioGroup` / `TabGroup`: radiogroup and tablist roles plus keyboard support already there. No change needed. |
-| `app.tsx` | `configureEcho` only stores config (socket opens lazily on first `echo()` call; landing must not call it). `bootFixtures()` loads the fixtures engine on **every** page when `VITE_USE_FIXTURES=true` (`.env.example` default) → AC06 network check must run with fixtures off. Title callback appends ` - <brand>` to every title (conflicts with `meta.title`, which already carries the brand). |
-| CSS tokens | `--container-shell: 1520px` only; no `max-w-container` (1312px) token. `bg-hero`, `bg-hatched`, `focus-ring`, `--animate-fade-in`, global `prefers-reduced-motion` reset exist. `<html lang>` is set in Blade only; nothing updates it on a client-side locale change. |
-| Wayfinder | `home`, `login`, `register`, `dashboard` in `@/routes`. No functions for the non-existent legal routes, so the frontend cannot build their URLs from booleans. |
-| Tests | No existing test touches `/`, locales or the landing. Nothing to write (CLAUDE.md). |
-| Migrations | None needed; `migrate:status` not relevant. |
-| Owner memory (2026-09-27) | "Spanish dropped, never touch `lang/es.json`". The spec (owner, final, 2026-09-30) explicitly re-adds `es` for public pages only; this plan follows the spec and keeps the in-app UI EN/PT. |
+| Check                                    | Result                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack                                    | Laravel 13.33, PHP 8.4, Inertia Laravel 3.3 / `@inertiajs/react` 3, React 19.2 (React Compiler), Tailwind 4, `@headlessui/react` 2, `lucide-react`, Vite+ (`vp`). No animation library, none needed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Verification commands that exist         | `composer lint:check`, `composer types:check`, `composer test`, `composer ci:check`, `yarn check`, `yarn check:fix`, `yarn types:check`, `yarn build`, `vendor/bin/pint --dirty --format agent`. No Lighthouse CLI in the repo (AC10 is manual / Chrome DevTools).                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Spec acceptance criteria                 | Present (AC01–AC12), no placeholders.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `routes/web.php`                         | `Route::inertia('/', 'landing')->name('home')`. `register`, `login`, `dashboard`, `locale.update` exist. Routes `privacy`, `terms`, `opt-out` do **not** exist → `legal` is all-off today; FAQ item 5 and footer legal links stay hidden.                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `config/talent.php`                      | `locales` is `['en','pt']` (spec says "keep `['en','pt','es']`" — it has to be **added**). No `app_locales`, `landing.*`, `contact_email`. `brand.name` / `brand.wordmark` exist. Plan catalog modes are `random` / `select` / `review` (spec calls the first one "auto"). `plans.highlighted` = `starter`.                                                                                                                                                                                                                                                                                                                                                                                     |
+| `.env` / `.env.example`                  | No `LANDING_BETA_CLOSED`, `LANDING_PRICES_ILLUSTRATIVE`, `TALENT_CONTACT_EMAIL` keys (append to `.env.example` only; defaults make `.env` optional). `PRICE_FREE_*` defaults are non-zero, so "Free" renders a price until the owner sets 0 (spec D-FREEPRICE, accepted).                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Consumers of `talent.locales`            | `LocaleResolver`, `Translations`, `HandleInertiaRequests`, `UpdateLocaleRequest`, **`UpdateOnboardingBasicsRequest`, `UpdateAccountRequest`, `Filament/Resources/Users/Schemas/UserForm`** (the last three are not listed in the spec and would accept `es` for users if left alone).                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `lang/`                                  | `en.json`, `pt.json` (848 lines each), no `es.json`. Old keys `landing.status/subtitle/login/dashboard` present. `locale.en`, `locale.pt` present; `locale.es` missing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| i18n interpolation                       | `translate.ts` replaces `:name`, not `{name}`. Spec placeholders `{brand}`, `{n}`, `{job_link}` are written as `:brand`, `:n`, `:job_link` in the lang files.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Frontend types                           | `Locale = 'en' \| 'pt'`, `JobLanguage = 'en' \| 'pt'`, `RegionKey`, `SendMode`, `SendStage`, `SubStep`, `PlanOffer` in `types/contracts.ts`. `SharedProps.locales` only. `INTL_LOCALES` has no `es`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **Application languages in the product** | `App\Enums\ApplicationLanguage` has only `En`, `Pt`; `JobLanguage` and the profiles workspace are EN/PT only. The spec's landing copy claims Spanish profiles ("CV, subject and cover letter in English, Portuguese and Spanish", "Profiles in EN, PT and ES", a Spanish preview tab) while Part 0 item 7 says every claimed capability must exist today → **D1**.                                                                                                                                                                                                                                                                                                                              |
+| Patterns the landing reuses              | `hero-card`, `dark-card`, `live-stepper`, `queue-row`, `activity-row`, `stat-tile`, `job-row`, `company-logo`, `nav-pills`, `ui/{tick-meter,pill,chip,tabs,segmented,sheet,button,card}` are presentational (only `useT` / `useFormat`). Data-coupled: `language-switcher` (`usePage` + `useSetLocale` → `PUT /locale`, acceptable: not `/internal`), `logo` (`usePage` brand; link hardcoded to `/dashboard`), `mobile-nav` (logout button + app locales; landing builds its own `Sheet` content with the same item styles), `countdown-bar` (own `setInterval`, needs a controlled mode for reduced motion). `HeroCard` always renders a focusable corner arrow → demo wrappers need `inert`. |
+| `Segmented` / `Tabs`                     | Headless UI `RadioGroup` / `TabGroup`: radiogroup and tablist roles plus keyboard support already there. No change needed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `app.tsx`                                | `configureEcho` only stores config (socket opens lazily on first `echo()` call; landing must not call it). `bootFixtures()` loads the fixtures engine on **every** page when `VITE_USE_FIXTURES=true` (`.env.example` default) → AC06 network check must run with fixtures off. Title callback appends ` - <brand>` to every title (conflicts with `meta.title`, which already carries the brand).                                                                                                                                                                                                                                                                                              |
+| CSS tokens                               | `--container-shell: 1520px` only; no `max-w-container` (1312px) token. `bg-hero`, `bg-hatched`, `focus-ring`, `--animate-fade-in`, global `prefers-reduced-motion` reset exist. `<html lang>` is set in Blade only; nothing updates it on a client-side locale change.                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Wayfinder                                | `home`, `login`, `register`, `dashboard` in `@/routes`. No functions for the non-existent legal routes, so the frontend cannot build their URLs from booleans.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Tests                                    | No existing test touches `/`, locales or the landing. Nothing to write (CLAUDE.md).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Migrations                               | None needed; `migrate:status` not relevant.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Owner memory (2026-09-27)                | "Spanish dropped, never touch `lang/es.json`". The spec (owner, final, 2026-09-30) explicitly re-adds `es` for public pages only; this plan follows the spec and keeps the in-app UI EN/PT.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Owner decisions
 
@@ -70,10 +70,10 @@ What the decision means (the landing UI itself stays EN/PT/ES):
 - These strings replace the corresponding B.9 rows (the spec text is left untouched; this
   decision overrides it until Spanish profiles ship):
 
-| Key | EN | PT | ES |
-| --- | -- | -- | -- |
-| `landing.languages.text` | CV, subject and cover letter in English and Portuguese. A Portuguese job gets your Portuguese profile, and you see the email ready before anything is sent. | Currículo, assunto e carta de apresentação em inglês e português. A vaga em português recebe o seu perfil em português, e você vê o e-mail pronto antes de qualquer envio. | Currículum, asunto y carta de presentación en inglés y portugués. La oferta en portugués recibe tu perfil en portugués y ves el correo listo antes de cualquier envío. |
-| `landing.plans.feature.profiles` | Profiles in EN and PT | Perfis em EN e PT | Perfiles en EN y PT |
+| Key                              | EN                                                                                                                                                          | PT                                                                                                                                                                         | ES                                                                                                                                                                     |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `landing.languages.text`         | CV, subject and cover letter in English and Portuguese. A Portuguese job gets your Portuguese profile, and you see the email ready before anything is sent. | Currículo, assunto e carta de apresentação em inglês e português. A vaga em português recebe o seu perfil em português, e você vê o e-mail pronto antes de qualquer envio. | Currículum, asunto y carta de presentación en inglés y portugués. La oferta en portugués recibe tu perfil en portugués y ves el correo listo antes de cualquier envío. |
+| `landing.plans.feature.profiles` | Profiles in EN and PT                                                                                                                                       | Perfis em EN e PT                                                                                                                                                          | Perfiles en EN y PT                                                                                                                                                    |
 
 ### Open in the spec, not blocking
 
@@ -106,26 +106,27 @@ D-ES-APP (not here), D-OG (`og:image` omitted unless `public/og-landing.png` is 
 
 ## Acceptance-criteria coverage
 
-| AC   | Phases              |
-| ---- | ------------------- |
-| AC01 | 1, 2, 3, 6, 17      |
-| AC02 | 4, 5, 6, 9, 17      |
-| AC03 | 3, 6–13, 15, 17     |
-| AC04 | 5, 6, 14, 17        |
-| AC05 | 4, 12, 17           |
-| AC06 | 8, 11, 15, 17       |
-| AC07 | 5–13, 15, 17        |
-| AC08 | 4, 6, 13, 14, 17    |
-| AC09 | 7–13, 17            |
-| AC10 | 15, 17              |
-| AC11 | 1, 2, 3, 8, 17      |
-| AC12 | 16                  |
+| AC   | Phases           |
+| ---- | ---------------- |
+| AC01 | 1, 2, 3, 6, 17   |
+| AC02 | 4, 5, 6, 9, 17   |
+| AC03 | 3, 6–13, 15, 17  |
+| AC04 | 5, 6, 14, 17     |
+| AC05 | 4, 12, 17        |
+| AC06 | 8, 11, 15, 17    |
+| AC07 | 5–13, 15, 17     |
+| AC08 | 4, 6, 13, 14, 17 |
+| AC09 | 7–13, 17         |
+| AC10 | 15, 17           |
+| AC11 | 1, 2, 3, 8, 17   |
+| AC12 | 16               |
 
 ## Phases
 
 ### Phase 1 — `app_locales` split on the backend (no behavior change)
 
-Status: PENDING
+Status: DONE
+Evidence: pint, composer lint:check, composer types:check (0 errors), php artisan test (33/33) pass; diff matches contract (config + 2 requests + UserForm + shared `appLocales`); reviewed by orchestrator (5-line diff, no code-reviewer run).
 Role: laravel-backend · Depends on: none · Covers: AC01, AC11 · Size: S
 Spec: B.2
 
@@ -156,7 +157,8 @@ to it, while `locales` still equals `['en','pt']`, so nothing changes yet.
 
 ### Phase 2 — Frontend locale types and app-scoped language switcher
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn run check` and `yarn types:check` pass; in-app switchers default to `appLocales` (EN/PT); only extra change is `pages/onboarding.tsx` narrowing `locale` to `JobLanguage` for `initialLanguage` (same result for en/pt). Reviewed by orchestrator (small diff).
 Role: inertia-frontend · Depends on: 1 · Covers: AC01, AC11 · Size: S
 Spec: B.2
 
@@ -188,7 +190,8 @@ Spec: B.2
 
 ### Phase 3 — Enable Spanish for guests + `lang/es.json`
 
-Status: PENDING
+Status: DONE
+Evidence: pint, lint:check, types:check (0 errors), tests 33/33 pass; tinker: guest `es` cookie/Accept-Language resolves `es`, signed-in user with `es` cookie resolves `pt`; `Translations::for('es')` falls back to English for missing keys. Diff reviewed by orchestrator.
 Role: laravel-backend · Depends on: 1, 2 · Covers: AC01, AC03, AC11 · Size: M
 Spec: B.2
 
@@ -198,11 +201,11 @@ Spec: B.2
 
 - `config/talent.php`: `'locales' => ['en', 'pt', 'es']`.
 - `LocaleResolver::resolve`: `$supported` = `app_locales` when `$request->hasSession() &&
-  $request->user()` is set, else `locales`. Order unchanged (user preference, cookie,
+$request->user()` is set, else `locales`. Order unchanged (user preference, cookie,
   Accept-Language primary subtag, `en`). An `es` cookie or `Accept-Language: es` for a signed-in
   user falls through to the next candidate.
 - `UpdateLocaleRequest::rules`: `Rule::in($this->user() ? config('talent.app_locales') :
-  config('talent.locales'))`. `LocaleController` unchanged (so `users.locale` can never be `es`).
+config('talent.locales'))`. `LocaleController` unchanged (so `users.locale` can never be `es`).
 - `lang/en.json` + `lang/pt.json`: add `"locale.es": "Español"`.
 - `lang/es.json` (new, public keys only): `locale.en` "English", `locale.pt` "Português",
   `locale.es` "Español", `language_switcher.label` "Cambiar idioma".
@@ -224,7 +227,8 @@ Spec: B.2
 
 ### Phase 4 — `LandingController`, config flags and page props
 
-Status: PENDING
+Status: DONE
+Evidence: pint, lint:check, types:check (0 errors), yarn types:check, yarn run check, tests 33/33 pass; payload verified via kernel: 6 props, 3 plans x 3 regions, defaultRegion br for pt-BR / row otherwise, legal all null. Diff reviewed by orchestrator.
 Role: laravel-backend · Depends on: none · Covers: AC02, AC05, AC08 · Size: S
 Spec: B.3
 
@@ -236,18 +240,18 @@ placeholder page keeps rendering (it ignores the new props).
 - `app/Http/Controllers/LandingController.php` (invokable) → `Inertia::render('landing', [...])`;
   `routes/web.php`: `Route::get('/', LandingController::class)->name('home')`.
 - Props:
-  - `plans`: for each `PlanCatalog::all()` →
-    `{ key, mode, dailyLimit, highlighted, prices: { br|eu|row: { amount: int (minor units),
+    - `plans`: for each `PlanCatalog::all()` →
+      `{ key, mode, dailyLimit, highlighted, prices: { br|eu|row: { amount: int (minor units),
 currency: string } } }` using `PlanCatalog::priceFor`, `PlanCatalog::isHighlighted` and
-    `Region::currency()` over `Region::cases()` (no price rule duplicated).
-  - `defaultRegion`: first entry of `$request->getLanguages()` that has a region subtag
-    (`pt_BR` / `pt-BR`) → `RegionResolver::fromCountry(<subtag>)->value`; none → `row`.
-  - `betaClosed`: `(bool) config('talent.landing.beta_closed')`.
-  - `pricesAreIllustrative`: `(bool) config('talent.landing.prices_illustrative')`.
-  - `contactEmail`: non-empty string from `config('talent.contact_email')`, else `null`.
-  - `legal`: `{ privacy, terms, optOut }`, each `Route::has('<privacy|terms|opt-out>') ?
+      `Region::currency()` over `Region::cases()` (no price rule duplicated).
+    - `defaultRegion`: first entry of `$request->getLanguages()` that has a region subtag
+      (`pt_BR` / `pt-BR`) → `RegionResolver::fromCountry(<subtag>)->value`; none → `row`.
+    - `betaClosed`: `(bool) config('talent.landing.beta_closed')`.
+    - `pricesAreIllustrative`: `(bool) config('talent.landing.prices_illustrative')`.
+    - `contactEmail`: non-empty string from `config('talent.contact_email')`, else `null`.
+    - `legal`: `{ privacy, terms, optOut }`, each `Route::has('<privacy|terms|opt-out>') ?
 route(...) : null`. **Deviation from B.3 (`bool`)**: the URL is passed instead of `true`
-    because Wayfinder has no function for routes that do not exist yet; `null` = hidden.
+      because Wayfinder has no function for routes that do not exist yet; `null` = hidden.
 - `config/talent.php`: `'landing' => ['beta_closed' => (bool) env('LANDING_BETA_CLOSED', true),
 'prices_illustrative' => (bool) env('LANDING_PRICES_ILLUSTRATIVE', true)]`,
   `'contact_email' => env('TALENT_CONTACT_EMAIL')`.
@@ -272,7 +276,8 @@ string }>`).
 
 ### Phase 5 — Marketing tokens, `PublicLayout`, `BetaCta`
 
-Status: PENDING
+Status: DONE
+Evidence: yarn run check + yarn types:check pass; code-reviewer APPROVED (non-blocking: redundant min-h-screen in placeholder landing.tsx, inert variant stripping only handles hover:/active:).
 Role: inertia-frontend · Depends on: 3, 4 · Covers: AC02, AC04, AC07 · Size: M
 Spec: B.4, B.5, Part 0 items 2–3
 
@@ -312,7 +317,8 @@ href={register().url}>` reading `t('landing.cta.open')`. The only primary CTA on
 
 ### Phase 6 — Nav, footer, page skeleton, `Head`/SEO
 
-Status: PENDING
+Status: DONE
+Evidence: yarn run check, yarn types:check, tests 33/33 pass; code-reviewer CHANGES_REQUIRED (global scroll-behavior) fixed in correction round 1 (click-handler smooth scroll, reduced-motion aware), re-verified by orchestrator. Not browser-rendered. Open: sticky header will cover anchor targets (later section phases need a scroll-margin token); canonical falls back to relative path if SSR is ever enabled.
 Role: inertia-frontend · Depends on: 5 · Covers: AC01, AC02, AC03, AC04, AC08 · Size: M
 Spec: B.5, B.6.1, B.6.10, B.7
 
@@ -363,7 +369,8 @@ rel=canonical` = `home().url` absolute. No `og:image`.
 
 ### Phase 7 — Hero copy, guarantees strip, reveal-on-scroll
 
-Status: PENDING
+Status: DONE
+Evidence: yarn run check, yarn types:check, tests 33/33 pass; code-reviewer APPROVED; one h1. Not browser-rendered. Non-blocking: strip is 2x2 until lg (contract says 4 cols from md); --spacing-anchor-offset unused until section phases (use scroll-mt-anchor-offset); hero click-interception wrapper duplicates landing-nav.
 Role: inertia-frontend · Depends on: 6 · Covers: AC03, AC07, AC09 · Size: M
 Spec: B.6.2, B.6.3, B.8
 
@@ -402,7 +409,8 @@ Spec: B.6.2, B.6.3, B.8
 
 ### Phase 8 — Demo engine and hero demo cards
 
-Status: PENDING
+Status: DONE
+Evidence: yarn run check, yarn types:check, composer lint:check/types:check, tests 33/33 pass; forbidden-import grep (@/data, echo-react, react-query, setInterval) under features/landing empty; code-reviewer CHANGES_REQUIRED (ETA UTC vs local time mismatch) fixed in correction round 1, re-verified by orchestrator. Not browser-rendered. Non-blocking: DEMO_CANDIDATE unused; live band (phase 11) must register in-view via useRegisterDemoInView.
 Role: inertia-frontend · Depends on: 7 · Covers: AC03, AC06, AC07, AC09, AC11 · Size: M
 Spec: B.5 (demo mode rules), B.6.2
 
@@ -446,7 +454,7 @@ patterns.
 **Steps.**
 
 1. Data + reducer + context. 2. `CountdownBar` prop. 3. Hero demo. 4. Mount in `Hero`'s slot.
-5. Lang (caption ×3, demo labels in `es.json`).
+2. Lang (caption ×3, demo labels in `es.json`).
 
 **Done when.**
 

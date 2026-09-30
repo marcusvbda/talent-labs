@@ -69,7 +69,7 @@ const Wizard = ({ status }: { status: AccountStatus }) => {
             )}
             {key === 'profile' && (
                 <StepProfile
-                    initialLanguage={locale}
+                    initialLanguage={locale === 'pt' ? 'pt' : 'en'}
                     onBack={back}
                     onDone={next}
                 />

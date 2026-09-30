@@ -19,6 +19,7 @@ export type SharedProps = {
     auth: { user: SharedUser | null };
     locale: Locale;
     locales: Locale[];
+    appLocales: Locale[];
     translations: Record<string, string>;
     flash: { success: string | null; error: string | null };
 };

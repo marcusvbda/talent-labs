@@ -15,13 +15,17 @@ export function CountdownBar({
     startsAt,
     endsAt,
     trailing,
+    now: driven,
 }: {
     startsAt: string;
     endsAt: string;
     trailing?: ReactNode;
+    /** Epoch ms driven by the caller; when set the bar starts no timer of its own. */
+    now?: number;
 }) {
     const { t } = useT();
-    const [now, setNow] = useState(() => Date.now());
+    const [clock, setClock] = useState(() => Date.now());
+    const now = driven ?? clock;
 
     const start = new Date(startsAt).getTime();
     const end = new Date(endsAt).getTime();
@@ -29,14 +33,14 @@ export function CountdownBar({
     const finished = !valid || now >= end;
 
     useEffect(() => {
-        if (finished) {
+        if (finished || driven !== undefined) {
             return;
         }
 
-        const id = setInterval(() => setNow(Date.now()), 1000);
+        const id = setInterval(() => setClock(Date.now()), 1000);
 
         return () => clearInterval(id);
-    }, [finished]);
+    }, [finished, driven]);
 
     const span = valid ? Math.max(1, end - start) : 1;
     const elapsed = valid ? Math.min(span, Math.max(0, now - start)) : 0;

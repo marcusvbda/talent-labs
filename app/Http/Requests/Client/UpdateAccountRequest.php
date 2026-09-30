@@ -20,7 +20,7 @@ class UpdateAccountRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'min:2', 'max:80'],
-            'locale' => ['required', Rule::in(config('talent.locales'))],
+            'locale' => ['required', Rule::in(config('talent.app_locales'))],
             'timezone' => ['nullable', 'string', 'timezone'],
             'country' => ['nullable', 'string', 'size:2'],
         ];
