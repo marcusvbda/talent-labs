@@ -173,7 +173,6 @@ export default function Dashboard() {
                         icon={Send}
                         loading={heroLoading}
                         value={String(data?.hero.sentToday ?? 0)}
-                        suffix={`/ ${quota?.limit ?? 0}`}
                         bars={[
                             ...(data?.hero.lastDays.map((day) => day.count) ??
                                 []),
@@ -186,8 +185,8 @@ export default function Dashboard() {
                             t('dashboard.hero.now'),
                         ]}
                         caption={t('dashboard.hero.caption', {
+                            queued: data?.hero.queued ?? 0,
                             left: quota?.remaining ?? 0,
-                            plan: status.data?.plan.name ?? '',
                         })}
                         stats={[
                             {

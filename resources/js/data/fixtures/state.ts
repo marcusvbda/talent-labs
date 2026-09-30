@@ -100,7 +100,6 @@ type FixtureData = {
     notifications: NotificationItem[];
     account: Omit<Account, 'region'>;
     onboarding: { basicsDone: boolean; preferencesSaved: boolean };
-    sentToday: number;
     paused: boolean;
     sendingApplicationId: number | null;
     currentStage: SendStage | null;
@@ -123,6 +122,21 @@ const isToday = (iso: string): boolean =>
 const todayRows = (rows: StoredApplication[]) =>
     rows.filter((row) => isToday(row.item.queuedAt));
 
+// Mirrors `Application::countedToday()`: what consumes today's quota.
+const COUNTED_STATUSES: ApplicationItem['status'][] = [
+    'queued',
+    'sending',
+    'sent',
+    'ambiguous',
+];
+
+const countedToday = (rows: StoredApplication[]): number =>
+    todayRows(rows).filter((row) => COUNTED_STATUSES.includes(row.item.status))
+        .length;
+
+const sentTodayCount = (rows: StoredApplication[]): number =>
+    todayRows(rows).filter((row) => row.item.status === 'sent').length;
+
 const initial: FixtureData = {
     companies: [...COMPANIES],
     jobs: [...JOBS],
@@ -141,9 +155,6 @@ const initial: FixtureData = {
         country: 'DE',
     },
     onboarding: { basicsDone: false, preferencesSaved: false },
-    sentToday: todayRows(APPLICATION_SEEDS).filter(
-        (row) => row.item.status === 'sent',
-    ).length,
     paused: false,
     sendingApplicationId: null,
     currentStage: null,
@@ -264,7 +275,7 @@ const gmailNeedsReauth = (): boolean =>
     getDevState().gmail === 'needs_reconnection';
 
 const quota = (): Quota => {
-    const usedToday = store.get().sentToday;
+    const usedToday = countedToday(store.get().applications);
     const tomorrow = new Date();
     tomorrow.setHours(24, 0, 0, 0);
 
@@ -370,7 +381,7 @@ const liveSending = (): LiveSending => {
     const queue = queuedRows();
     const current = sendingItem();
     const max = limit();
-    const used = data.sentToday;
+    const used = sentTodayCount(data.applications);
     let state: LiveSending['state'] = 'idle';
 
     if (data.paused || gmailNeedsReauth()) {
@@ -479,10 +490,6 @@ function queueJobs(jobIds: number[], origin: 'auto' | 'manual'): QueueResult {
     for (const jobId of jobIds) {
         const data = store.get();
         const job = data.jobs.find((row) => row.id === jobId);
-        const inFlight = data.applications.filter(
-            (row) =>
-                row.item.status === 'queued' || row.item.status === 'sending',
-        ).length;
 
         if (!job) {
             result.rejected.push({
@@ -492,7 +499,7 @@ function queueJobs(jobIds: number[], origin: 'auto' | 'manual'): QueueResult {
             continue;
         }
 
-        if (data.sentToday + inFlight >= limit()) {
+        if (countedToday(data.applications) >= limit()) {
             result.rejected.push({
                 jobId,
                 reason: "You have reached today's limit.",

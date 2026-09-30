@@ -151,7 +151,6 @@ function finish(id: number, outcome: 'sent' | 'failed'): void {
 
     fixtureState.set((s) => ({
         ...s,
-        sentToday: failed ? s.sentToday : s.sentToday + 1,
         sendingApplicationId: null,
         currentStage: null,
         currentSubStep: null,
