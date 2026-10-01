@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Collection\Data\JobPostingData;
+use App\Collection\Support\PostingTitle;
 use App\Collection\Support\RoleClassifier;
 use App\Contacts\Jobs\DiscoverContactsForPosting;
 use App\Enums\SourceRunStatus;
@@ -76,10 +77,10 @@ class FetchJobsFromSource implements ShouldQueue
                 $existing = JobPosting::query()
                     ->where('source_id', $source->id)
                     ->whereIn('external_id', array_map('strval', array_keys($chunk)))
-                    ->pluck('external_id')
+                    ->pluck('title', 'external_id')
                     ->all();
 
-                $chunkNewIds = array_diff(array_map('strval', array_keys($chunk)), $existing);
+                $chunkNewIds = array_diff(array_map('strval', array_keys($chunk)), array_map('strval', array_keys($existing)));
                 $jobsNew += count($chunkNewIds);
                 array_push($newExternalIds, ...$chunkNewIds);
 
@@ -90,7 +91,7 @@ class FetchJobsFromSource implements ShouldQueue
                     'collection_run_id' => $sourceRun->collection_run_id,
                     'last_seen_run_id' => $sourceRun->collection_run_id,
                     'external_id' => $item->externalId,
-                    'title' => mb_substr($item->title, 0, self::MAX_STRING),
+                    'title' => mb_substr($this->title($item, $existing), 0, self::MAX_STRING),
                     'company_name' => mb_substr($item->companyName, 0, self::MAX_STRING),
                     'location' => $this->fit($item->location),
                     'is_remote' => $item->isRemote,
@@ -193,6 +194,26 @@ class FetchJobsFromSource implements ShouldQueue
         }
 
         return $tags;
+    }
+
+    /**
+     * Postings are kept even when the feed gives no readable title: reuse the title we
+     * already stored (possibly set by the AI extraction), else a placeholder that the
+     * profile extraction replaces.
+     *
+     * @param  array<string, string>  $existing  title by external id
+     */
+    private function title(JobPostingData $item, array $existing): string
+    {
+        if (PostingTitle::isUsable($item->title)) {
+            return trim($item->title);
+        }
+
+        $stored = $existing[$item->externalId] ?? null;
+
+        return $stored !== null && PostingTitle::isUsable($stored)
+            ? $stored
+            : PostingTitle::placeholder($item->companyName);
     }
 
     private function fit(?string $value): ?string

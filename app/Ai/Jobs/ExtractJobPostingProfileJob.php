@@ -3,6 +3,7 @@
 namespace App\Ai\Jobs;
 
 use App\Ai\Agents\ExtractJobPostingProfile;
+use App\Collection\Support\PostingTitle;
 use App\Enums\AiUsageStatus;
 use App\Enums\OutreachStatus;
 use App\Enums\ProfileStatus;
@@ -123,13 +124,23 @@ class ExtractJobPostingProfileJob implements ShouldBeUnique, ShouldQueue
     {
         $seniority = $data['seniority'] ?? null;
         $summary = $this->nullableString($data['summary'] ?? null);
+        $normalizedTitle = $this->nullableString($data['normalized_title'] ?? null);
+
+        // The feed gave no readable title: use the extracted one instead.
+        if (
+            $normalizedTitle !== null
+            && PostingTitle::isUsable($normalizedTitle)
+            && PostingTitle::needsReplacement($posting->title, $posting->company_name)
+        ) {
+            $posting->update(['title' => mb_substr($normalizedTitle, 0, 255)]);
+        }
 
         JobPostingProfile::query()->updateOrCreate(
             ['job_posting_id' => $posting->id],
             [
                 'status' => ProfileStatus::Done,
                 'schema_version' => ExtractJobPostingProfile::CACHE_SCHEMA_VERSION,
-                'normalized_title' => $this->nullableString($data['normalized_title'] ?? null),
+                'normalized_title' => $normalizedTitle,
                 'seniority' => in_array($seniority, ExtractJobPostingProfile::SENIORITIES, true) ? $seniority : 'unknown',
                 'stack' => StackNormalizer::normalize(is_array($data['stack'] ?? null) ? $data['stack'] : []),
                 'locations' => $this->stringList($data['locations'] ?? null),
