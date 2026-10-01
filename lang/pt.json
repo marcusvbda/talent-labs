@@ -284,7 +284,7 @@
     "auth.reset.password_confirmation": "Confirmar nova senha",
     "auth.reset.submit": "Redefinir senha",
     "auth.reset.success": "Sua senha foi redefinida.",
-    "landing.cta.closed": "Close beta",
+    "landing.cta.closed": "Closed beta",
     "landing.cta.open": "Começar",
     "errors.403.title": "Acesso negado",
     "errors.403.message": "Você não tem acesso a esta página.",

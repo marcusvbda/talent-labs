@@ -28,7 +28,7 @@ Decisions that bind this spec:
    `components/patterns`). Do not invent a second look.
 2. **"Ask for access" is not interactive.** Every primary call to action
    (nav, hero, plans, final banner) is a **non-interactive label reading
-   `Close beta`** (same text in EN/PT): no `href`, no `onClick`, not
+   `Closed beta`** (same text in EN/PT): no `href`, no `onClick`, not
    focusable, no hover/pressed state, `aria-disabled="true"` (the `Button`
    `inert` prop), styled as the existing primary pill so the layout is
    unchanged. The secondary hero
@@ -97,30 +97,30 @@ in their locale.
 
 ### B.3 Backend
 
--   Replace `Route::inertia('/', 'landing')` with `LandingController`
-    (invokable, `name('home')` kept). It returns the Inertia `landing` page
-    with props:
-    -   `plans`: the three plans with `key`, `mode`, `dailyLimit`,
-        `highlighted` (`PlanCatalog::isHighlighted`) and `prices` for the
-        three regions (minor units + currency code), built from
-        `PlanCatalog`/config (reuse what `GET /internal/plans` uses; do not
-        duplicate the price rules).
-    -   `defaultRegion`: `br` | `eu` | `row` from `Accept-Language` region
-        subtag via `RegionResolver::fromCountry` (`pt-BR`→`br`; EU/EEA country
-        codes→`eu`; else `row`). No geo-IP service.
-    -   `betaClosed: bool` from `config('talent.landing.beta_closed')`
-        (`LANDING_BETA_CLOSED`, default `true`).
-    -   `contactEmail`: `config('talent.contact_email')` (env
-        `TALENT_CONTACT_EMAIL`); null when empty, and the footer omits it.
-    -   `legal`: `{ privacy, terms, optOut }`, each the URL of the named route
-        `privacy`, `terms`, `opt-out`, or null when the route does not exist
-        (`Route::has`); a null link is hidden.
--   Page must be publicly cacheable-safe: no per-user data except the
-    existing shared `auth.user` (used only to swap "Sign in" for "Open
-    dashboard").
--   When `betaClosed=false`, the CTA label becomes a real link to `register`
-    ("Get started" strings, B.9); when true, the `Close beta` label (Part 0
-    item 2).
+- Replace `Route::inertia('/', 'landing')` with `LandingController`
+  (invokable, `name('home')` kept). It returns the Inertia `landing` page
+  with props:
+    - `plans`: the three plans with `key`, `mode`, `dailyLimit`,
+      `highlighted` (`PlanCatalog::isHighlighted`) and `prices` for the
+      three regions (minor units + currency code), built from
+      `PlanCatalog`/config (reuse what `GET /internal/plans` uses; do not
+      duplicate the price rules).
+    - `defaultRegion`: `br` | `eu` | `row` from `Accept-Language` region
+      subtag via `RegionResolver::fromCountry` (`pt-BR`→`br`; EU/EEA country
+      codes→`eu`; else `row`). No geo-IP service.
+    - `betaClosed: bool` from `config('talent.landing.beta_closed')`
+      (`LANDING_BETA_CLOSED`, default `true`).
+    - `contactEmail`: `config('talent.contact_email')` (env
+      `TALENT_CONTACT_EMAIL`); null when empty, and the footer omits it.
+    - `legal`: `{ privacy, terms, optOut }`, each the URL of the named route
+      `privacy`, `terms`, `opt-out`, or null when the route does not exist
+      (`Route::has`); a null link is hidden.
+- Page must be publicly cacheable-safe: no per-user data except the
+  existing shared `auth.user` (used only to swap "Sign in" for "Open
+  dashboard").
+- When `betaClosed=false`, the CTA label becomes a real link to `register`
+  ("Get started" strings, B.9); when true, the `Closed beta` label (Part 0
+  item 2).
 
 ### B.4 Design tokens for the marketing scale
 
@@ -142,23 +142,23 @@ logic.
 
 Files under `resources/js/features/landing/` (one component per file):
 
--   `landing-nav.tsx`: sticky header with `Logo`, pill nav (`nav-pills`, links
-    scroll to section ids via `scroll-to-hash.ts`), `LanguageSwitcher`, Sign in
-    (or Open dashboard when signed in; ≥lg), `BetaCta` (≥sm) and, below lg, a
-    menu button opening a `Sheet` with the section links and Sign in.
--   `beta-cta.tsx`: the single component behind every primary CTA. Renders the
-    `Close beta` label (`Button` `inert`, Part 0 item 2) or a real link to
-    `register` when `betaClosed=false`. Used in nav, hero, live band, plan
-    cards and the final banner.
--   `hero.tsx` + `hero-demo.tsx` (B.6).
--   `guarantees-strip.tsx` (4 `FeatureTile`s).
--   `feature-matching.tsx`, `feature-languages.tsx`, `live-band.tsx`.
--   `pricing.tsx` + `landing-plan-card.tsx`.
--   `faq.tsx`, `cta-banner.tsx`, `landing-footer.tsx`.
--   `lazy-section.tsx` (lazy mounting, B.8), `scroll-to-hash.ts`.
--   Demo and motion: `demo-data.ts`, `use-demo-loop.ts`,
-    `demo-loop-context.tsx`, `use-in-view.ts`, `use-reveal.ts`,
-    `use-count-up.ts`.
+- `landing-nav.tsx`: sticky header with `Logo`, pill nav (`nav-pills`, links
+  scroll to section ids via `scroll-to-hash.ts`), `LanguageSwitcher`, Sign in
+  (or Open dashboard when signed in; ≥lg), `BetaCta` (≥sm) and, below lg, a
+  menu button opening a `Sheet` with the section links and Sign in.
+- `beta-cta.tsx`: the single component behind every primary CTA. Renders the
+  `Closed beta` label (`Button` `inert`, Part 0 item 2) or a real link to
+  `register` when `betaClosed=false`. Used in nav, hero, live band, plan
+  cards and the final banner.
+- `hero.tsx` + `hero-demo.tsx` (B.6).
+- `guarantees-strip.tsx` (4 `FeatureTile`s).
+- `feature-matching.tsx`, `feature-languages.tsx`, `live-band.tsx`.
+- `pricing.tsx` + `landing-plan-card.tsx`.
+- `faq.tsx`, `cta-banner.tsx`, `landing-footer.tsx`.
+- `lazy-section.tsx` (lazy mounting, B.8), `scroll-to-hash.ts`.
+- Demo and motion: `demo-data.ts`, `use-demo-loop.ts`,
+  `demo-loop-context.tsx`, `use-in-view.ts`, `use-reveal.ts`,
+  `use-count-up.ts`.
 
 `pages/landing.tsx` composes them: `Hero`, `GuaranteesStrip` eagerly; the
 rest as `React.lazy` sections inside `LazySection`. Section ids: `product`,
@@ -167,23 +167,23 @@ guarantees, preferences, languages and live band so the demo numbers agree.
 
 **Demo mode rules (hero and live band):**
 
--   Presentational patterns only; the public page must not call any
-    `/internal/*` endpoint, subscribe to any channel or read `data/fixtures`
-    boot code.
--   `demo-data.ts`: fictional jobs (Northwind Systems, Lumen Data, Via Cloud
-    style names; no real companies), fictional candidate ("Ana Silva"), the
-    sample emails (EN and PT) and the CV file name. Sample content is fixed
-    and independent of the UI language.
--   `use-demo-loop`: a small state machine (timeouts cleaned up on unmount)
-    that cycles: queue advances, the stepper moves through the 5 real stages,
-    the countdown runs, "sent today" increments (18 → 19 → …, wraps after a
-    cycle), new "sent" rows appear in Recent activity.
--   `prefers-reduced-motion`: one static frame, no timers. Pause when
-    `document.hidden`. Runs only while the hero demo or live band is in view
-    (`use-in-view`, `IntersectionObserver`).
--   Demo panels are `aria-hidden` and `inert`; the section copy is their text
-    alternative. Stage, "Live", "Sent" and dashboard labels reuse the app's
-    existing keys.
+- Presentational patterns only; the public page must not call any
+  `/internal/*` endpoint, subscribe to any channel or read `data/fixtures`
+  boot code.
+- `demo-data.ts`: fictional jobs (Northwind Systems, Lumen Data, Via Cloud
+  style names; no real companies), fictional candidate ("Ana Silva"), the
+  sample emails (EN and PT) and the CV file name. Sample content is fixed
+  and independent of the UI language.
+- `use-demo-loop`: a small state machine (timeouts cleaned up on unmount)
+  that cycles: queue advances, the stepper moves through the 5 real stages,
+  the countdown runs, "sent today" increments (18 → 19 → …, wraps after a
+  cycle), new "sent" rows appear in Recent activity.
+- `prefers-reduced-motion`: one static frame, no timers. Pause when
+  `document.hidden`. Runs only while the hero demo or live band is in view
+  (`use-in-view`, `IntersectionObserver`).
+- Demo panels are `aria-hidden` and `inert`; the section copy is their text
+  alternative. Stage, "Live", "Sent" and dashboard labels reuse the app's
+  existing keys.
 
 ### B.6 Sections (order, content, behavior)
 
@@ -201,7 +201,7 @@ guarantees, preferences, languages and live band so the demo numbers agree.
 4. **Preferences** (`#product`): eyebrow, title, text, four static chips,
    and a static "New jobs" panel with three fictional `JobRow`s (first
    pre-selected), the selected-count line and a "Send 1 application" button
-   that is non-interactive (same `inert` treatment as `Close beta`).
+   that is non-interactive (same `inert` treatment as `Closed beta`).
 5. **Languages** (`#languages`): text + interactive `Tabs` (English /
    Portuguese; the only interactive demo, it switches local preview state).
    Each tab shows the sample CV file row and the sample email with the
@@ -233,36 +233,36 @@ guarantees, preferences, languages and live band so the demo numbers agree.
 
 ### B.7 SEO, no-JS essentials and Google requirements
 
--   `<Head>`: localized `title` and `description`, Open Graph
-    (`og:title`, `og:description`, `og:type=website`, `og:locale`), canonical
-    URL, `<html lang>` follows the resolved locale (already handled by the
-    layout).
--   `app.blade.php`: for the `landing` page only, add a `<noscript>` block
-    and a visually-hidden-when-JS server-rendered block with the brand name,
-    the one-paragraph description and the Gmail-use statement in the resolved
-    locale (Laravel `__()` is not used for the SPA strings, so read the three
-    strings from `Translations::for(locale)`). No SSR Node process
-    (decision D-SSR: revisit only if SEO becomes a goal).
--   No third-party scripts, fonts or trackers. Geist stays self-hosted.
--   Add `public/og-landing.png` (1200×630) only if the owner supplies it;
-    otherwise omit `og:image` (do not generate a fake one).
+- `<Head>`: localized `title` and `description`, Open Graph
+  (`og:title`, `og:description`, `og:type=website`, `og:locale`), canonical
+  URL, `<html lang>` follows the resolved locale (already handled by the
+  layout).
+- `app.blade.php`: for the `landing` page only, add a `<noscript>` block
+  and a visually-hidden-when-JS server-rendered block with the brand name,
+  the one-paragraph description and the Gmail-use statement in the resolved
+  locale (Laravel `__()` is not used for the SPA strings, so read the three
+  strings from `Translations::for(locale)`). No SSR Node process
+  (decision D-SSR: revisit only if SEO becomes a goal).
+- No third-party scripts, fonts or trackers. Geist stays self-hosted.
+- Add `public/og-landing.png` (1200×630) only if the owner supplies it;
+  otherwise omit `og:image` (do not generate a fake one).
 
 ### B.8 Motion and performance
 
--   Motion vocabulary: reveal-on-scroll (fade + 12px translate, 350 ms,
-    staggered 60 ms), the demo loop, number count-ups on first view, FAQ height
-    animation, hover lift on cards (transform only). CSS keyframes/transitions
-    as `@theme` `--animate-*` tokens where new; no library.
--   All motion off under `prefers-reduced-motion` (the global rule in
-    `app.css` already neutralizes animations; reveal hooks must also skip).
--   Below-the-fold sections mount lazily (`React.lazy` inside `LazySection`,
-    which mounts on approach via `use-in-view` or when an anchor asks for every
-    section, with a fixed min-height placeholder to avoid layout shift). Target: LCP under
-    2.5 s on a mid phone with cache off, no layout shift from lazy sections
-    (CLS < 0.05). Images: none required; icons are `lucide-react` as in the
-    app.
--   No `setInterval` fetching; timers exist only inside the demo loop and are
-    cleaned up.
+- Motion vocabulary: reveal-on-scroll (fade + 12px translate, 350 ms,
+  staggered 60 ms), the demo loop, number count-ups on first view, FAQ height
+  animation, hover lift on cards (transform only). CSS keyframes/transitions
+  as `@theme` `--animate-*` tokens where new; no library.
+- All motion off under `prefers-reduced-motion` (the global rule in
+  `app.css` already neutralizes animations; reveal hooks must also skip).
+- Below-the-fold sections mount lazily (`React.lazy` inside `LazySection`,
+  which mounts on approach via `use-in-view` or when an anchor asks for every
+  section, with a fixed min-height placeholder to avoid layout shift). Target: LCP under
+  2.5 s on a mid phone with cache off, no layout shift from lazy sections
+  (CLS < 0.05). Images: none required; icons are `lucide-react` as in the
+  app.
+- No `setInterval` fetching; timers exist only inside the demo loop and are
+  cleaned up.
 
 ### B.9 Copy (EN and PT, source of truth)
 
@@ -284,7 +284,7 @@ duplicating. The sample email content is not a dictionary key; it lives in
 | `nav.faq`                                                 | FAQ                                                                                                                                                              | FAQ                                                                                                                                                                              |
 | `nav.signin`                                              | Sign in                                                                                                                                                          | Entrar                                                                                                                                                                           |
 | `nav.dashboard`                                           | Open dashboard                                                                                                                                                   | Abrir painel                                                                                                                                                                     |
-| `cta.closed`                                              | Close beta                                                                                                                                                       | Close beta                                                                                                                                                                       |
+| `cta.closed`                                              | Closed beta                                                                                                                                                      | Closed beta                                                                                                                                                                      |
 | `cta.open`                                                | Get started                                                                                                                                                      | Começar                                                                                                                                                                          |
 | `hero.badge`                                              | Closed beta · invite-only access                                                                                                                                 | Beta fechada · acesso por convite                                                                                                                                                |
 | `hero.title.a` / `.em` / `.b`                             | Applications sent by / you / , without opening 40 tabs.                                                                                                          | Candidaturas enviadas por / você / , sem abrir 40 abas.                                                                                                                          |
@@ -341,15 +341,15 @@ reuse the existing app keys (EN/PT).
 
 ### B.10 Responsive rules
 
--   ≥1280: two columns in hero and features.
--   768–1279: hero stacks (text, then cards in a 2-column grid), features
-    stack, pricing 3 columns tightened or 1+2, live band stacked.
--   <768: single column, `text-landing-*-sm` tokens, guarantees strip 2×2,
-    pricing cards stacked with the recommended plan first, region control
-    full width, nav collapses (logo, language, menu `Sheet` holding the links
-    and Sign in).
--   No horizontal page scroll at 360 px. Touch targets ≥ 44 px
-    (`control-xs`).
+- ≥1280: two columns in hero and features.
+- 768–1279: hero stacks (text, then cards in a 2-column grid), features
+  stack, pricing 3 columns tightened or 1+2, live band stacked.
+- <768: single column, `text-landing-*-sm` tokens, guarantees strip 2×2,
+  pricing cards stacked with the recommended plan first, region control
+  full width, nav collapses (logo, language, menu `Sheet` holding the links
+  and Sign in).
+- No horizontal page scroll at 360 px. Touch targets ≥ 44 px
+  (`control-xs`).
 
 ### B.11 Accessibility
 
@@ -358,43 +358,43 @@ Semantic landmarks (`header`, `main`, `section` with `aria-labelledby`,
 as in the app), FAQ buttons with `aria-expanded`/`aria-controls`, tabs with
 proper roles (existing `Tabs`), region control with radiogroup semantics (existing
 `Segmented`; add the roles/keyboard support there if it lacks them, without changing app behavior), the demo panels `aria-hidden="true"` with a text alternative
-in the section copy (they are decorative), `Close beta` is
+in the section copy (they are decorative), `Closed beta` is
 `aria-disabled="true"` and skipped in tab order, contrast AA on the accent
 banner (black text on accent), `lang` attributes on the
 sample email blocks.
 
 ## Acceptance criteria
 
--   **AC01** `/` renders the landing in EN and PT; the nav language switcher
-    changes it without reload and persists in the `locale` cookie. The
-    switcher lists only English and Portuguese.
--   **AC02** Every "ask for access" button reads `Close beta`, is not
-    clickable, not focusable, has no hover state; Sign in and "See how it
-    works" work. With `LANDING_BETA_CLOSED=false` the CTAs become real links
-    to `/register`.
--   **AC03** No hardcoded UI strings, no raw keys, no mixed-language text on
-    the page in any locale (demo labels included).
--   **AC04** Brand name and logo change by editing config/brand source only
-    (change it once and grep the page for the old name: no occurrences).
--   **AC05** Pricing values come from config, switch by region and show the
-    localized "Free" for a zero price.
--   **AC06** The hero and live band run on real components in demo mode with
-    fictional data, loop smoothly, pause when hidden/out of view, and are
-    static under `prefers-reduced-motion`. The network tab shows no
-    `/internal/*` calls, no websocket, and no polling on `/`.
--   **AC07** The visual result uses the app's palette, type and components at
-    1440 px, and adapts per B.10 down to 360 px with no horizontal scroll.
--   **AC08** The page states what the app does and how Gmail is used (B.7,
-    visible with JavaScript disabled) in the resolved locale; Privacy, Terms
-    and Opt-out links appear only when their routes exist.
--   **AC09** No fabricated proof anywhere: no testimonials, customer logos,
-    user counts, response rates; nothing from the "do not reveal" list.
--   **AC10** Lighthouse (mobile) on `/`: Performance ≥ 90, Accessibility ≥ 95,
-    Best Practices ≥ 95, SEO ≥ 95; CLS < 0.05.
--   **AC11** In-app screens are unchanged (`composer lint:check`, `composer
+- **AC01** `/` renders the landing in EN and PT; the nav language switcher
+  changes it without reload and persists in the `locale` cookie. The
+  switcher lists only English and Portuguese.
+- **AC02** Every "ask for access" button reads `Closed beta`, is not
+  clickable, not focusable, has no hover state; Sign in and "See how it
+  works" work. With `LANDING_BETA_CLOSED=false` the CTAs become real links
+  to `/register`.
+- **AC03** No hardcoded UI strings, no raw keys, no mixed-language text on
+  the page in any locale (demo labels included).
+- **AC04** Brand name and logo change by editing config/brand source only
+  (change it once and grep the page for the old name: no occurrences).
+- **AC05** Pricing values come from config, switch by region and show the
+  localized "Free" for a zero price.
+- **AC06** The hero and live band run on real components in demo mode with
+  fictional data, loop smoothly, pause when hidden/out of view, and are
+  static under `prefers-reduced-motion`. The network tab shows no
+  `/internal/*` calls, no websocket, and no polling on `/`.
+- **AC07** The visual result uses the app's palette, type and components at
+  1440 px, and adapts per B.10 down to 360 px with no horizontal scroll.
+- **AC08** The page states what the app does and how Gmail is used (B.7,
+  visible with JavaScript disabled) in the resolved locale; Privacy, Terms
+  and Opt-out links appear only when their routes exist.
+- **AC09** No fabricated proof anywhere: no testimonials, customer logos,
+  user counts, response rates; nothing from the "do not reveal" list.
+- **AC10** Lighthouse (mobile) on `/`: Performance ≥ 90, Accessibility ≥ 95,
+  Best Practices ≥ 95, SEO ≥ 95; CLS < 0.05.
+- **AC11** In-app screens are unchanged (`composer lint:check`, `composer
 types:check`, `yarn check`, `yarn types:check` pass; the app locale menu,
-    onboarding and account still behave as before).
--   **AC12** The `production-readiness` doc edits of Phase 1 are applied.
+  onboarding and account still behave as before).
+- **AC12** The `production-readiness` doc edits of Phase 1 are applied.
 
 ## Phases
 
@@ -428,16 +428,16 @@ Gmail statement; enable "reduce motion" in the OS; inspect the network tab
 
 ## Open decisions (owner)
 
--   **D-BRAND / D-DOMAIN:** final brand, logo and domain (nothing here blocks
-    on it; all brand text is placeholder-driven).
--   **D-FREEPRICE / D-PRICES / D-TAX:** Free is meant to show as "Grátis"/"Free";
-    today the config default for Free is a paid amount (`PRICE_FREE_*`).
-    Landing follows config; owner sets the real values.
--   **D-SSR:** server rendering of the landing for SEO (adds a Node process).
-    Default: no.
--   **D-OG:** provide `og-landing.png` (1200×630) if wanted.
--   Interactive hero (visitor picks language/plan and the panel reacts):
-    not in this spec; passive demo only.
+- **D-BRAND / D-DOMAIN:** final brand, logo and domain (nothing here blocks
+  on it; all brand text is placeholder-driven).
+- **D-FREEPRICE / D-PRICES / D-TAX:** Free is meant to show as "Grátis"/"Free";
+  today the config default for Free is a paid amount (`PRICE_FREE_*`).
+  Landing follows config; owner sets the real values.
+- **D-SSR:** server rendering of the landing for SEO (adds a Node process).
+  Default: no.
+- **D-OG:** provide `og-landing.png` (1200×630) if wanted.
+- Interactive hero (visitor picks language/plan and the panel reacts):
+  not in this spec; passive demo only.
 
 ## Out of scope
 
