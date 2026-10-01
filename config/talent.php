@@ -30,8 +30,8 @@ return [
         // Test mode: when set, every application email is delivered to this address
         // instead of the company. Empty/unset = emails go to the companies for real.
         'intercept_to' => env('OUTREACH_INTERCEPT_TO'),
-        'interval_min_seconds' => (int) env('OUTREACH_SEND_INTERVAL_MIN_SECONDS', 15),
-        'interval_max_seconds' => (int) env('OUTREACH_SEND_INTERVAL_MAX_SECONDS', 15),
+        'interval_min_seconds' => (int) env('OUTREACH_SEND_INTERVAL_MIN_SECONDS', 5),
+        'interval_max_seconds' => (int) env('OUTREACH_SEND_INTERVAL_MAX_SECONDS', 10),
         'step_delay_ms' => (int) env('OUTREACH_STEP_DELAY_MS', 1200),
         'window' => [
             'enabled' => (bool) env('OUTREACH_WINDOW_ENABLED', false),

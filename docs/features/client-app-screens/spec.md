@@ -218,7 +218,7 @@ export type DashboardData = {
         nextSendAt: ISODateTime | null;
         lastDays: { date: ISODate; count: number }[]; // the 5 days before today, oldest first
     };
-    matches: { total: number; newToday: number; items: JobCard[] }; // items: up to 4, newest first
+    matches: { total: number; newToday: number; items: JobCard[] }; // items: first 4, newest first; more are paged from /internal/jobs
     activity: ApplicationItem[]; // up to 5, newest first
 };
 export type ChartData = {
@@ -517,8 +517,11 @@ retry), responsive per foundation B.5, all copy translated.
   headline `averagePerActiveDay` "avg per active day", `BarChart` with today
   highlighted and the daily limit as a dashed line, legend.
 - Row 3: **New matches** `DataCard` (span 7): subtitle "Collected today ·
-  <total> match your preferences · all in your active languages"; up to 4
-  `JobRow`s; mode behavior:
+  <total> match your preferences · all in your active languages"; 4
+  `JobRow`s, then a **See more** button that reveals 4 more per click (loaded
+  from the Jobs list, same pool as <total>) until all are shown; header
+  arrow (tooltip "View all jobs") → Jobs. Free (no Jobs access) gets neither
+  the arrow nor See more. Mode behavior:
     - `select`: checkboxes, footer "<n> selected · <remaining> sends left
       today", Clear, primary "Send <n> applications" → confirm modal
       (B.6 S3 confirm) → `useQueueApplications`.
@@ -526,7 +529,7 @@ retry), responsive per foundation B.5, all copy translated.
       modal (S3).
     - `auto`: rows shown without checkboxes, card wrapped in
       `PlanGate(locked, requiredPlans ['starter','pro'], feature 'choose jobs')`.
-      Header arrow → Jobs. **Recent activity** (span 5): `ActivityRow`s
+      **Recent activity** (span 5): `ActivityRow`s
       (sending spinner / sent / not delivered with reason / needs review for
       `ambiguous`), "Live" pill, footer "View all applications".
 - Onboarding incomplete (`AccountStatus.onboarding.complete = false`): Row 1

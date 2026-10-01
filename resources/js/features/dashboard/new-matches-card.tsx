@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { ArrowUpRight, Send, Shuffle } from 'lucide-react';
 import { useState } from 'react';
 import { DataCard } from '@/components/patterns/data-card';
@@ -5,17 +6,20 @@ import { JobRow } from '@/components/patterns/job-row';
 import { PlanGate } from '@/components/patterns/plan-gate';
 import { Button } from '@/components/ui/button';
 import { IconButton } from '@/components/ui/icon-button';
+import { Tooltip } from '@/components/ui/tooltip';
+import { useJobs } from '@/data/hooks/use-jobs';
 import { ReviewModal } from '@/features/review/review-modal';
 import { ConfirmSendModal } from '@/features/send/confirm-send-modal';
 import { RandomSendModal } from '@/features/send/random-send-modal';
 import { useSelection } from '@/features/send/use-selection';
 import { useT } from '@/i18n/i18n-provider';
 import { useFormat } from '@/lib/format';
+import { jobs } from '@/routes';
 import type { DashboardData, SendMode } from '@/types/contracts';
 import type { PlanKey } from '@/types/plans';
 
 const SELECTION_PLANS: PlanKey[] = ['starter', 'pro'];
-const MAX_SHOWN = 4;
+const PAGE_SIZE = 4;
 
 export function NewMatchesCard({
     matches,
@@ -36,7 +40,35 @@ export function NewMatchesCard({
     const [reviewIds, setReviewIds] = useState<number[] | null>(null);
     const locked = mode === 'random';
     const canChoose = !locked;
-    const items = matches.items.slice(0, MAX_SHOWN);
+    const [shown, setShown] = useState(PAGE_SIZE);
+    // Same pool as `matches.total` (no filters); only fetched once "See more" is used.
+    const pool = useJobs({}, undefined, {
+        enabled: canChoose && shown > PAGE_SIZE,
+    });
+    const loaded = new Map(matches.items.map((job) => [job.id, job]));
+
+    for (const page of pool.data?.pages ?? []) {
+        for (const job of page.data) {
+            if (!loaded.has(job.id)) {
+                loaded.set(job.id, job);
+            }
+        }
+    }
+
+    const all = [...loaded.values()];
+    const items = all.slice(0, shown);
+    const hasMore = canChoose && shown < matches.total;
+    const loadingMore = shown > all.length && pool.hasNextPage !== false;
+
+    const seeMore = () => {
+        const next = shown + PAGE_SIZE;
+
+        setShown(next);
+
+        if (all.length < next && pool.hasNextPage && !pool.isFetchingNextPage) {
+            void pool.fetchNextPage();
+        }
+    };
     const count = canChoose ? selection.selected.length : 0;
     const randomCount = Math.min(remaining, matches.total);
 
@@ -49,10 +81,13 @@ export function NewMatchesCard({
             state={matches.total === 0 ? 'empty' : 'ready'}
             actions={
                 canChoose ? (
-                    <IconButton
-                        icon={ArrowUpRight}
-                        label={t('dashboard.matches.open')}
-                    />
+                    <Tooltip content={t('dashboard.matches.open')}>
+                        <IconButton
+                            icon={ArrowUpRight}
+                            label={t('dashboard.matches.open')}
+                            onClick={() => router.visit(jobs().url)}
+                        />
+                    </Tooltip>
                 ) : undefined
             }
             className="flex flex-col"
@@ -73,11 +108,24 @@ export function NewMatchesCard({
                             selectable={!locked}
                             company={job.company.name}
                             title={job.title}
-                            meta={`${job.company.name} · ${job.location ?? t('jobs.remote')} · ${format.relativeTime(job.firstSeenAt)}`}
+                            meta={`${job.company.name} · ${
+                                job.location ?? t('jobs.remote')
+                            } · ${format.relativeTime(job.firstSeenAt)}`}
                             stack={job.stack}
                             language={job.language}
                         />
                     ))}
+                    {hasMore && (
+                        <Button
+                            variant="secondary-tile"
+                            size="lg"
+                            fullWidth
+                            loading={loadingMore && pool.isFetching}
+                            onClick={seeMore}
+                        >
+                            {t('dashboard.matches.see_more')}
+                        </Button>
+                    )}
                 </div>
             </PlanGate>
             <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-6">

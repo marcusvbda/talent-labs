@@ -88,7 +88,9 @@
   postings, no blurred rows, no lock. A short note points to Starter/Pro for
   choosing jobs.
 - Starter/Pro: list, selection, clear and send as today, plus the working
-  Send randomly button.
+  Send randomly button, a **See more** button (4 more rows per click, until
+  `matches.total` is reached) and a header arrow ("View all jobs") to `/jobs`.
+  Free sees neither See more nor the arrow.
 - The dead `Send randomly` button (no handler) and the Free "auto" banner
   (`AutoBanner`, `mode === 'auto'` branches) are removed.
 
