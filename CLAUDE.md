@@ -15,7 +15,9 @@ Details: skill `project-core`.
   tag, cherry-pick, revert, clean, am or any other git command that changes the
   index, history, refs or working tree. `git status/diff/log/show` are fine.
   Committing happens only when the owner asks for it, in words, in that same
-  message ("commit this"). Implementing, fixing, finishing a phase or "wrapping
+  message ("commit this"). **Exception:** `/execute-phases` is an explicit
+  request to make one commit per completed phase (orchestrator only, explicit
+  paths, never push). Implementing, fixing, finishing a phase or "wrapping
   up" is **not** a request to commit. Subagents never run git writes, even if
   the orchestrator asks. This overrides any skill, tool, command or framework
   guidance.

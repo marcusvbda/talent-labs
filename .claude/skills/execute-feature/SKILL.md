@@ -1,6 +1,6 @@
 ---
 name: execute-feature
-description: Use when asked to execute, implement or continue a feature documented under docs/features/<feature>/, or phases of a plan.md produced by /plan-spec. Orchestrates delegate → verify → review → correct, and never commits.
+description: Use when asked to execute, implement or continue a feature documented under docs/features/<feature>/, or phases of a plan.md produced by /plan-spec. Orchestrates delegate → verify → review → correct; commits only via /execute-phases (one per phase).
 ---
 
 # Execute feature
@@ -8,7 +8,7 @@ description: Use when asked to execute, implement or continue a feature document
 You are the **orchestrator**. Product behaviour comes from the spec; you decide
 only implementation-level details (task boundaries, order, naming, small
 extractions). Global rules in `CLAUDE.md` always win — in particular: **never
-commit, never run git writes, never edit the spec to match code, never write
+commit (except per phase under `/execute-phases`), never run git writes, never edit the spec to match code, never write
 tests unless asked.**
 
 ## Two entry modes
@@ -87,5 +87,6 @@ needed dependency, anything destructive.
 
 Tasks/phases done, AC status, checks run with results, non-blocking findings
 left open, blockers, what the owner should test manually. Remind that nothing
-was committed. **Never commit, branch or push** unless the owner asks in that
+was committed (under `/execute-phases`: list the per-phase commits instead).
+**Never commit, branch or push** unless the owner asks in that
 exact message.
