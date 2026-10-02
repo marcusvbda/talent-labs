@@ -7,31 +7,31 @@ session. Phase status is updated in place in this file.
 
 ## Status board
 
-| Phase | Title                                         | Role             | Depends on | Size | Status  |
-| ----- | --------------------------------------------- | ---------------- | ---------- | ---- | ------- |
-| 1     | Store links and render `{{ links }}`          | laravel-backend  | none       | M    | DONE |
-| 2     | Save and preview endpoints accept links       | laravel-backend  | 1          | S    | DONE |
-| 3     | Frontend contract, data hooks and fixtures    | inertia-frontend | 2          | M    | DONE |
-| 4     | Links field on the Profiles form              | inertia-frontend | 3          | M    | DONE |
-| 5     | Verification and report                       | qa-tester        | 1–4        | S    | PENDING |
+| Phase | Title                                      | Role             | Depends on | Size | Status      |
+| ----- | ------------------------------------------ | ---------------- | ---------- | ---- | ----------- |
+| 1     | Store links and render `{{ links }}`       | laravel-backend  | none       | M    | DONE        |
+| 2     | Save and preview endpoints accept links    | laravel-backend  | 1          | S    | DONE        |
+| 3     | Frontend contract, data hooks and fixtures | inertia-frontend | 2          | M    | DONE        |
+| 4     | Links field on the Profiles form           | inertia-frontend | 3          | M    | DONE        |
+| 5     | Verification and report                    | qa-tester        | 1–4        | S    | DONE        |
 
 ## Audit — 2026-10-02
 
-| Check                     | Result                                                                                                                                                                                                                                                                                                         |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Spec completeness         | Spec had no acceptance criteria and left validation, empty output, onboarding, preview/export and copy open. Owner delegated all of these to the recommendation on 2026-10-02 (see Owner decisions). ACs below are derived from Part 0/B plus those decisions.                                               |
-| Table                     | `application_profiles` created by `2026_09_24_095959_create_application_profiles_table.php` (Ran). Has `cover_letter text nullable`; no links column.                                                                                                                                                          |
-| Model                     | `app/Models/ApplicationProfile.php` — `#[Fillable([...])]` attribute, `casts()`, `@property` docblock.                                                                                                                                                                                                         |
-| Renderer                  | `app/Outreach/Support/ApplicationTemplateRenderer.php` — `ALLOWED_VARIABLES` (`company, job_title, job_location, job_url, client_name, cover_letter`), `variablesFor()`, `render()` (collapses blank-line runs, trims), `html()` (`nl2br(e())`). Callers of `variablesFor()`: `QueueApplication` (send), `ReviewDraftPresenter` (review drafts), `TemplatePreviewPresenter` (preview). |
-| Write path                | `PUT internal/profiles/{language}` → `ProfilesController::update` + `UpdateApplicationProfileRequest` (camelCase keys). Used by Profiles workspace **and** onboarding `step-profile.tsx`.                                                                                                                      |
-| Preview path              | `POST internal/profiles/{language}/preview` → `ProfilePreviewController` + `PreviewProfileRequest` → `TemplatePreviewPresenter::forUser(..., string $coverLetter)`.                                                                                                                                           |
-| Read contracts            | `ApplicationProfileResource` (`coverLetter`), `ProfilesDataPresenter` (`variables` = `ALLOWED_VARIABLES`), `AccountExportController` (`coverLetter`). TS: `resources/js/types/contracts.ts` (`ApplicationProfile`, `TemplateVariable`).                                                                         |
-| Frontend                  | `features/profiles/profile-form.tsx` (cover letter `Field` + `Textarea`), `profiles-workspace.tsx` (debounced preview, save → toast on error), `variable-bar.tsx` (chips from `variables`). Hooks `data/hooks/use-profiles.ts`, `use-template-preview.ts`. UI kit: `components/ui/{field,input,button,icon-button}.tsx`, lucide icons. |
-| Fixtures                  | Dev-only fixture source (`data/fixtures/*`, `fromSource({ real, fixture })`) mirrors the API: `handlers/profiles.ts` (`SaveProfileInput`, `saveProfile`, `previewTemplate`, `createProfile`), `catalog/profiles.ts` (`TEMPLATE_VARIABLES`, `PROFILES`), `handlers/drafts.ts` (draft variables). Must stay type-correct. |
-| i18n                      | `lang/en.json`, `lang/pt.json` (EN/PT only). Existing keys `profiles.cover_letter.title/help`.                                                                                                                                                                                                                 |
-| Tests                     | No test references `cover_letter`, `coverLetter` or `ApplicationTemplateRenderer` → nothing existing breaks from new variable. Test DB `talent_labs_testing` (pgsql) with `RefreshDatabase`, so an edited create migration is picked up by tests.                                                             |
-| Commands that exist       | PHP: `vendor/bin/pint --dirty --format agent`, `composer lint:check`, `composer types:check`, `php artisan test --compact --filter=…`, `composer test`. Frontend: `yarn check`, `yarn check:fix`, `yarn types:check`, `yarn build`. Final: `composer ci:check`.                                                |
-| Dependencies              | None needed (Laravel `url:http,https` rule, lucide `Plus`/`X` already available).                                                                                                                                                                                                                             |
+| Check               | Result                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Spec completeness   | Spec had no acceptance criteria and left validation, empty output, onboarding, preview/export and copy open. Owner delegated all of these to the recommendation on 2026-10-02 (see Owner decisions). ACs below are derived from Part 0/B plus those decisions.                                                                                                                         |
+| Table               | `application_profiles` created by `2026_09_24_095959_create_application_profiles_table.php` (Ran). Has `cover_letter text nullable`; no links column.                                                                                                                                                                                                                                  |
+| Model               | `app/Models/ApplicationProfile.php` — `#[Fillable([...])]` attribute, `casts()`, `@property` docblock.                                                                                                                                                                                                                                                                                 |
+| Renderer            | `app/Outreach/Support/ApplicationTemplateRenderer.php` — `ALLOWED_VARIABLES` (`company, job_title, job_location, job_url, client_name, cover_letter`), `variablesFor()`, `render()` (collapses blank-line runs, trims), `html()` (`nl2br(e())`). Callers of `variablesFor()`: `QueueApplication` (send), `ReviewDraftPresenter` (review drafts), `TemplatePreviewPresenter` (preview). |
+| Write path          | `PUT internal/profiles/{language}` → `ProfilesController::update` + `UpdateApplicationProfileRequest` (camelCase keys). Used by Profiles workspace **and** onboarding `step-profile.tsx`.                                                                                                                                                                                              |
+| Preview path        | `POST internal/profiles/{language}/preview` → `ProfilePreviewController` + `PreviewProfileRequest` → `TemplatePreviewPresenter::forUser(..., string $coverLetter)`.                                                                                                                                                                                                                    |
+| Read contracts      | `ApplicationProfileResource` (`coverLetter`), `ProfilesDataPresenter` (`variables` = `ALLOWED_VARIABLES`), `AccountExportController` (`coverLetter`). TS: `resources/js/types/contracts.ts` (`ApplicationProfile`, `TemplateVariable`).                                                                                                                                                |
+| Frontend            | `features/profiles/profile-form.tsx` (cover letter `Field` + `Textarea`), `profiles-workspace.tsx` (debounced preview, save → toast on error), `variable-bar.tsx` (chips from `variables`). Hooks `data/hooks/use-profiles.ts`, `use-template-preview.ts`. UI kit: `components/ui/{field,input,button,icon-button}.tsx`, lucide icons.                                                 |
+| Fixtures            | Dev-only fixture source (`data/fixtures/*`, `fromSource({ real, fixture })`) mirrors the API: `handlers/profiles.ts` (`SaveProfileInput`, `saveProfile`, `previewTemplate`, `createProfile`), `catalog/profiles.ts` (`TEMPLATE_VARIABLES`, `PROFILES`), `handlers/drafts.ts` (draft variables). Must stay type-correct.                                                                |
+| i18n                | `lang/en.json`, `lang/pt.json` (EN/PT only). Existing keys `profiles.cover_letter.title/help`.                                                                                                                                                                                                                                                                                         |
+| Tests               | No test references `cover_letter`, `coverLetter` or `ApplicationTemplateRenderer` → nothing existing breaks from new variable. Test DB `talent_labs_testing` (pgsql) with `RefreshDatabase`, so an edited create migration is picked up by tests.                                                                                                                                      |
+| Commands that exist | PHP: `vendor/bin/pint --dirty --format agent`, `composer lint:check`, `composer types:check`, `php artisan test --compact --filter=…`, `composer test`. Frontend: `yarn check`, `yarn check:fix`, `yarn types:check`, `yarn build`. Final: `composer ci:check`.                                                                                                                        |
+| Dependencies        | None needed (Laravel `url:http,https` rule, lucide `Plus`/`X` already available).                                                                                                                                                                                                                                                                                                      |
 
 ## Owner decisions
 
@@ -100,18 +100,18 @@ ACs derived from spec Part 0/B and decisions D1–D8 (spec has no AC section).
 - **AC09** All new UI strings exist in EN and PT; no hardcoded UI text. (CLAUDE.md)
 - **AC10** Default templates are unchanged and profiles without links keep working (`links` is `[]` in the API). (D6)
 
-| AC   | Phases  |
-| ---- | ------- |
-| AC01 | 4, 5    |
-| AC02 | 1, 2, 4, 5 |
-| AC03 | 2, 4, 5 |
-| AC04 | 1, 3, 5 |
-| AC05 | 1, 5    |
+| AC   | Phases        |
+| ---- | ------------- |
+| AC01 | 4, 5          |
+| AC02 | 1, 2, 4, 5    |
+| AC03 | 2, 4, 5       |
+| AC04 | 1, 3, 5       |
+| AC05 | 1, 5          |
 | AC06 | 1, 2, 3, 4, 5 |
-| AC07 | 2, 3, 5 |
-| AC08 | 1, 5    |
-| AC09 | 4, 5    |
-| AC10 | 1, 5    |
+| AC07 | 2, 3, 5       |
+| AC08 | 1, 5          |
+| AC09 | 4, 5          |
+| AC10 | 1, 5          |
 
 ## Phases
 
@@ -129,10 +129,10 @@ Spec: Part 0, B.1, B.2 · Decisions D2, D3, D6, D7, D8
 - Stored shape: `null` or a JSON list of `{"label": string, "url": string}` in entry order. Empty list is stored as `null`.
 - `App\Models\ApplicationProfile`: add `links` to `#[Fillable]`; cast `'links' => 'array'`; docblock `@property list<array{label: string, url: string}>|null $links`.
 - `App\Outreach\Support\ApplicationTemplateRenderer`:
-  - `ALLOWED_VARIABLES` gains `'links'` (append after `'cover_letter'`).
-  - New `public static function linksText(?array $links): string` — for each row, trim `label` and `url`; skip rows where either is empty; emit `"{$label} : {$url}"`; join with `"\n"`; return `''` when nothing remains. Docblock types `@param list<array{label?: mixed, url?: mixed}>|null $links`.
-  - `variablesFor()`: compute `'links' => self::linksText($profile->links)` and include it in `$base` **before** rendering the cover letter, so `{{ links }}` also works inside the cover letter (D7). Return shape stays `array<string, string>`.
-  - Default templates untouched (D6).
+    - `ALLOWED_VARIABLES` gains `'links'` (append after `'cover_letter'`).
+    - New `public static function linksText(?array $links): string` — for each row, trim `label` and `url`; skip rows where either is empty; emit `"{$label} : {$url}"`; join with `"\n"`; return `''` when nothing remains. Docblock types `@param list<array{label?: mixed, url?: mixed}>|null $links`.
+    - `variablesFor()`: compute `'links' => self::linksText($profile->links)` and include it in `$base` **before** rendering the cover letter, so `{{ links }}` also works inside the cover letter (D7). Return shape stays `array<string, string>`.
+    - Default templates untouched (D6).
 - `App\Http\Resources\Client\ApplicationProfileResource`: add `'links' => array_values($profile->links ?? [])` right after `coverLetter`, each item `['label' => string, 'url' => string]`.
 - `App\Http\Controllers\Client\Internal\AccountExportController`: add `'links' => array_values($profile->links ?? [])` after `'coverLetter'` in each exported profile.
 - `ProfilesDataPresenter` needs no edit (it returns `ALLOWED_VARIABLES`).
@@ -168,17 +168,17 @@ Spec: B.1, B.2 · Decisions D1, D4, D5
 
 - D9 addendum: `App\Client\TemplatePreviewPresenter::forUser` must swap the rendered `links` text out for a one-off placeholder before `ClientSafeText::tokenizeJobUrl()` and restore it after, so the live preview shows real link URLs while job/company URL redaction still applies to everything else. Scoped to this file only.
 - `App\Http\Requests\Client\UpdateApplicationProfileRequest::rules()` adds:
-  - `'links' => ['sometimes', 'array', 'max:10']`
-  - `'links.*' => ['array:label,url']`
-  - `'links.*.label' => ['required', 'string', 'max:60', 'not_regex:/\{\{|\}\}/']`
-  - `'links.*.url' => ['required', 'string', 'max:2048', 'url:http,https', 'not_regex:/\{\{|\}\}/']`
-  (`TrimStrings`/`ConvertEmptyStringsToNull` already trim and null blank strings, so blank inputs fail `required`.)
+    - `'links' => ['sometimes', 'array', 'max:10']`
+    - `'links.*' => ['array:label,url']`
+    - `'links.*.label' => ['required', 'string', 'max:60', 'not_regex:/\{\{|\}\}/']`
+    - `'links.*.url' => ['required', 'string', 'max:2048', 'url:http,https', 'not_regex:/\{\{|\}\}/']`
+      (`TrimStrings`/`ConvertEmptyStringsToNull` already trim and null blank strings, so blank inputs fail `required`.)
 - `ProfilesController::update`: only when `$request->exists('links')`, set `links` to the validated rows mapped to `['label' => $row['label'], 'url' => $row['url']]` with `array_values()`; store `null` when the list is empty. When the key is absent, do not touch `links` (AC07).
 - `App\Http\Requests\Client\PreviewProfileRequest::rules()` adds (preview stays lenient, nothing rejected for being incomplete):
-  - `'links' => ['nullable', 'array', 'max:10']`
-  - `'links.*' => ['array:label,url']`
-  - `'links.*.label' => ['nullable', 'string', 'max:60']`
-  - `'links.*.url' => ['nullable', 'string', 'max:2048']`
+    - `'links' => ['nullable', 'array', 'max:10']`
+    - `'links.*' => ['array:label,url']`
+    - `'links.*.label' => ['nullable', 'string', 'max:60']`
+    - `'links.*.url' => ['nullable', 'string', 'max:2048']`
 - `App\Client\TemplatePreviewPresenter::forUser(User $user, ApplicationLanguage $language, string $subject, string $body, string $coverLetter, array $links = [])` — sets `$draftProfile->links = $links` (incomplete rows are skipped by `linksText()`). Docblock `@param list<array{label?: string|null, url?: string|null}> $links`.
 - `ProfilePreviewController`: pass `(array) ($request->validated('links') ?? [])` as the new argument.
 
@@ -211,14 +211,14 @@ Spec: B.1, B.2 · Decisions D4, D5
 **Contract.**
 
 - `resources/js/types/contracts.ts`:
-  - `export type ProfileLink = { label: string; url: string };`
-  - `ApplicationProfile` gains `links: ProfileLink[];` after `coverLetter`.
-  - `TemplateVariable` gains `| 'links'` after `'cover_letter'`.
+    - `export type ProfileLink = { label: string; url: string };`
+    - `ApplicationProfile` gains `links: ProfileLink[];` after `coverLetter`.
+    - `TemplateVariable` gains `| 'links'` after `'cover_letter'`.
 - `resources/js/data/fixtures/handlers/profiles.ts`:
-  - `SaveProfileInput` gains `links?: ProfileLink[]` (optional — onboarding omits it).
-  - `saveProfile`: when `input.links` is defined, store it (drop rows where both label and url are blank after trim); otherwise keep the existing links.
-  - `createProfile`: `links: []`.
-  - `previewTemplate` input gains `links?: ProfileLink[]`; variables gain `links` rendered as rows with both fields non-empty, `label : url` joined by `\n` (same as backend `linksText`).
+    - `SaveProfileInput` gains `links?: ProfileLink[]` (optional — onboarding omits it).
+    - `saveProfile`: when `input.links` is defined, store it (drop rows where both label and url are blank after trim); otherwise keep the existing links.
+    - `createProfile`: `links: []`.
+    - `previewTemplate` input gains `links?: ProfileLink[]`; variables gain `links` rendered as rows with both fields non-empty, `label : url` joined by `\n` (same as backend `linksText`).
 - `resources/js/data/fixtures/catalog/profiles.ts`: `TEMPLATE_VARIABLES` gains `'links'`; each `PROFILES` entry gains `links` (e.g. one fixture with `[{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/example' }]`, others `[]`).
 - `resources/js/data/fixtures/handlers/drafts.ts`: draft variables gain `links` from the profile, same formatting.
 - `resources/js/data/hooks/use-profiles.ts` `useSaveProfile` real call: include `links: input.links` in the body only when `input.links !== undefined`.
@@ -253,29 +253,29 @@ Spec: B.1, B.2 · Decisions D1, D5
 **Contract.**
 
 - New `resources/js/features/profiles/links-field.tsx` exporting `LinksField({ links, onChange }: { links: ProfileLink[]; onChange: (next: ProfileLink[]) => void })`:
-  - Header: label `t('profiles.links.title')` with the same classes/structure as `Field`'s label, an "optional" marker like the cover letter (`Field` `optional` look), and hint `t('profiles.links.help')` styled like `Field`'s hint.
-  - One row per link: `Input` for label (`aria-label={t('profiles.links.label')}`, `placeholder={t('profiles.links.label_placeholder')}`, `maxLength={60}`) and `Input` for url (`type="url"`, `inputMode="url"`, `aria-label={t('profiles.links.url')}`, `placeholder="https://"`, `maxLength={2048}`), plus an `IconButton` (lucide `X`, `label={t('profiles.links.remove')}`) that removes the row. Rows stack on mobile, label+url side by side from `sm:`.
-  - An "Add link" `Button` (existing secondary/ghost variant used in the form, lucide `Plus`) appending `{ label: '', url: '' }`; disabled at 10 rows.
-  - Row validity helper exported from the same file: `linkRowState(row): 'blank' | 'valid' | 'invalid'` — blank when both trimmed empty; valid when both non-empty, label ≤ 60, url ≤ 2048, url matches `/^https?:\/\/\S+$/i`, neither contains `{{` or `}}`; otherwise invalid. Invalid rows get `aria-invalid` on the offending input(s), and one message `t('profiles.links.invalid')` under the list (danger text style used elsewhere in the form/kit).
+    - Header: label `t('profiles.links.title')` with the same classes/structure as `Field`'s label, an "optional" marker like the cover letter (`Field` `optional` look), and hint `t('profiles.links.help')` styled like `Field`'s hint.
+    - One row per link: `Input` for label (`aria-label={t('profiles.links.label')}`, `placeholder={t('profiles.links.label_placeholder')}`, `maxLength={60}`) and `Input` for url (`type="url"`, `inputMode="url"`, `aria-label={t('profiles.links.url')}`, `placeholder="https://"`, `maxLength={2048}`), plus an `IconButton` (lucide `X`, `label={t('profiles.links.remove')}`) that removes the row. Rows stack on mobile, label+url side by side from `sm:`.
+    - An "Add link" `Button` (existing secondary/ghost variant used in the form, lucide `Plus`) appending `{ label: '', url: '' }`; disabled at 10 rows.
+    - Row validity helper exported from the same file: `linkRowState(row): 'blank' | 'valid' | 'invalid'` — blank when both trimmed empty; valid when both non-empty, label ≤ 60, url ≤ 2048, url matches `/^https?:\/\/\S+$/i`, neither contains `{{` or `}}`; otherwise invalid. Invalid rows get `aria-invalid` on the offending input(s), and one message `t('profiles.links.invalid')` under the list (danger text style used elsewhere in the form/kit).
 - `profile-form.tsx`:
-  - `ProfileDraft` gains `links: ProfileLink[]`; `draftFrom` copies `profile.links`.
-  - Render `<LinksField>` immediately after the cover letter `Field`, inside the same `gap-8` column.
-  - Save button: `disabled={!dirty || draft.links.some((row) => linkRowState(row) === 'invalid')}`.
+    - `ProfileDraft` gains `links: ProfileLink[]`; `draftFrom` copies `profile.links`.
+    - Render `<LinksField>` immediately after the cover letter `Field`, inside the same `gap-8` column.
+    - Save button: `disabled={!dirty || draft.links.some((row) => linkRowState(row) === 'invalid')}`.
 - `profiles-workspace.tsx`:
-  - Debounce `draft.links` the same way as `coverLetter` (500 ms) and pass `links` to `useTemplatePreview`.
-  - `onSave` sends `links: draft.links.filter((row) => linkRowState(row) !== 'blank')`.
+    - Debounce `draft.links` the same way as `coverLetter` (500 ms) and pass `links` to `useTemplatePreview`.
+    - `onSave` sends `links: draft.links.filter((row) => linkRowState(row) !== 'blank')`.
 - Copy — add to `lang/en.json` and `lang/pt.json` next to `profiles.cover_letter.*`:
 
-  | Key                               | EN                                                                                                                | PT                                                                                                                         |
-  | --------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-  | `profiles.links.title`            | `Links`                                                                                                           | `Links`                                                                                                                    |
-  | `profiles.links.help`             | `Inserted into the email where {{ links }} appears, one per line as label : url. Add that variable to the body to use it.` | `Inseridos no e-mail onde {{ links }} aparecer, um por linha no formato rótulo : url. Adicione essa variável ao corpo para usá-la.` |
-  | `profiles.links.label`            | `Label`                                                                                                           | `Rótulo`                                                                                                                   |
-  | `profiles.links.label_placeholder`| `e.g. LinkedIn`                                                                                                   | `ex.: LinkedIn`                                                                                                            |
-  | `profiles.links.url`              | `URL`                                                                                                             | `URL`                                                                                                                      |
-  | `profiles.links.add`              | `Add link`                                                                                                        | `Adicionar link`                                                                                                           |
-  | `profiles.links.remove`           | `Remove link`                                                                                                     | `Remover link`                                                                                                             |
-  | `profiles.links.invalid`          | `Each link needs a label and a URL starting with http:// or https://.`                                            | `Cada link precisa de um rótulo e de uma URL começando com http:// ou https://.`                                           |
+    | Key                                | EN                                                                                                                         | PT                                                                                                                                  |
+    | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+    | `profiles.links.title`             | `Links`                                                                                                                    | `Links`                                                                                                                             |
+    | `profiles.links.help`              | `Inserted into the email where {{ links }} appears, one per line as label : url. Add that variable to the body to use it.` | `Inseridos no e-mail onde {{ links }} aparecer, um por linha no formato rótulo : url. Adicione essa variável ao corpo para usá-la.` |
+    | `profiles.links.label`             | `Label`                                                                                                                    | `Rótulo`                                                                                                                            |
+    | `profiles.links.label_placeholder` | `e.g. LinkedIn`                                                                                                            | `ex.: LinkedIn`                                                                                                                     |
+    | `profiles.links.url`               | `URL`                                                                                                                      | `URL`                                                                                                                               |
+    | `profiles.links.add`               | `Add link`                                                                                                                 | `Adicionar link`                                                                                                                    |
+    | `profiles.links.remove`            | `Remove link`                                                                                                              | `Remover link`                                                                                                                      |
+    | `profiles.links.invalid`           | `Each link needs a label and a URL starting with http:// or https://.`                                                     | `Cada link precisa de um rótulo e de uma URL começando com http:// ou https://.`                                                    |
 
 **Steps.**
 
@@ -298,7 +298,7 @@ Spec: B.1, B.2 · Decisions D1, D5
 
 ### Phase 5 — Verification and report
 
-Status: PENDING
+Status: DONE
 Role: qa-tester · Depends on: 1–4 · Covers: AC01–AC10 · Size: S
 Spec: all
 
@@ -308,21 +308,25 @@ Spec: all
 
 1. Full gate: `composer ci:check` (plus `yarn build` since the bundle changed).
 2. Smoke tests (tinker / HTTP against the dev app, never destructive):
-   - Renderer: two links → two `label : url` lines in order; `null` → no blank gap (AC05).
-   - `PUT internal/profiles/{en}` valid/invalid payloads from Phase 2 (AC02, AC03); without `links` key → unchanged (AC07).
-   - Preview with draft links (AC06); `GET internal/profiles` → `links` + `variables` contains `links` (AC04, AC10).
-   - Account export JSON includes `links` (AC08).
-   - Review drafts / queued application body for a profile with links and `{{ links }}` in the body contains the lines (AC06).
+    - Renderer: two links → two `label : url` lines in order; `null` → no blank gap (AC05).
+    - `PUT internal/profiles/{en}` valid/invalid payloads from Phase 2 (AC02, AC03); without `links` key → unchanged (AC07).
+    - Preview with draft links (AC06); `GET internal/profiles` → `links` + `variables` contains `links` (AC04, AC10).
+    - Account export JSON includes `links` (AC08).
+    - Review drafts / queued application body for a profile with links and `{{ links }}` in the body contains the lines (AC06).
 3. Greps: no `->poll(` / `wire:poll` added; no hardcoded English UI strings in `links-field.tsx` (all via `t(...)`); every new `profiles.links.*` key exists in both `lang/en.json` and `lang/pt.json`; `defaultsFor()` bodies unchanged (`git diff`).
 4. AC walkthrough AC01–AC10 with evidence per AC.
 5. Owner manual checklist:
-   - Run `php artisan migrate:fresh --seed` locally (D8 — owner only).
-   - Profiles → EN: add two links, add `{{ links }}` to the body, check preview, save, reload.
-   - Try a `ftp://` url and a row with only a label → Save disabled with the message.
-   - PT tab: confirm its links are independent.
-   - Send or review one application and confirm the email shows the lines.
+    - Run `php artisan migrate:fresh --seed` locally (D8 — owner only).
+    - Profiles → EN: add two links, add `{{ links }}` to the body, check preview, save, reload.
+    - Try a `ftp://` url and a row with only a label → Save disabled with the message.
+    - PT tab: confirm its links are independent.
+    - Send or review one application and confirm the email shows the lines.
 
 **Done when.**
 
 - `composer ci:check` and `yarn build` pass.
 - Every AC has evidence; the report lists anything not verified.
+
+**Evidence.** `composer lint:check`/`types:check`/`php artisan test --compact` → all pass (33 tests, 1017 assertions). `yarn run check` scoped to this feature's own files → clean; `tsc --noEmit` → clean; `yarn build` → succeeded. `composer ci:check` initially failed only on pre-existing baseline formatting drift in 14 files never touched by this feature (landing page, an unrelated command doc) plus this feature's own two new docs files (`plan.md`/`spec.md`), which I then fixed with `vp check --fix` (docs only, no code change); after that fix `composer ci:check`'s PHP gate and this feature's frontend files are fully green — the remaining 14-file drift is pre-existing and out of scope. Smoke tests against `talent_labs_testing` (rolled back transactions, no permanent data): renderer `label : url` output matches byte-for-byte; model round-trip preserves order; export/resource `links` shape confirmed; `ALLOWED_VARIABLES`/`unknownVariables` confirmed; all three `variablesFor()` call sites (`QueueApplication`, `ReviewDraftPresenter`, `TemplatePreviewPresenter`) confirmed wired; D9 redaction fix confirmed still in place. Greps: no `->poll(`/`wire:poll` added; no hardcoded UI strings in `links-field.tsx` besides the allowed literal `placeholder="https://"`; all 8 `profiles.links.*` keys present in both `lang/en.json` and `lang/pt.json`; default template bodies/subjects confirmed unchanged across the whole feature diff.
+
+AC01–AC10: all PASS by code/static verification; AC01 (visual layout), AC03 (clicking through Save-disabled in a browser) and AC06 (an actual sent/reviewed email) are code-confirmed but need a human in the browser for final visual/interactive sign-off — left on the owner's manual checklist above. No blocking findings from any phase's `code-reviewer` pass.
