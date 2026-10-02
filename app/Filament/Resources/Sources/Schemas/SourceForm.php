@@ -28,6 +28,7 @@ class SourceForm
         'we_work_remotely' => 'Key: categories (comma list of feed slugs).',
         'working_nomads' => 'Key: categories (comma list, matched against the category name).',
         'adzuna' => 'Keys: country (e.g. br), queries (comma list), pages (1-3). Needs ADZUNA_APP_ID / ADZUNA_APP_KEY in .env. Max 10 requests per run.',
+        'y_combinator' => 'Key: roles (comma list of YC role slugs, e.g. software-engineer). Empty = software-engineer, product-manager, support. Max 10 requests per run (role pages first, then company pages).',
     ];
 
     public static function configure(Schema $schema): Schema

@@ -23,6 +23,7 @@ class SourceSeeder extends Seeder
             ['name' => 'Working Nomads', 'adapter' => SourceAdapter::WorkingNomads, 'identifier' => null, 'settings' => ['categories' => 'Development,Customer Success']],
             ['name' => 'Hacker News', 'adapter' => SourceAdapter::HackerNews, 'identifier' => null, 'settings' => null],
             ['name' => 'Adzuna', 'adapter' => SourceAdapter::Adzuna, 'identifier' => null, 'settings' => ['country' => 'br', 'queries' => 'desenvolvedor,developer,backend,frontend,full stack,suporte,customer success,product manager', 'pages' => 1], 'is_active' => false],
+            ['name' => 'Y Combinator', 'adapter' => SourceAdapter::YCombinator, 'identifier' => null, 'settings' => ['roles' => 'software-engineer,product-manager,support'], 'is_active' => false],
 
             // Curated ATS boards (Brazil-targeted), seeded inactive for the owner to enable.
             ['name' => 'Wellhub', 'adapter' => SourceAdapter::Greenhouse, 'identifier' => 'gympass', 'settings' => ['locations' => 'Brazil, São Paulo, Sao Paulo', 'website' => 'https://wellhub.com'], 'is_active' => false],

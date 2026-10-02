@@ -13,7 +13,7 @@ session. Phase status is updated in place in this file.
 | 2     | "Today" = first run started today, app timezone (D1)      | laravel-backend | 1          | M    | DONE    |
 | 3     | `source_contacts` on postings (storage + DTO + upsert)    | laravel-backend | none       | M    | DONE    |
 | 4     | Hacker News: extract emails into source contacts          | laravel-backend | 3          | S    | DONE    |
-| 5     | New source: Y Combinator (jobs + founders)                | laravel-backend | 3          | M    | PENDING |
+| 5     | New source: Y Combinator (jobs + founders)                | laravel-backend | 3          | M    | DONE    |
 | 6     | Admin: show source contacts + Y Combinator settings hint  | filament-admin  | 3, 5       | S    | PENDING |
 | 7     | Verification and report                                   | qa-tester       | 1–6        | S    | PENDING |
 
@@ -257,7 +257,8 @@ Spec: "1. Hacker News", D4
 
 ### Phase 5 — New source: Y Combinator
 
-Status: PENDING
+Status: DONE
+Evidence: live read-only fetch: 99 postings in exactly 10 requests, 8 with companyWebsite, 7 with a named Founder contact, 0 emails; seeded source `Y Combinator` inactive, label "via Y Combinator"; lint:check, types:check (0 errors), tests (33 passed) green; code-reviewer APPROVED. Departures accepted: `createdAt` regex also accepts about/over/almost; no company requests after a role-page 429; one placeholder hint line already added to SourceForm (Phase 6 owns the final text).
 Role: laravel-backend · Depends on: 3 · Covers: AC7 · Size: M
 Spec: "2. Y Combinator", D5, D6
 
