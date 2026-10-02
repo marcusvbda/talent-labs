@@ -21,6 +21,8 @@ final class ReviewDraftPresenter
      */
     public static function forUser(User $user, JobPosting $posting, ApplicationProfile $profile): array
     {
+        $posting->loadMissing('collectionRun');
+
         $variables = ApplicationTemplateRenderer::variablesFor($user, $posting, $profile);
 
         $variables['job_url'] = ClientSafeText::JOB_URL_TOKEN;

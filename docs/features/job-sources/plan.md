@@ -10,7 +10,7 @@ session. Phase status is updated in place in this file.
 | Phase | Title                                                     | Role            | Depends on | Size | Status  |
 | ----- | --------------------------------------------------------- | --------------- | ---------- | ---- | ------- |
 | 1     | Availability window on the client pool (D3)               | laravel-backend | none       | S    | DONE    |
-| 2     | "Today" = first run started today, app timezone (D1)      | laravel-backend | 1          | M    | PENDING |
+| 2     | "Today" = first run started today, app timezone (D1)      | laravel-backend | 1          | M    | DONE    |
 | 3     | `source_contacts` on postings (storage + DTO + upsert)    | laravel-backend | none       | M    | PENDING |
 | 4     | Hacker News: extract emails into source contacts          | laravel-backend | 3          | S    | PENDING |
 | 5     | New source: Y Combinator (jobs + founders)                | laravel-backend | 3          | M    | PENDING |
@@ -130,7 +130,8 @@ rule.
 
 ### Phase 2 — "Today" = first run started today, app timezone
 
-Status: PENDING
+Status: DONE
+Evidence: tinker raw SQL filters `first_run.started_at >= '2026-10-02 00:00:00'`; `grep todayStartsAt app` only PostingDay + JobPoolQuery call; lint:check, types:check (0 errors), tests (33 passed) green; code-reviewer APPROVED.
 Role: laravel-backend · Depends on: 1 · Covers: AC1 · Size: M
 Spec: "Daily batch accumulates", D1
 

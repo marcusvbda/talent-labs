@@ -23,7 +23,7 @@ class JobsPayload
     {
         // An empty string decodes to "no cursor" without falling back to the request's query string.
         $page = JobPoolQuery::forUser($user, $filters)
-            ->with(['profile', 'company'])
+            ->with(['profile', 'company', 'collectionRun'])
             ->cursorPaginate(self::PER_PAGE, ['*'], 'cursor', $cursor ?? '');
 
         $total = JobPoolQuery::forUser($user, $filters)->reorder()->count();

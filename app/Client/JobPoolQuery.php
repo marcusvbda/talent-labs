@@ -2,11 +2,11 @@
 
 namespace App\Client;
 
+use App\Collection\Support\PostingDay;
 use App\Models\JobPosting;
 use App\Models\User;
 use App\Outreach\Queries\MatchingJobPostings;
 use App\Outreach\Support\StackNormalizer;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
@@ -43,18 +43,6 @@ final class JobPoolQuery
             })
             ->orderByDesc('job_postings.first_seen_at')
             ->orderByDesc('job_postings.id');
-    }
-
-    /**
-     * Start of the user's current day, expressed in the app timezone the timestamps are stored in.
-     */
-    public static function todayStartsAt(User $user): CarbonImmutable
-    {
-        $appTimezone = (string) config('app.timezone');
-
-        return CarbonImmutable::now($user->timezone ?? $appTimezone)
-            ->startOfDay()
-            ->setTimezone($appTimezone);
     }
 
     /**
@@ -96,7 +84,7 @@ final class JobPoolQuery
         };
 
         if (($filters['today'] ?? false) === true) {
-            $query->where('job_postings.first_seen_at', '>=', self::todayStartsAt($user));
+            $query->where('first_run.started_at', '>=', PostingDay::todayStartsAt());
         }
 
         $stack = StackNormalizer::normalize($filters['stack'] ?? []);

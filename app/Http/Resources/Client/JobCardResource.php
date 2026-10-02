@@ -2,16 +2,15 @@
 
 namespace App\Http\Resources\Client;
 
-use App\Client\JobPoolQuery;
+use App\Collection\Support\PostingDay;
 use App\Models\Company;
 use App\Models\JobPosting;
-use App\Models\User;
 use App\Outreach\Support\ClientSafeText;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * The `JobCard` contract. Expects `profile` and `company` loaded. Never exposes links,
+ * The `JobCard` contract. Expects `profile`, `company` and `collectionRun` loaded. Never exposes links,
  * descriptions, raw payloads or contact data.
  *
  * @property JobPosting $resource
@@ -27,8 +26,6 @@ class JobCardResource extends JsonResource
         $profile = $posting->profile;
         /** @var Company $company */
         $company = $posting->company;
-        /** @var User $user */
-        $user = $request->user();
 
         $summary = ClientSafeText::redact($profile?->summary);
 
@@ -47,7 +44,7 @@ class JobCardResource extends JsonResource
             'stack' => array_slice($profile->stack ?? [], 0, 6),
             'summary' => trim($summary) === '' ? null : $summary,
             'firstSeenAt' => $posting->first_seen_at->toIso8601String(),
-            'collectedToday' => $posting->first_seen_at->greaterThanOrEqualTo(JobPoolQuery::todayStartsAt($user)),
+            'collectedToday' => PostingDay::isToday($posting->collectionRun?->started_at),
         ];
     }
 

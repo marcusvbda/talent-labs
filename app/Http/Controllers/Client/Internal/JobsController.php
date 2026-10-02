@@ -28,7 +28,7 @@ class JobsController extends Controller
 
         $posting = JobPoolQuery::forUser($user)
             ->where('job_postings.id', $id)
-            ->with(['profile', 'company', 'source'])
+            ->with(['profile', 'company', 'source', 'collectionRun'])
             ->first();
 
         abort_if($posting === null, 404);

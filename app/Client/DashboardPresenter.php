@@ -44,7 +44,7 @@ final class DashboardPresenter
         $matches = $this->plans->for($user)->canChooseJobs()
             ? JobCardResource::collection(
                 JobPoolQuery::forUser($user)
-                    ->with(['profile', 'company'])
+                    ->with(['profile', 'company', 'collectionRun'])
                     ->limit(self::MATCH_ITEMS)
                     ->get(),
             )->resolve()
