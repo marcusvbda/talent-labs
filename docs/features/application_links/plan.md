@@ -10,7 +10,7 @@ session. Phase status is updated in place in this file.
 | Phase | Title                                         | Role             | Depends on | Size | Status  |
 | ----- | --------------------------------------------- | ---------------- | ---------- | ---- | ------- |
 | 1     | Store links and render `{{ links }}`          | laravel-backend  | none       | M    | DONE |
-| 2     | Save and preview endpoints accept links       | laravel-backend  | 1          | S    | PENDING |
+| 2     | Save and preview endpoints accept links       | laravel-backend  | 1          | S    | DONE |
 | 3     | Frontend contract, data hooks and fixtures    | inertia-frontend | 2          | M    | PENDING |
 | 4     | Links field on the Profiles form              | inertia-frontend | 3          | M    | PENDING |
 | 5     | Verification and report                       | qa-tester        | 1–4        | S    | PENDING |
@@ -68,6 +68,10 @@ Chosen: everywhere `{{ cover_letter }}` is allowed (subject, body, and inside th
 ### D8 — Migration style — RESOLVED
 
 Chosen: add the column to the existing create migration (owner rule: create-only migrations during development). The executor never runs `migrate:fresh`; the **owner** runs it locally after Phase 1. Tests pick it up via `RefreshDatabase`.
+
+### D9 — Live preview redaction masks personal links — RESOLVED (found during Phase 2)
+
+Discovered during Phase 2: `TemplatePreviewPresenter::forUser` runs the whole rendered subject/body through `ClientSafeText::tokenizeJobUrl()`, which replaces every `http(s)` URL with `[link]` — this is existing anti-bypass redaction for job/company URLs, but it also masks the user's own personal links, so the preview would show `LinkedIn : [link]` instead of the real URL, which contradicts D5 ("preview renders the unsaved draft links"). Chosen: `TemplatePreviewPresenter` swaps the rendered `links` text out for a one-off placeholder before redaction and restores it after, so personal links survive redaction untouched while job/company URL redaction is unaffected. Scoped to `TemplatePreviewPresenter` only — `ClientSafeText` is not touched. · Why: owner chose this over leaving `[link]` in preview or pausing to replan.
 
 ## Global constraints (every phase)
 
@@ -154,7 +158,7 @@ Spec: Part 0, B.1, B.2 · Decisions D2, D3, D6, D7, D8
 
 ### Phase 2 — Save and preview endpoints accept links
 
-Status: PENDING
+Status: DONE
 Role: laravel-backend · Depends on: 1 · Covers: AC02, AC03 (API), AC06 (preview), AC07 · Size: S
 Spec: B.1, B.2 · Decisions D1, D4, D5
 
@@ -162,6 +166,7 @@ Spec: B.1, B.2 · Decisions D1, D4, D5
 
 **Contract.**
 
+- D9 addendum: `App\Client\TemplatePreviewPresenter::forUser` must swap the rendered `links` text out for a one-off placeholder before `ClientSafeText::tokenizeJobUrl()` and restore it after, so the live preview shows real link URLs while job/company URL redaction still applies to everything else. Scoped to this file only.
 - `App\Http\Requests\Client\UpdateApplicationProfileRequest::rules()` adds:
   - `'links' => ['sometimes', 'array', 'max:10']`
   - `'links.*' => ['array:label,url']`
@@ -192,6 +197,8 @@ Spec: B.1, B.2 · Decisions D1, D4, D5
 - `composer lint:check`, `composer types:check` and `php artisan test --compact` pass.
 
 **Not in this phase.** Frontend types, hooks and UI.
+
+**Evidence.** `vendor/bin/pint --dirty --format agent` → passed. `composer types:check` → 0 errors. `php artisan test --compact` → 33 tests, 1017 assertions. Manual HTTP checks against `talent_labs_testing` (rolled back transaction): save stores links in order; ftp url/missing label/11 rows/61-char label/`{{ company }}` each reject with 422 on the right `links.*` key; omitting `links` on update leaves stored links unchanged; `links: []` clears to `null`; preview with a half-filled row renders only the complete row. D9 fix verified: preview body with a personal link (`https://linkedin.com/in/x`) and a job URL in the same text returns the real personal URL while the job URL still becomes `{{ job_url }}` and an unrelated URL/email still redact to `[link]`/`[email]`. `code-reviewer`: APPROVED, no blocking findings (two non-blocking notes: `completeLinks()` duplicates `linksText()`'s filtering — harmless; `links: null` is rejected by the `array` rule, only `[]` clears — matches contract).
 
 ### Phase 3 — Frontend contract, data hooks and fixtures
 

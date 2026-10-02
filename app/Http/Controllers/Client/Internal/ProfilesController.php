@@ -72,7 +72,22 @@ class ProfilesController extends Controller
             'email_body' => $request->validated('emailBody'),
             'cover_letter' => trim((string) $coverLetter) === '' ? null : $coverLetter,
             'is_active' => $request->boolean('active'),
-        ])->save();
+        ]);
+
+        // Onboarding saves never send `links`; leave stored links untouched then.
+        if ($request->exists('links')) {
+            /** @var array<array-key, array{label: string, url: string}> $rows */
+            $rows = $request->validated('links') ?? [];
+
+            $links = array_values(array_map(
+                fn (array $row): array => ['label' => $row['label'], 'url' => $row['url']],
+                $rows,
+            ));
+
+            $profile->links = $links === [] ? null : $links;
+        }
+
+        $profile->save();
 
         return new ApplicationProfileResource($profile);
     }

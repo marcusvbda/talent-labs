@@ -23,6 +23,10 @@ class PreviewProfileRequest extends FormRequest
             'subject' => ['nullable', 'string', 'max:200'],
             'body' => ['nullable', 'string', 'max:5000'],
             'coverLetter' => ['nullable', 'string', 'max:6000'],
+            'links' => ['nullable', 'array', 'max:10'],
+            'links.*' => ['array:label,url'],
+            'links.*.label' => ['nullable', 'string', 'max:60'],
+            'links.*.url' => ['nullable', 'string', 'max:2048'],
         ];
     }
 }

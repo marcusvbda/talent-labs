@@ -38,6 +38,10 @@ class UpdateApplicationProfileRequest extends FormRequest
                 },
             ],
             'active' => ['required', 'boolean'],
+            'links' => ['sometimes', 'array', 'max:10'],
+            'links.*' => ['array:label,url'],
+            'links.*.label' => ['required', 'string', 'max:60', 'not_regex:/\{\{|\}\}/'],
+            'links.*.url' => ['required', 'string', 'max:2048', 'url:http,https', 'not_regex:/\{\{|\}\}/'],
         ];
     }
 

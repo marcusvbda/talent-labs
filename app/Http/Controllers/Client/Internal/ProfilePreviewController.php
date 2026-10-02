@@ -24,6 +24,7 @@ class ProfilePreviewController extends Controller
             (string) $request->validated('subject'),
             (string) $request->validated('body'),
             (string) $request->validated('coverLetter'),
+            (array) ($request->validated('links') ?? []),
         );
     }
 }
