@@ -3,8 +3,12 @@
 namespace App\Filament\Resources\JobPostings\Schemas;
 
 use App\Enums\RoleFamily;
+use App\Enums\SourceContactKind;
+use App\Models\JobPosting;
 use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class JobPostingInfolist
@@ -63,6 +67,29 @@ class JobPostingInfolist
 
                 TextEntry::make('collectionRun.label')
                     ->label('Run'),
+
+                Section::make('Source contacts')
+                    ->description('Contacts exposed by the source. Not used as application recipients.')
+                    ->columnSpanFull()
+                    ->visible(fn (?JobPosting $record): bool => filled($record?->source_contacts))
+                    ->schema([
+                        RepeatableEntry::make('source_contacts')
+                            ->hiddenLabel()
+                            ->columns(4)
+                            ->schema([
+                                TextEntry::make('kind')
+                                    ->badge()
+                                    ->formatStateUsing(fn (?string $state): ?string => $state === null ? null : (SourceContactKind::tryFrom($state)?->getLabel() ?? $state))
+                                    ->placeholder('—'),
+                                TextEntry::make('name')
+                                    ->placeholder('—'),
+                                TextEntry::make('title')
+                                    ->placeholder('—'),
+                                TextEntry::make('email')
+                                    ->copyable()
+                                    ->placeholder('—'),
+                            ]),
+                    ]),
 
                 TextEntry::make('description_text')
                     ->label('Description')

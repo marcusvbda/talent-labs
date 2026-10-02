@@ -14,7 +14,7 @@ session. Phase status is updated in place in this file.
 | 3     | `source_contacts` on postings (storage + DTO + upsert)    | laravel-backend | none       | M    | DONE    |
 | 4     | Hacker News: extract emails into source contacts          | laravel-backend | 3          | S    | DONE    |
 | 5     | New source: Y Combinator (jobs + founders)                | laravel-backend | 3          | M    | DONE    |
-| 6     | Admin: show source contacts + Y Combinator settings hint  | filament-admin  | 3, 5       | S    | PENDING |
+| 6     | Admin: show source contacts + Y Combinator settings hint  | filament-admin  | 3, 5       | S    | DONE    |
 | 7     | Verification and report                                   | qa-tester       | 1–6        | S    | PENDING |
 
 ## Audit — 2026-10-02
@@ -327,7 +327,8 @@ public YC job postings with founder names/titles and the company website.
 
 ### Phase 6 — Admin: source contacts + Y Combinator settings hint
 
-Status: PENDING
+Status: DONE
+Evidence: infolist section + Y Combinator hint added; `route:list` boots, no polling; lint:check, types:check (0 errors), tests (33 passed) green; code-reviewer APPROVED. Not exercised in a browser (local DB lacks the column until `migrate:fresh`).
 Role: filament-admin · Depends on: 3, 5 · Covers: AC6, AC7 (visibility) · Size: S
 Spec: D4, D6
 
