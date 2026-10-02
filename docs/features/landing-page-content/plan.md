@@ -7,13 +7,13 @@ session. Phase status is updated in place in this file.
 
 ## Status board
 
-| Phase | Title                                              | Role             | Depends on | Size | Status  |
-| ----- | -------------------------------------------------- | ---------------- | ---------- | ---- | ------- |
-| 1     | Copy-only replacements (items 1, 3, 4, 5, 6, 8–10) | inertia-frontend | none       | S    | DONE    |
-| 2     | Caption under the matching chips (item 7)          | inertia-frontend | none       | S    | DONE    |
-| 3     | Gmail → email across the landing (item 11)         | inertia-frontend | none       | M    | DONE    |
-| 4     | Hero demo framed as a product preview (item 2)     | inertia-frontend | none       | S    | DONE    |
-| 5     | Verification and report                            | qa-tester        | 1–4        | S    | PENDING |
+| Phase | Title                                              | Role             | Depends on | Size | Status |
+| ----- | -------------------------------------------------- | ---------------- | ---------- | ---- | ------ |
+| 1     | Copy-only replacements (items 1, 3, 4, 5, 6, 8–10) | inertia-frontend | none       | S    | DONE   |
+| 2     | Caption under the matching chips (item 7)          | inertia-frontend | none       | S    | DONE   |
+| 3     | Gmail → email across the landing (item 11)         | inertia-frontend | none       | M    | DONE   |
+| 4     | Hero demo framed as a product preview (item 2)     | inertia-frontend | none       | S    | DONE   |
+| 5     | Verification and report                            | qa-tester        | 1–4        | S    | DONE   |
 
 Phases 1–4 are independent of each other and can run in any order. They all
 edit `lang/en.json` + `lang/pt.json`, so run them one at a time, not in
@@ -314,7 +314,8 @@ sub-step labels (D4). Any change to `dashboard.*` copy.
 
 ### Phase 5 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: key parity OK; Gmail-in-landing-values grep empty; old-key grep (`landing.plans.feature.gmail`, `landing.gmail.note`, `gmailNote`) empty; orphan check 83 landing keys, 0 unreferenced; no `->poll(`/`wire:poll` added; commits 1-4 touch only landing files, dictionaries and plan.md; `php artisan test` 33/33; `yarn types:check` pass; `lang/*.json` clean in `yarn run check`. `composer ci:check` NOT green because of pre-existing issues outside this feature: pint fails on app/Outreach/Support/ApplicationTemplateRenderer.php, PHPStan crashes at the 128M memory limit, and `yarn run check` reports formatting failures in ~20 files (landing folder quote style, docs). Browser walkthrough of ACs not done (owner checklist below).
 Role: qa-tester · Depends on: 1, 2, 3, 4 · Covers: all ACs · Size: S
 Spec: whole spec
 
