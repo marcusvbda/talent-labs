@@ -1,35 +1,42 @@
-import { useRef, useState } from 'react';
-import { DataCard } from '@/components/patterns/data-card';
-import { Button } from '@/components/ui/button';
-import { Field } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import { Segmented } from '@/components/ui/segmented';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/components/ui/toast';
-import { useDefaultTemplates } from '@/data/hooks/use-default-templates';
+import { useRef, useState } from "react";
+import { DataCard } from "@/components/patterns/data-card";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Segmented } from "@/components/ui/segmented";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/toast";
+import { useDefaultTemplates } from "@/data/hooks/use-default-templates";
 import {
     useCreateProfile,
     useProfiles,
     useSaveProfile,
-} from '@/data/hooks/use-profiles';
-import { useTemplatePreview } from '@/data/hooks/use-template-preview';
-import { StepFooter } from '@/features/onboarding/step-footer';
-import { CvCard } from '@/features/profiles/cv-card';
-import { PreviewCard } from '@/features/profiles/preview-card';
-import { VariableBar } from '@/features/profiles/variable-bar';
-import { useT } from '@/i18n/i18n-provider';
-import { AppGrid } from '@/layouts/app-layout';
-import { useDebouncedValue } from '@/lib/use-debounced-value';
+} from "@/data/hooks/use-profiles";
+import { useTemplatePreview } from "@/data/hooks/use-template-preview";
+import { StepFooter } from "@/features/onboarding/step-footer";
+import { CvCard } from "@/features/profiles/cv-card";
+import { LinksField, linkRowState } from "@/features/profiles/links-field";
+import { PreviewCard } from "@/features/profiles/preview-card";
+import { VariableBar } from "@/features/profiles/variable-bar";
+import { useT } from "@/i18n/i18n-provider";
+import { AppGrid } from "@/layouts/app-layout";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import type {
     ApplicationProfile,
     JobLanguage,
+    ProfileLink,
     ProfilesData,
-} from '@/types/contracts';
+} from "@/types/contracts";
 
-const LANGUAGES: JobLanguage[] = ['en', 'pt'];
+const LANGUAGES: JobLanguage[] = ["en", "pt"];
 const PREVIEW_DEBOUNCE_MS = 500;
 
-type Draft = { subject: string; body: string; coverLetter: string };
+type Draft = {
+    subject: string;
+    body: string;
+    coverLetter: string;
+    links: ProfileLink[];
+};
 
 const ProfileEditor = ({
     language,
@@ -54,21 +61,24 @@ const ProfileEditor = ({
                   subject: profile.emailSubject,
                   body: profile.emailBody,
                   coverLetter: profile.coverLetter,
+                  links: profile.links,
               }
-            : { ...defaults, coverLetter: '' },
+            : { ...defaults, coverLetter: "", links: [] }
     );
-    const focused = useRef<'subject' | 'body'>('body');
+    const focused = useRef<"subject" | "body">("body");
     const subject = useDebouncedValue(draft.subject, PREVIEW_DEBOUNCE_MS);
     const body = useDebouncedValue(draft.body, PREVIEW_DEBOUNCE_MS);
     const coverLetter = useDebouncedValue(
         draft.coverLetter,
-        PREVIEW_DEBOUNCE_MS,
+        PREVIEW_DEBOUNCE_MS
     );
+    const links = useDebouncedValue(draft.links, PREVIEW_DEBOUNCE_MS);
     const preview = useTemplatePreview({
         language,
         subject,
         body,
         coverLetter,
+        links,
     });
 
     const insert = (token: string) =>
@@ -77,8 +87,16 @@ const ProfileEditor = ({
             [focused.current]: current[focused.current] + token,
         }));
 
-    const persist = () => ({ language, ...draft, active: true });
-    const onFailure = () => toast.error(t('onboarding.profile.save_failed'));
+    const withoutBlankLinks = (value: Draft) => ({
+        ...value,
+        links: value.links.filter((row) => linkRowState(row) !== "blank"),
+    });
+    const persist = () => ({
+        language,
+        ...withoutBlankLinks(draft),
+        active: true,
+    });
+    const onFailure = () => toast.error(t("onboarding.profile.save_failed"));
 
     const onCreate = () =>
         create.mutate(
@@ -93,23 +111,28 @@ const ProfileEditor = ({
                             ? draft.body
                             : created.emailBody,
                         coverLetter: draft.coverLetter,
+                        links: draft.links,
                     };
 
                     setDraft(next);
                     save.mutate(
-                        { language, ...next, active: true },
-                        { onError: onFailure },
+                        { language, ...withoutBlankLinks(next), active: true },
+                        { onError: onFailure }
                     );
                 },
                 onError: onFailure,
-            },
+            }
         );
 
     const onContinue = () =>
         save.mutate(persist(), { onSuccess: onDone, onError: onFailure });
 
     const complete = Boolean(
-        profile && profile.cv && draft.subject.trim() && draft.body.trim(),
+        profile &&
+            profile.cv &&
+            draft.subject.trim() &&
+            draft.body.trim() &&
+            !draft.links.some((row) => linkRowState(row) === "invalid")
     );
 
     return (
@@ -120,7 +143,7 @@ const ProfileEditor = ({
                 ) : (
                     <div className="flex flex-col gap-3">
                         <p className="text-body text-muted">
-                            {t('onboarding.profile.create_hint')}
+                            {t("onboarding.profile.create_hint")}
                         </p>
                         <div>
                             <Button
@@ -128,18 +151,18 @@ const ProfileEditor = ({
                                 loading={create.isPending}
                                 onClick={onCreate}
                             >
-                                {t('onboarding.profile.create')}
+                                {t("onboarding.profile.create")}
                             </Button>
                         </div>
                     </div>
                 )}
                 <div className="flex flex-col gap-4">
-                    <Field label={t('profiles.email.subject')}>
+                    <Field label={t("profiles.email.subject")}>
                         {(control) => (
                             <Input
                                 {...control}
                                 value={draft.subject}
-                                onFocus={() => (focused.current = 'subject')}
+                                onFocus={() => (focused.current = "subject")}
                                 onChange={(event) =>
                                     setDraft({
                                         ...draft,
@@ -149,13 +172,13 @@ const ProfileEditor = ({
                             />
                         )}
                     </Field>
-                    <Field label={t('profiles.email.body')}>
+                    <Field label={t("profiles.email.body")}>
                         {(control) => (
                             <Textarea
                                 {...control}
                                 rows={8}
                                 value={draft.body}
-                                onFocus={() => (focused.current = 'body')}
+                                onFocus={() => (focused.current = "body")}
                                 onChange={(event) =>
                                     setDraft({
                                         ...draft,
@@ -168,8 +191,8 @@ const ProfileEditor = ({
                     <VariableBar variables={data.variables} onInsert={insert} />
                 </div>
                 <Field
-                    label={t('profiles.cover_letter.title')}
-                    hint={t('profiles.cover_letter.help')}
+                    label={t("profiles.cover_letter.title")}
+                    hint={t("profiles.cover_letter.help")}
                     optional
                 >
                     {(control) => (
@@ -186,6 +209,10 @@ const ProfileEditor = ({
                         />
                     )}
                 </Field>
+                <LinksField
+                    links={draft.links}
+                    onChange={(links) => setDraft({ ...draft, links })}
+                />
                 <StepFooter
                     onBack={onBack}
                     onContinue={onContinue}
@@ -199,7 +226,7 @@ const ProfileEditor = ({
                     preview={preview.data}
                     previewError={preview.isError}
                     onRetry={() => void preview.refetch()}
-                    missing={profile?.missing ?? ['cv']}
+                    missing={profile?.missing ?? ["cv"]}
                     unlocked={data.unlockCounts[language]}
                 />
             </aside>
@@ -222,9 +249,9 @@ export const StepProfile = ({
 
     return (
         <DataCard
-            title={t('onboarding.profile.title')}
-            subtitle={t('onboarding.profile.subtitle')}
-            state={isError ? 'error' : !data ? 'loading' : 'ready'}
+            title={t("onboarding.profile.title")}
+            subtitle={t("onboarding.profile.subtitle")}
+            state={isError ? "error" : !data ? "loading" : "ready"}
             onRetry={() => void refetch()}
         >
             {data && (
@@ -232,7 +259,7 @@ export const StepProfile = ({
                     <Segmented
                         value={language}
                         onChange={setLanguage}
-                        ariaLabel={t('onboarding.profile.language')}
+                        ariaLabel={t("onboarding.profile.language")}
                         options={LANGUAGES.map((value) => ({
                             value,
                             label: t(`locale.${value}`),
@@ -242,7 +269,7 @@ export const StepProfile = ({
                         key={language}
                         language={language}
                         profile={data.profiles.find(
-                            (item) => item.language === language,
+                            (item) => item.language === language
                         )}
                         data={data}
                         onBack={onBack}

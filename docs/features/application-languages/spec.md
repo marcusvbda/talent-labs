@@ -102,6 +102,8 @@ I'm writing to apply for the {{ job_title }} position ({{ job_url }}).
 
 My CV is attached. Thank you for your time.
 
+{{links}}
+
 Best regards,
 {{ client_name }}
 ```
@@ -116,6 +118,8 @@ Gostaria de me candidatar à vaga de {{ job_title }} ({{ job_url }}).
 {{ cover_letter }}
 
 Meu currículo está em anexo. Obrigado pelo seu tempo.
+
+{{links}}
 
 Atenciosamente,
 {{ client_name }}

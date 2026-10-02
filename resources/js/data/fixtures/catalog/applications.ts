@@ -2,10 +2,10 @@ import type {
     ApplicationDetail,
     ApplicationItem,
     JobDetail,
-} from '../../../types/contracts';
-import { JOBS } from './jobs';
-import { defaultTemplates } from './profiles';
-import { minutesAgoToday } from './time';
+} from "../../../types/contracts";
+import { JOBS } from "./jobs";
+import { defaultTemplates } from "./profiles";
+import { minutesAgoToday } from "./time";
 
 // Deterministic application history. Nothing here uses Math.random: a seeded
 // PRNG drives every "random" choice, so the shape is identical on every
@@ -23,12 +23,12 @@ import { minutesAgoToday } from './time';
 //   queueing stays possible for the matching and fresh jobs.
 
 const HISTORY_TOTAL = 420;
-const CLIENT_NAME = 'Ana Silva';
-const CV_FILE_NAME = 'ana-silva-cv.pdf';
+const CLIENT_NAME = "Ana Silva";
+const CV_FILE_NAME = "luke-skywalker-cv.pdf";
 
-const ERR_CV = 'Your CV file could not be read.';
-const ERR_REJECTED = 'The company mailbox rejected the message.';
-const ERR_UNCONFIRMED = 'We could not confirm delivery.';
+const ERR_CV = "Your CV file could not be read.";
+const ERR_REJECTED = "The company mailbox rejected the message.";
+const ERR_UNCONFIRMED = "We could not confirm delivery.";
 
 // mulberry32: small, fast, seedable.
 const createRandom = (seed: number) => {
@@ -64,12 +64,12 @@ const HISTORY_POOL = JOBS.filter((row) => row.id >= 21);
 
 // Destructuring instead of property access keeps the AC08 grep (which flags
 // the substring after a dot) clean.
-const companyOf = (job: JobDetail): JobDetail['company'] => {
+const companyOf = (job: JobDetail): JobDetail["company"] => {
     const { company } = job;
 
     return company;
 };
-const refOf = (job: JobDetail): JobDetail['company'] => {
+const refOf = (job: JobDetail): JobDetail["company"] => {
     const { id, name, initials } = companyOf(job);
 
     return { id, name, initials };
@@ -78,31 +78,31 @@ const companyIdOf = (job: JobDetail): number => companyOf(job).id;
 
 const slugify = (value: string): string =>
     value
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 
 export const fixtureJobUrl = (
     company: { name: string },
     jobId: number,
     title: string | null,
 ): string => {
-    const titleSlug = title === null ? '' : slugify(title);
+    const titleSlug = title === null ? "" : slugify(title);
 
     return `https://careers.${slugify(company.name)}.example/jobs/${
-        titleSlug === '' ? jobId : `${jobId}-${titleSlug}`
+        titleSlug === "" ? jobId : `${jobId}-${titleSlug}`
     }`;
 };
 
 const draft = (
     job: JobDetail,
-): Pick<ApplicationItem, 'company' | 'title' | 'language' | 'origin'> => ({
+): Pick<ApplicationItem, "company" | "title" | "language" | "origin"> => ({
     company: refOf(job),
     title: job.title,
     language: job.language,
-    origin: random() < 0.6 ? 'auto' : 'manual',
+    origin: random() < 0.6 ? "auto" : "manual",
 });
 
 // ---- History -------------------------------------------------------------
@@ -206,8 +206,8 @@ const historySeeds = (): ApplicationSeed[] => {
                     item: {
                         id: 0,
                         ...draft(job),
-                        status: 'sent',
-                        stage: 'sent',
+                        status: "sent",
+                        stage: "sent",
                         subStep: null,
                         lastError: null,
                         queuedAt: queuedAt.toISOString(),
@@ -266,8 +266,8 @@ const todaySeeds = (): ApplicationSeed[] => {
         if (i === 6) {
             item = {
                 ...base,
-                status: 'failed',
-                stage: 'attaching_cv',
+                status: "failed",
+                stage: "attaching_cv",
                 subStep: null,
                 lastError: ERR_CV,
                 sentAt: null,
@@ -276,8 +276,8 @@ const todaySeeds = (): ApplicationSeed[] => {
         } else if (i === 11 || i === 16) {
             item = {
                 ...base,
-                status: 'ambiguous',
-                stage: 'sending',
+                status: "ambiguous",
+                stage: "sending",
                 subStep: null,
                 lastError: i === 11 ? ERR_UNCONFIRMED : ERR_REJECTED,
                 sentAt: null,
@@ -286,8 +286,8 @@ const todaySeeds = (): ApplicationSeed[] => {
         } else {
             item = {
                 ...base,
-                status: 'sent',
-                stage: 'sent',
+                status: "sent",
+                stage: "sent",
                 subStep: null,
                 lastError: null,
                 sentAt: minutesAgoToday(minutesBack),
@@ -309,7 +309,7 @@ const todaySeeds = (): ApplicationSeed[] => {
             item: {
                 id: 0,
                 ...draft(job),
-                status: 'queued',
+                status: "queued",
                 stage: null,
                 subStep: null,
                 lastError: null,
@@ -367,9 +367,9 @@ export const detailFor = (
         );
     const values = {
         company: itemCompany.name,
-        job_title: item.title ?? '',
+        job_title: item.title ?? "",
         client_name: CLIENT_NAME,
-        job_location: job?.location ?? 'Remote',
+        job_location: job?.location ?? "Remote",
     };
     const template = defaultTemplates[item.language];
 
@@ -377,6 +377,6 @@ export const detailFor = (
         ...item,
         subject: fill(template.subject, values),
         body: fill(template.body, values),
-        cvFileName: item.language === 'pt' ? null : CV_FILE_NAME,
+        cvFileName: item.language === "pt" ? null : CV_FILE_NAME,
     };
 };

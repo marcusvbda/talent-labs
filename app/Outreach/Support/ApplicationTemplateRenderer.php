@@ -13,11 +13,11 @@ final class ApplicationTemplateRenderer
 
     private const DEFAULT_SUBJECT_EN = 'Application: {{ job_title }}';
 
-    private const DEFAULT_BODY_EN = "Hello {{ company }} team,\n\nI'm writing to apply for the {{ job_title }} position ({{ job_url }}).\n\n{{ cover_letter }}\n\nMy CV is attached. Thank you for your time.\n\nBest regards,\n{{ client_name }}";
+    private const DEFAULT_BODY_EN = "Hello {{ company }} team,\n\nI'm writing to apply for the {{ job_title }} position ({{ job_url }}).\n\n{{ cover_letter }}\n\nMy CV is attached. Thank you for your time.\n\n{{links}}\n\nBest regards,\n{{ client_name }}";
 
     private const DEFAULT_SUBJECT_PT = 'Candidatura: {{ job_title }}';
 
-    private const DEFAULT_BODY_PT = "Olá, equipe {{ company }},\n\nGostaria de me candidatar à vaga de {{ job_title }} ({{ job_url }}).\n\n{{ cover_letter }}\n\nMeu currículo está em anexo. Obrigado pelo seu tempo.\n\nAtenciosamente,\n{{ client_name }}";
+    private const DEFAULT_BODY_PT = "Olá, equipe {{ company }},\n\nGostaria de me candidatar à vaga de {{ job_title }} ({{ job_url }}).\n\n{{ cover_letter }}\n\nMeu currículo está em anexo. Obrigado pelo seu tempo.\n\n{links}}\n\nAtenciosamente,\n{{ client_name }}";
 
     /**
      * Variable names used in the text that are not allowed.
@@ -109,7 +109,7 @@ final class ApplicationTemplateRenderer
     {
         $rendered = preg_replace_callback(
             '/\{\{\s*(.*?)\s*\}\}/',
-            fn (array $match): string => in_array(trim($match[1]), self::ALLOWED_VARIABLES, true)
+            fn(array $match): string => in_array(trim($match[1]), self::ALLOWED_VARIABLES, true)
                 ? (string) ($variables[trim($match[1])] ?? '')
                 : $match[0],
             $template,
