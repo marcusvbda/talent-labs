@@ -13,4 +13,5 @@ export const toJobCard = (job: JobDetail): JobCard => ({
     summary: job.summary,
     firstSeenAt: job.firstSeenAt,
     collectedToday: job.collectedToday,
+    jobUrl: job.jobUrl,
 });

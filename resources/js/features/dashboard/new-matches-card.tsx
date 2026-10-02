@@ -113,6 +113,7 @@ export function NewMatchesCard({
                             } · ${format.relativeTime(job.firstSeenAt)}`}
                             stack={job.stack}
                             language={job.language}
+                            jobUrl={job.jobUrl}
                         />
                     ))}
                     {hasMore && (

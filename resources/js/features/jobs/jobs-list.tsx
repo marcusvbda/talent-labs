@@ -39,6 +39,7 @@ export function JobsList({
                     language={job.language}
                     selectable={selectable}
                     onOpen={() => onOpen(job)}
+                    jobUrl={job.jobUrl}
                 />
             ))}
             {hasMore && (

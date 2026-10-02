@@ -3,15 +3,18 @@
 namespace App\Http\Resources\Client;
 
 use App\Collection\Support\PostingDay;
+use App\Enums\PlanKey;
 use App\Models\Company;
 use App\Models\JobPosting;
 use App\Outreach\Support\ClientSafeText;
+use App\Plans\PlanCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * The `JobCard` contract. Expects `profile`, `company` and `collectionRun` loaded. Never exposes links,
- * descriptions, raw payloads or contact data.
+ * The `JobCard` contract. Expects `profile`, `company` and `collectionRun` loaded. Never exposes descriptions,
+ * raw payloads or contact data; the captured job link (`jobUrl`) is exposed to paid plans only
+ * (free users get `null`).
  *
  * @property JobPosting $resource
  */
@@ -28,6 +31,8 @@ class JobCardResource extends JsonResource
         $company = $posting->company;
 
         $summary = ClientSafeText::redact($profile?->summary);
+        $user = $request->user();
+        $paid = $user !== null && app(PlanCatalog::class)->for($user)->key !== PlanKey::Free;
 
         return [
             'id' => $posting->id,
@@ -45,6 +50,7 @@ class JobCardResource extends JsonResource
             'summary' => trim($summary) === '' ? null : $summary,
             'firstSeenAt' => $posting->first_seen_at->toIso8601String(),
             'collectedToday' => PostingDay::isToday($posting->collectionRun?->started_at),
+            'jobUrl' => $paid ? ApplicationItemResource::safeUrl($posting->applicationUrl()) : null,
         ];
     }
 

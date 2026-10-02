@@ -1,6 +1,10 @@
+import { ArrowUpRight } from 'lucide-react';
 import { CompanyLogo } from '@/components/patterns/company-logo';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Chip } from '@/components/ui/chip';
+import { IconButton } from '@/components/ui/icon-button';
+import { Tooltip } from '@/components/ui/tooltip';
+import { useT } from '@/i18n/i18n-provider';
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/types/shared';
 
@@ -18,6 +22,7 @@ export function JobRow({
     disabled = false,
     selectable = true,
     onOpen,
+    jobUrl,
 }: {
     selected: boolean;
     onSelectedChange: (selected: boolean) => void;
@@ -31,7 +36,10 @@ export function JobRow({
     selectable?: boolean;
     /** When set, the row body opens details and only the checkbox selects. */
     onOpen?: () => void;
+    /** Captured job page; rendered as a link button when present (paid plans only). */
+    jobUrl?: string | null;
 }) {
+    const { t } = useT();
     const checkbox = (
         <Checkbox
             checked={selected}
@@ -68,6 +76,16 @@ export function JobRow({
             </span>
         </>
     );
+    const jobLink = jobUrl ? (
+        <Tooltip content={t('applications.open_job_page')}>
+            <IconButton
+                icon={ArrowUpRight}
+                label={t('applications.open_job_page')}
+                externalHref={jobUrl}
+                onClick={(event) => event.stopPropagation()}
+            />
+        </Tooltip>
+    ) : null;
     const tone = selected
         ? 'border-accent-line bg-accent-soft'
         : 'border-transparent bg-tile';
@@ -83,6 +101,7 @@ export function JobRow({
                 >
                     {body}
                 </button>
+                {jobLink}
             </div>
         );
     }
@@ -97,6 +116,7 @@ export function JobRow({
         >
             {checkbox}
             {body}
+            {jobLink}
         </label>
     );
 }

@@ -8,6 +8,12 @@ import { cn } from '@/lib/utils';
 
 export const JOB_URL_TOKEN = '{{ job_url }}';
 
+// The highlight layer is only aligned while it wraps exactly like the textarea, so both get
+// the same text metrics. `geometricPrecision` forces fractional glyph advances everywhere: some
+// browsers round them inside form controls only, which makes the textarea wider than the layer.
+const TEXT_METRICS =
+    '[font-feature-settings:inherit] [font-kerning:normal] [text-rendering:geometricPrecision]';
+
 type Range = { start: number; end: number };
 
 const findToken = (value: string): Range[] => {
@@ -217,7 +223,10 @@ export function BodyEditor({
                 <div
                     ref={mirror}
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 [scrollbar-gutter:stable] overflow-y-scroll px-6 py-4 text-body wrap-break-word whitespace-pre-wrap text-transparent"
+                    className={cn(
+                        TEXT_METRICS,
+                        'pointer-events-none absolute inset-0 [scrollbar-gutter:stable] overflow-y-scroll px-6 py-4 text-body wrap-break-word whitespace-pre-wrap text-transparent',
+                    )}
                 >
                     <Overlay value={value} />
                 </div>
@@ -236,7 +245,10 @@ export function BodyEditor({
                                 event.currentTarget.scrollTop;
                         }
                     }}
-                    className="relative block resize-none [scrollbar-gutter:stable] overflow-y-scroll bg-transparent aria-invalid:bg-transparent"
+                    className={cn(
+                        TEXT_METRICS,
+                        'relative block resize-none [scrollbar-gutter:stable] overflow-y-scroll bg-transparent aria-invalid:bg-transparent',
+                    )}
                 />
             </div>
             {value.includes(JOB_URL_TOKEN) && (
