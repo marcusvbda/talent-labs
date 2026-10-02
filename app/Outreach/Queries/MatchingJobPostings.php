@@ -2,6 +2,7 @@
 
 namespace App\Outreach\Queries;
 
+use App\Collection\Support\PostingDay;
 use App\Enums\ContactConfidence;
 use App\Enums\OutreachStatus;
 use App\Enums\ProfileStatus;
@@ -28,7 +29,8 @@ final class MatchingJobPostings
      * families (talent.collection.target_role_families) are in the pool, so a company verified
      * through a dev posting never surfaces its non-target (e.g. sales) postings. Postings are
      * left out unless their language has an active, complete application profile for this
-     * user (skippable with $withLanguageRule = false).
+     * user (skippable with $withLanguageRule = false). Only postings whose first run (collection_run_id)
+     * started inside the last talent.collection.window_days app-timezone days, today included, are kept.
      *
      * Preferences narrow the pool: terms inside one field are ORed, fields are ANDed, and an
      * empty field applies no filter (no preferences at all = the whole pool). Titles,
@@ -48,10 +50,12 @@ final class MatchingJobPostings
             ->select('job_postings.*')
             ->join('job_posting_profiles', 'job_posting_profiles.job_posting_id', '=', 'job_postings.id')
             ->join('companies', 'companies.id', '=', 'job_postings.company_id')
+            ->join('collection_runs as first_run', 'first_run.id', '=', 'job_postings.collection_run_id')
             ->where('companies.outreach_status', OutreachStatus::Verified->value)
             ->where('job_posting_profiles.status', ProfileStatus::Done->value)
             ->when($withLanguageRule, fn (Builder $query) => $query->whereIn('job_posting_profiles.language', ApplicationProfile::activeCompleteLanguagesFor($user)))
             ->whereIn('job_postings.role_family', config('talent.collection.target_role_families'))
+            ->where('first_run.started_at', '>=', PostingDay::windowStartsAt())
             ->whereExists(function ($contacts): void {
                 $contacts->select(DB::raw(1))
                     ->from('contacts')

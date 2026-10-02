@@ -62,6 +62,10 @@ return [
             'customer_service',
             'product',
         ],
+
+        // Days (today included, app timezone) a posting stays in the client pool, counted by
+        // the started_at of the run that first collected it.
+        'window_days' => (int) env('COLLECTION_WINDOW_DAYS', 5),
     ],
 
     'matching' => [
