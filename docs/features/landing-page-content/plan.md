@@ -12,7 +12,7 @@ session. Phase status is updated in place in this file.
 | 1     | Copy-only replacements (items 1, 3, 4, 5, 6, 8–10) | inertia-frontend | none       | S    | DONE    |
 | 2     | Caption under the matching chips (item 7)          | inertia-frontend | none       | S    | DONE    |
 | 3     | Gmail → email across the landing (item 11)         | inertia-frontend | none       | M    | DONE    |
-| 4     | Hero demo framed as a product preview (item 2)     | inertia-frontend | none       | S    | PENDING |
+| 4     | Hero demo framed as a product preview (item 2)     | inertia-frontend | none       | S    | DONE    |
 | 5     | Verification and report                            | qa-tester        | 1–4        | S    | PENDING |
 
 Phases 1–4 are independent of each other and can run in any order. They all
@@ -254,7 +254,8 @@ App-side Gmail copy (out of scope).
 
 ### Phase 4 — Hero demo framed as a product preview (item 2)
 
-Status: PENDING
+Status: DONE
+Evidence: key `landing.hero.demo.label` added after trust.3 in both dictionaries; HeroDemo() wrapped in a framed panel (rounded-card, border-hairline, bg-tile, p-3 md:p-4) with a white-on-accent Eye pill outside the aria-hidden/inert grid; ref, in-view hook and grid classes unchanged; key parity OK; `yarn types:check` pass; `php artisan test` 33/33 pass; code-reviewer APPROVED. Visual check at mobile/md/xl in EN and PT NOT done (owner manual item).
 Role: inertia-frontend · Depends on: none · Covers: AC-0.1, AC-2 · Size: S
 Spec: Part 0, Part 1 item 2 · Decisions: D2
 

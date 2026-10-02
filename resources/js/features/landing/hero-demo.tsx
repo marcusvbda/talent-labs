@@ -1,4 +1,4 @@
-import { Clock, Radio, Send } from "lucide-react";
+import { Clock, Eye, Radio, Send } from "lucide-react";
 import { ActivityRow } from "@/components/patterns/activity-row";
 import { CompanyLogo } from "@/components/patterns/company-logo";
 import { CountdownBar } from "@/components/patterns/countdown-bar";
@@ -215,7 +215,12 @@ export function HeroDemo() {
     useRegisterDemoInView(inView);
 
     return (
-        <div>
+        <div className="flex flex-col gap-3 rounded-card border border-hairline bg-tile p-3 md:p-4">
+            <div>
+                <Pill tone="white-on-accent" icon={Eye}>
+                    {t("landing.hero.demo.label")}
+                </Pill>
+            </div>
             <div
                 ref={ref}
                 aria-hidden="true"
