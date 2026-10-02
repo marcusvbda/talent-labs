@@ -15,7 +15,7 @@ session. Phase status is updated in place in this file.
 | 4     | Hacker News: extract emails into source contacts          | laravel-backend | 3          | S    | DONE    |
 | 5     | New source: Y Combinator (jobs + founders)                | laravel-backend | 3          | M    | DONE    |
 | 6     | Admin: show source contacts + Y Combinator settings hint  | filament-admin  | 3, 5       | S    | DONE    |
-| 7     | Verification and report                                   | qa-tester       | 1–6        | S    | PENDING |
+| 7     | Verification and report                                   | qa-tester       | 1–6        | S    | DONE    |
 
 ## Audit — 2026-10-02
 
@@ -361,7 +361,8 @@ Y Combinator source reads.
 
 ### Phase 7 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn check`, `yarn types:check`, `composer lint:check`, phpstan (0 errors), `php artisan test --compact` (33 passed) green; live smoke HN 114 / YC 99 / Himalayas 118 / WWR 119 / Working Nomads 33 postings with "via …" labels and board links; no duplicate (source_id, external_id); forbidden-pattern greps clean. Local DB has 0 postings, so AC1/AC3/AC4/AC5 were verified by SQL shape and in-memory PostingDay checks, not data.
 Role: qa-tester · Depends on: 1–6 · Covers: AC1–AC9 · Size: S
 Spec: whole spec
 
