@@ -31,6 +31,7 @@ class ApplicationProfileResource extends JsonResource
             'emailSubject' => $profile->email_subject,
             'emailBody' => $profile->email_body,
             'coverLetter' => $profile->cover_letter ?? '',
+            'links' => $profile->links ?? [],
             'complete' => $profile->isComplete(),
             'missing' => $profile->missing(),
         ];

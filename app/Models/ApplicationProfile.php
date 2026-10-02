@@ -24,11 +24,12 @@ use Illuminate\Support\Facades\Storage;
  * @property string $email_subject
  * @property string $email_body
  * @property string|null $cover_letter
+ * @property list<array{label: string, url: string}>|null $links
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read User $user
  */
-#[Fillable(['user_id', 'language', 'is_active', 'cv_path', 'cv_original_name', 'cv_size_bytes', 'cv_uploaded_at', 'email_subject', 'email_body', 'cover_letter'])]
+#[Fillable(['user_id', 'language', 'is_active', 'cv_path', 'cv_original_name', 'cv_size_bytes', 'cv_uploaded_at', 'email_subject', 'email_body', 'cover_letter', 'links'])]
 class ApplicationProfile extends Model
 {
     use DispatchesClientEvent;
@@ -56,6 +57,7 @@ class ApplicationProfile extends Model
             'is_active' => 'bool',
             'cv_size_bytes' => 'int',
             'cv_uploaded_at' => 'immutable_datetime',
+            'links' => 'array',
         ];
     }
 

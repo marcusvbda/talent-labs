@@ -9,7 +9,7 @@ use App\Models\User;
 
 final class ApplicationTemplateRenderer
 {
-    public const ALLOWED_VARIABLES = ['company', 'job_title', 'job_location', 'job_url', 'client_name', 'cover_letter'];
+    public const ALLOWED_VARIABLES = ['company', 'job_title', 'job_location', 'job_url', 'client_name', 'cover_letter', 'links'];
 
     private const DEFAULT_SUBJECT_EN = 'Application: {{ job_title }}';
 
@@ -64,12 +64,36 @@ final class ApplicationTemplateRenderer
             'job_location' => $location,
             'job_url' => (string) $posting->applicationUrl(),
             'client_name' => $user->name,
+            'links' => self::linksText($profile->links),
         ];
 
         return [
             ...$base,
             'cover_letter' => self::render((string) $profile->cover_letter, $base),
         ];
+    }
+
+    /**
+     * One "label : url" line per complete link, in entry order.
+     *
+     * @param  list<array{label?: mixed, url?: mixed}>|null  $links
+     */
+    public static function linksText(?array $links): string
+    {
+        $lines = [];
+
+        foreach ($links ?? [] as $link) {
+            $label = is_string($link['label'] ?? null) ? trim($link['label']) : '';
+            $url = is_string($link['url'] ?? null) ? trim($link['url']) : '';
+
+            if ($label === '' || $url === '') {
+                continue;
+            }
+
+            $lines[] = "{$label} : {$url}";
+        }
+
+        return implode("\n", $lines);
     }
 
     /**

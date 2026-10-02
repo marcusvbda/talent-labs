@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('email_subject', 200);
             $table->text('email_body');
             $table->text('cover_letter')->nullable();
+            $table->json('links')->nullable();
             $table->timestamps();
 
             $table->unique(['user_id', 'language']);

@@ -46,6 +46,7 @@ class AccountExportController extends Controller
                 'emailSubject' => $profile->email_subject,
                 'emailBody' => $profile->email_body,
                 'coverLetter' => $profile->cover_letter ?? '',
+                'links' => $profile->links ?? [],
             ];
         }
 
