@@ -11,7 +11,7 @@ session. Phase status is updated in place in this file.
 | ----- | --------------------------------------------------------- | --------------- | ---------- | ---- | ------- |
 | 1     | Availability window on the client pool (D3)               | laravel-backend | none       | S    | DONE    |
 | 2     | "Today" = first run started today, app timezone (D1)      | laravel-backend | 1          | M    | DONE    |
-| 3     | `source_contacts` on postings (storage + DTO + upsert)    | laravel-backend | none       | M    | PENDING |
+| 3     | `source_contacts` on postings (storage + DTO + upsert)    | laravel-backend | none       | M    | DONE    |
 | 4     | Hacker News: extract emails into source contacts          | laravel-backend | 3          | S    | PENDING |
 | 5     | New source: Y Combinator (jobs + founders)                | laravel-backend | 3          | M    | PENDING |
 | 6     | Admin: show source contacts + Y Combinator settings hint  | filament-admin  | 3, 5       | S    | PENDING |
@@ -169,7 +169,8 @@ first run in the app timezone, so several runs on the same day add up.
 
 ### Phase 3 — `source_contacts` on postings
 
-Status: PENDING
+Status: DONE
+Evidence: column folded into create migration (no new migration file; `migrate:status` clean); upsert SQL via DB::pretend ends with `"source_contacts" = coalesce(excluded.source_contacts, job_postings.source_contacts)`; lint:check, types:check (0 errors), tests (33 passed) green; code-reviewer APPROVED. Owner must run `php artisan migrate:fresh --seed` before the column exists locally.
 Role: laravel-backend · Depends on: none · Covers: AC6, AC7 (storage) · Size: M
 Spec: "1. Hacker News" (contact kept), "2. Y Combinator" (founders), D4, D6
 

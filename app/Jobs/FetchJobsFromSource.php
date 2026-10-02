@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Collection\Data\JobPostingData;
+use App\Collection\Data\SourceContactData;
 use App\Collection\Support\PostingTitle;
 use App\Collection\Support\RoleClassifier;
 use App\Contacts\Jobs\DiscoverContactsForPosting;
@@ -13,6 +14,7 @@ use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Marcusvbda\FilamentRealtimeDriver\RealtimeEvent;
@@ -37,6 +39,7 @@ class FetchJobsFromSource implements ShouldQueue
     /**
      * Columns refreshed when a posting already exists. Never `collection_run_id`,
      * `first_seen_at` or `created_at`: those belong to the run that first found it.
+     * `source_contacts` is merged separately in the upsert so a run without contacts keeps them.
      */
     private const MUTABLE_COLUMNS = [
         'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'role_family',
@@ -101,6 +104,9 @@ class FetchJobsFromSource implements ShouldQueue
                     'url' => $item->url,
                     'apply_url' => $item->applyUrl,
                     'company_website' => $item->companyWebsite,
+                    'source_contacts' => $item->sourceContacts === []
+                        ? null
+                        : json_encode(array_map(fn (SourceContactData $c): array => $c->toArray(), $item->sourceContacts)),
                     'description_html' => $item->descriptionHtml,
                     'description_text' => $item->descriptionText,
                     'published_at' => $item->publishedAt?->setTimezone(config('app.timezone')),
@@ -112,7 +118,11 @@ class FetchJobsFromSource implements ShouldQueue
                     'updated_at' => $now,
                 ], array_values($chunk));
 
-                JobPosting::upsert($rows, ['source_id', 'external_id'], self::MUTABLE_COLUMNS);
+                JobPosting::upsert($rows, ['source_id', 'external_id'], [
+                    ...self::MUTABLE_COLUMNS,
+                    // A run that brings no contacts must not wipe the ones already stored.
+                    'source_contacts' => DB::raw('coalesce(excluded.source_contacts, job_postings.source_contacts)'),
+                ]);
             }
 
             $sourceRun->status = SourceRunStatus::Completed;

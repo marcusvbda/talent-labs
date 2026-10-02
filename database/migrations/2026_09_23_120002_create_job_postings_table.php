@@ -29,6 +29,8 @@ return new class extends Migration
             $table->text('url');
             $table->text('apply_url')->nullable();
             $table->text('company_website')->nullable();
+            // Human contacts exposed by the source (HN emails, YC founders). Admin-only; never recipients.
+            $table->jsonb('source_contacts')->nullable();
             $table->longText('description_html')->nullable();
             $table->longText('description_text')->nullable();
             $table->timestamp('published_at')->nullable();

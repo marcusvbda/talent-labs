@@ -8,6 +8,7 @@ final readonly class JobPostingData
 {
     /**
      * @param  array<string, mixed>  $raw
+     * @param  list<SourceContactData>  $sourceContacts
      */
     public function __construct(
         public string $externalId,
@@ -24,5 +25,6 @@ final readonly class JobPostingData
         public ?CarbonImmutable $publishedAt,
         public array $raw,
         public ?string $companyWebsite = null,
+        public array $sourceContacts = [],
     ) {}
 }
