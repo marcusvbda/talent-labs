@@ -10,7 +10,7 @@ session. Phase status is updated in place in this file.
 | Phase | Title                                              | Role             | Depends on | Size | Status  |
 | ----- | -------------------------------------------------- | ---------------- | ---------- | ---- | ------- |
 | 1     | Copy-only replacements (items 1, 3, 4, 5, 6, 8–10) | inertia-frontend | none       | S    | DONE    |
-| 2     | Caption under the matching chips (item 7)          | inertia-frontend | none       | S    | PENDING |
+| 2     | Caption under the matching chips (item 7)          | inertia-frontend | none       | S    | DONE    |
 | 3     | Gmail → email across the landing (item 11)         | inertia-frontend | none       | M    | PENDING |
 | 4     | Hero demo framed as a product preview (item 2)     | inertia-frontend | none       | S    | PENDING |
 | 5     | Verification and report                            | qa-tester        | 1–4        | S    | PENDING |
@@ -161,7 +161,8 @@ changes.
 
 ### Phase 2 — Caption under the matching chips (item 7)
 
-Status: PENDING
+Status: DONE
+Evidence: key `landing.matching.chips.caption` added to both dictionaries after chip.4; caption `<p class="text-label-sm text-muted">` rendered under the chips in feature-matching.tsx; key parity OK; `yarn types:check` pass; `php artisan test` 33/33 pass; code-reviewer APPROVED. `yarn run check` format failures are pre-existing across the landing folder (quote style); lang files clean. Mobile wrapping not visually verified.
 Role: inertia-frontend · Depends on: none · Covers: AC-0.1, AC-7 · Size: S
 Spec: Part 0, Part 1 item 7 · Decisions: D3
 
