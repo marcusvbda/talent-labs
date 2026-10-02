@@ -5,6 +5,7 @@ import { fixtureState } from '@/data/fixtures/state';
 import type {
     ApplicationProfile,
     JobLanguage,
+    ProfileLink,
     ProfilesData,
     TemplatePreview,
 } from '@/types/contracts';
@@ -22,7 +23,22 @@ export type SaveProfileInput = {
     body: string;
     coverLetter: string;
     active: boolean;
+    links?: ProfileLink[];
 };
+
+const sanitizeLinks = (links: ProfileLink[]): ProfileLink[] =>
+    links.filter(
+        (link) => link.label.trim() !== '' || link.url.trim() !== '',
+    );
+
+// Mirrors ApplicationTemplateRenderer::linksText: one "label : url" line per
+// complete link, in entry order; incomplete rows are skipped.
+export const linksText = (links: ProfileLink[]): string =>
+    links
+        .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
+        .filter((link) => link.label !== '' && link.url !== '')
+        .map((link) => `${link.label} : ${link.url}`)
+        .join('\n');
 
 const find = (language: JobLanguage): ApplicationProfile | undefined =>
     fixtureState.get().profiles.find((row) => row.language === language);
@@ -107,6 +123,7 @@ export function createProfile(language: JobLanguage): ApplicationProfile {
         emailSubject: defaultTemplates[language].subject,
         emailBody: defaultTemplates[language].body,
         coverLetter: '',
+        links: [],
         complete: false,
         missing: ['cv'],
     });
@@ -189,6 +206,10 @@ export function saveProfile(input: SaveProfileInput): ApplicationProfile {
             emailBody: input.body,
             coverLetter: input.coverLetter,
             active: input.active,
+            links:
+                input.links === undefined
+                    ? profile.links
+                    : sanitizeLinks(input.links),
         }),
     );
 }
@@ -216,6 +237,7 @@ export function previewTemplate(input: {
     subject: string;
     body: string;
     coverLetter: string;
+    links?: ProfileLink[];
 }): TemplatePreview {
     const { jobs } = fixtureState.get();
     const sample =
@@ -230,6 +252,7 @@ export function previewTemplate(input: {
         job_location: sample.location ?? 'Remote',
         client_name: 'Ana Silva',
         cover_letter: input.coverLetter,
+        links: linksText(input.links ?? []),
     };
 
     return {

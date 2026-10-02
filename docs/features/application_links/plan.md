@@ -11,7 +11,7 @@ session. Phase status is updated in place in this file.
 | ----- | --------------------------------------------- | ---------------- | ---------- | ---- | ------- |
 | 1     | Store links and render `{{ links }}`          | laravel-backend  | none       | M    | DONE |
 | 2     | Save and preview endpoints accept links       | laravel-backend  | 1          | S    | DONE |
-| 3     | Frontend contract, data hooks and fixtures    | inertia-frontend | 2          | M    | PENDING |
+| 3     | Frontend contract, data hooks and fixtures    | inertia-frontend | 2          | M    | DONE |
 | 4     | Links field on the Profiles form              | inertia-frontend | 3          | M    | PENDING |
 | 5     | Verification and report                       | qa-tester        | 1–4        | S    | PENDING |
 
@@ -202,7 +202,7 @@ Spec: B.1, B.2 · Decisions D1, D4, D5
 
 ### Phase 3 — Frontend contract, data hooks and fixtures
 
-Status: PENDING
+Status: DONE
 Role: inertia-frontend · Depends on: 2 · Covers: AC04 (types), AC06, AC07 · Size: M
 Spec: B.1, B.2 · Decisions D4, D5
 
@@ -239,6 +239,8 @@ Spec: B.1, B.2 · Decisions D4, D5
 - Saving from onboarding sends no `links` key (inspect the hook body).
 
 **Not in this phase.** The Links editor UI and copy (Phase 4).
+
+**Evidence.** `yarn check` → passed. `yarn types:check` → passed. `features/onboarding/step-profile.tsx` confirmed unmodified (`git diff` empty) and never sets `links`, so `useSaveProfile`'s conditional spread omits the key entirely on the wire (verified against `data/api.ts`'s `JSON.stringify`). `code-reviewer`: APPROVED, no blocking findings (one non-blocking note: `sanitizeLinks`/`linksText` use intentionally different blank-row rules — drop-both-blank vs drop-either-blank — could use a clarifying comment, not required).
 
 ### Phase 4 — Links field on the Profiles form
 

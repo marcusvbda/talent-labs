@@ -1,5 +1,6 @@
 import { ApiError } from '@/data/api';
 import { toJobCard } from '@/data/fixtures/handlers/cards';
+import { linksText } from '@/data/fixtures/handlers/profiles';
 import { renderTemplate } from '@/data/fixtures/handlers/templates';
 import { fixtureState } from '@/data/fixtures/state';
 import type { ReviewDraft } from '@/types/contracts';
@@ -40,6 +41,7 @@ export function buildDrafts(jobIds: number[]): ReviewDraft[] {
             job_location: job.location ?? 'Remote',
             client_name: CLIENT_NAME,
             cover_letter: profile.coverLetter,
+            links: linksText(profile.links),
         };
 
         drafts.push({

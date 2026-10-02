@@ -13,6 +13,7 @@ export const TEMPLATE_VARIABLES: TemplateVariable[] = [
     'job_url',
     'client_name',
     'cover_letter',
+    'links',
 ];
 
 // Copied verbatim from ApplicationTemplateRenderer::defaultsFor() in
@@ -48,6 +49,9 @@ export const PROFILES: ApplicationProfile[] = [
         emailBody: defaultTemplates.en.body,
         coverLetter:
             'I am a backend-leaning full-stack engineer with six years of experience building reliable web products, and I enjoy working close to both the data and the interface.',
+        links: [
+            { label: 'LinkedIn', url: 'https://www.linkedin.com/in/example' },
+        ],
         complete: true,
         missing: [],
     },

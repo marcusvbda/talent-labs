@@ -5,13 +5,18 @@ import { previewTemplate } from '@/data/fixtures/handlers/profiles';
 import { fixtureCall } from '@/data/fixtures/runtime';
 import { keys } from '@/data/keys';
 import { fromSource } from '@/data/source';
-import type { JobLanguage, TemplatePreview } from '@/types/contracts';
+import type {
+    JobLanguage,
+    ProfileLink,
+    TemplatePreview,
+} from '@/types/contracts';
 
 type Input = {
     language: JobLanguage;
     subject: string;
     body: string;
     coverLetter: string;
+    links?: ProfileLink[];
 };
 
 // The screen debounces the input (500 ms); the previous preview stays visible.
@@ -25,6 +30,7 @@ export function useTemplatePreview(input: Input) {
                 subject: input.subject,
                 body: input.body,
                 coverLetter: input.coverLetter,
+                links: input.links ?? [],
             },
         });
     };

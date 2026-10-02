@@ -46,7 +46,8 @@ export type TemplateVariable =
     | 'job_location'
     | 'job_url'
     | 'client_name'
-    | 'cover_letter';
+    | 'cover_letter'
+    | 'links';
 
 export type CompanyRef = { id: number; name: string; initials: string };
 
@@ -233,6 +234,8 @@ export type PreferencesPreview = {
     byLanguage: Record<JobLanguage, number>;
 };
 
+export type ProfileLink = { label: string; url: string };
+
 export type ApplicationProfile = {
     language: JobLanguage;
     active: boolean;
@@ -240,6 +243,7 @@ export type ApplicationProfile = {
     emailSubject: string;
     emailBody: string;
     coverLetter: string;
+    links: ProfileLink[];
     complete: boolean;
     missing: ('cv' | 'subject' | 'body')[];
 };
