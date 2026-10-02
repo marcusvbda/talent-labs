@@ -2,11 +2,11 @@
 <noscript>
     <h1>{{ $brand }}</h1>
     <p>{{ $description }}</p>
-    <p>{{ $gmailNote }}</p>
+    <p>{{ $emailNote }}</p>
 </noscript>
 <div id="landing-essentials">
     <p>{{ $brand }}</p>
     <p>{{ $description }}</p>
-    <p>{{ $gmailNote }}</p>
+    <p>{{ $emailNote }}</p>
 </div>
 <script>document.getElementById('landing-essentials').classList.add('sr-only');</script>

@@ -852,8 +852,8 @@
     "mail.reset.expiry": "Este link expira em :minutes minutos.",
     "mail.reset.ignore": "Se você não solicitou a redefinição de senha, pode ignorar este e-mail com segurança.",
     "auth.register.invite_locked_hint": "Este convite está vinculado a este e-mail.",
-    "landing.meta.title": ":brand — Candidaturas enviadas pelo seu próprio Gmail",
-    "landing.meta.description": "O :brand encontra vagas de desenvolvimento, filtra pelas suas preferências e envia cada candidatura pelo seu próprio Gmail, uma empresa por vez, no idioma da vaga.",
+    "landing.meta.title": ":brand — Candidaturas enviadas pelo seu próprio email",
+    "landing.meta.description": "O :brand encontra vagas de desenvolvimento, filtra pelas suas preferências e envia cada candidatura pelo seu próprio email, uma empresa por vez, no idioma da vaga.",
     "landing.nav.product": "Produto",
     "landing.nav.how": "Como funciona",
     "landing.nav.languages": "Idiomas",
@@ -913,7 +913,7 @@
     "landing.plans.desc.auto": "Envia dentro das suas preferências.",
     "landing.plans.desc.select": "Você escolhe para quais vagas aplicar.",
     "landing.plans.desc.review": "Você revisa e edita cada e-mail antes de sair.",
-    "landing.plans.feature.gmail": "Sai do seu próprio Gmail",
+    "landing.plans.feature.email": "Sai do seu próprio email",
     "landing.plans.feature.filtered": "Vagas filtradas pelas suas preferências",
     "landing.plans.feature.select": "Escolha exatamente o que enviar",
     "landing.plans.feature.review": "Revise e edite cada e-mail",
@@ -931,5 +931,5 @@
     "landing.faq.5.q": "Como uma empresa pede para não receber candidaturas?",
     "landing.faq.5.a": "Pela página de opt-out no rodapé. Depois de confirmado, a empresa deixa de receber candidaturas.",
     "landing.cta.title": "Comece com acesso por convite.",
-    "landing.gmail.note": "Usamos a permissão do seu Gmail apenas para enviar as candidaturas que você escolhe ou autoriza. Nunca lemos a sua caixa de entrada."
+    "landing.email.note": "Usamos a permissão do seu email apenas para enviar as candidaturas que você escolhe ou autoriza. Nunca lemos a sua caixa de entrada."
 }

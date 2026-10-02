@@ -19,7 +19,7 @@ export function CtaBanner({ betaClosed }: { betaClosed: boolean }) {
                     size="lg"
                 />
                 <p className="max-w-2xl text-landing-body">
-                    {t('landing.gmail.note')}
+                    {t('landing.email.note')}
                 </p>
             </div>
         </section>

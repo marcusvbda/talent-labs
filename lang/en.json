@@ -852,8 +852,8 @@
     "mail.reset.expiry": "This link expires in :minutes minutes.",
     "mail.reset.ignore": "If you didn't request a password reset, you can safely ignore this email.",
     "auth.register.invite_locked_hint": "This invitation is bound to this email address.",
-    "landing.meta.title": ":brand — Job applications sent from your own Gmail",
-    "landing.meta.description": ":brand finds developer jobs, filters them by your preferences and sends each application from your own Gmail, one company at a time, in the language of the job.",
+    "landing.meta.title": ":brand — Job applications sent from your own email",
+    "landing.meta.description": ":brand finds developer jobs, filters them by your preferences and sends each application from your own email, one company at a time, in the language of the job.",
     "landing.nav.product": "Product",
     "landing.nav.how": "How it works",
     "landing.nav.languages": "Languages",
@@ -913,7 +913,7 @@
     "landing.plans.desc.auto": "Sends within your preferences.",
     "landing.plans.desc.select": "You choose which jobs to apply to.",
     "landing.plans.desc.review": "You review and edit each email before it goes.",
-    "landing.plans.feature.gmail": "Sent from your own Gmail",
+    "landing.plans.feature.email": "Sent from your own email",
     "landing.plans.feature.filtered": "Jobs filtered by your preferences",
     "landing.plans.feature.select": "Choose exactly what to send",
     "landing.plans.feature.review": "Review and edit each email",
@@ -931,5 +931,5 @@
     "landing.faq.5.q": "How can a company ask not to receive applications?",
     "landing.faq.5.a": "Through the opt-out page linked in the footer. Once confirmed, the company stops receiving applications.",
     "landing.cta.title": "Start with invite-only access.",
-    "landing.gmail.note": "We only use your Gmail permission to send the applications you choose or allow. We never read your inbox."
+    "landing.email.note": "We only use your email permission to send the applications you choose or allow. We never read your inbox."
 }

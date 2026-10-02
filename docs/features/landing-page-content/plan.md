@@ -11,7 +11,7 @@ session. Phase status is updated in place in this file.
 | ----- | -------------------------------------------------- | ---------------- | ---------- | ---- | ------- |
 | 1     | Copy-only replacements (items 1, 3, 4, 5, 6, 8–10) | inertia-frontend | none       | S    | DONE    |
 | 2     | Caption under the matching chips (item 7)          | inertia-frontend | none       | S    | DONE    |
-| 3     | Gmail → email across the landing (item 11)         | inertia-frontend | none       | M    | PENDING |
+| 3     | Gmail → email across the landing (item 11)         | inertia-frontend | none       | M    | DONE    |
 | 4     | Hero demo framed as a product preview (item 2)     | inertia-frontend | none       | S    | PENDING |
 | 5     | Verification and report                            | qa-tester        | 1–4        | S    | PENDING |
 
@@ -198,7 +198,8 @@ in the "Preferences" section.
 
 ### Phase 3 — Gmail → email across the landing (item 11)
 
-Status: PENDING
+Status: DONE
+Evidence: meta.title/description values changed; `landing.plans.feature.gmail` -> `.email` and `landing.gmail.note` -> `landing.email.note` renamed in both dictionaries; readers updated (landing-plan-card.tsx, cta-banner.tsx, app.blade.php, landing-essentials.blade.php); Gmail-in-landing-values grep and old-key grep both empty; key parity OK; `yarn types:check` pass; `php artisan test` 33/33 pass; code-reviewer APPROVED. Landing not rendered in a browser.
 Role: inertia-frontend (also edits two Blade views) · Depends on: none · Covers: AC-0.1, AC-0.2, AC-11 · Size: M
 Spec: Part 0, Part 1 item 11 · Decisions: D4
 

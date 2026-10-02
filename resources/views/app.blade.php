@@ -19,7 +19,7 @@
                 $landingEssentials = [
                     'brand' => $landingBrand,
                     'description' => str_replace(':brand', $landingBrand, $landingStrings['landing.meta.description'] ?? ''),
-                    'gmailNote' => str_replace(':brand', $landingBrand, $landingStrings['landing.gmail.note'] ?? ''),
+                    'emailNote' => str_replace(':brand', $landingBrand, $landingStrings['landing.email.note'] ?? ''),
                 ];
             @endphp
             {{-- Keyed like Inertia-managed head tags so the client <Head> replaces it: one description after hydration. --}}
