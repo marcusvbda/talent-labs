@@ -82,7 +82,9 @@ export function useSaveProfile() {
                     emailBody: input.body,
                     coverLetter: input.coverLetter,
                     active: input.active,
-                    ...(input.links !== undefined ? { links: input.links } : {}),
+                    ...(input.links !== undefined
+                        ? { links: input.links }
+                        : {}),
                 },
             });
         } catch (error) {

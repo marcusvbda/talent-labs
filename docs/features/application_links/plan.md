@@ -12,7 +12,7 @@ session. Phase status is updated in place in this file.
 | 1     | Store links and render `{{ links }}`          | laravel-backend  | none       | M    | DONE |
 | 2     | Save and preview endpoints accept links       | laravel-backend  | 1          | S    | DONE |
 | 3     | Frontend contract, data hooks and fixtures    | inertia-frontend | 2          | M    | DONE |
-| 4     | Links field on the Profiles form              | inertia-frontend | 3          | M    | PENDING |
+| 4     | Links field on the Profiles form              | inertia-frontend | 3          | M    | DONE |
 | 5     | Verification and report                       | qa-tester        | 1–4        | S    | PENDING |
 
 ## Audit — 2026-10-02
@@ -244,7 +244,7 @@ Spec: B.1, B.2 · Decisions D4, D5
 
 ### Phase 4 — Links field on the Profiles form
 
-Status: PENDING
+Status: DONE
 Role: inertia-frontend · Depends on: 3 · Covers: AC01, AC02, AC03 (UI), AC06 (preview), AC09 · Size: M
 Spec: B.1, B.2 · Decisions D1, D5
 
@@ -293,6 +293,8 @@ Spec: B.1, B.2 · Decisions D1, D5
 - `yarn check` and `yarn types:check` pass.
 
 **Not in this phase.** Onboarding changes (D4); default template changes (D6).
+
+**Evidence.** `yarn run check` (the actual `vp check` script — plain `yarn check` is Yarn's own reserved builtin and only checks workspace sync, not formatting/lint; discovered during this phase) initially flagged pre-existing formatting issues in 4 files from Phase 3 (`lang/en.json`, `lang/pt.json`, `resources/js/data/fixtures/handlers/profiles.ts`, `resources/js/data/hooks/use-profiles.ts`) plus 16 unrelated baseline files; fixed formatting only in this feature's files via `vp check --fix <paths>` (no logic change, confirmed by diff), left the unrelated baseline files untouched. `yarn run check` and `tsc --noEmit` now pass clean for all feature files. `code-reviewer`: APPROVED, no blocking findings (one non-blocking UX note: `links-field.tsx` uses array index as React `key`, harmless since inputs are fully controlled, not required to fix).
 
 ### Phase 5 — Verification and report
 

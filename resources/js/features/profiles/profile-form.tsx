@@ -7,13 +7,19 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useT } from '@/i18n/i18n-provider';
 import { CvCard } from '@/features/profiles/cv-card';
+import { LinksField, linkRowState } from '@/features/profiles/links-field';
 import { VariableBar } from '@/features/profiles/variable-bar';
-import type { ApplicationProfile, TemplateVariable } from '@/types/contracts';
+import type {
+    ApplicationProfile,
+    ProfileLink,
+    TemplateVariable,
+} from '@/types/contracts';
 
 export type ProfileDraft = {
     subject: string;
     body: string;
     coverLetter: string;
+    links: ProfileLink[];
     active: boolean;
 };
 
@@ -21,6 +27,7 @@ export const draftFrom = (profile: ApplicationProfile): ProfileDraft => ({
     subject: profile.emailSubject,
     body: profile.emailBody,
     coverLetter: profile.coverLetter,
+    links: profile.links,
     active: profile.active,
 });
 
@@ -145,6 +152,10 @@ export const ProfileForm = ({
                     />
                 )}
             </Field>
+            <LinksField
+                links={draft.links}
+                onChange={(links) => onDraftChange({ ...draft, links })}
+            />
             <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 flex-col gap-1">
                     <label
@@ -171,7 +182,16 @@ export const ProfileForm = ({
                 >
                     {t('profiles.delete')}
                 </Button>
-                <Button loading={saving} disabled={!dirty} onClick={onSave}>
+                <Button
+                    loading={saving}
+                    disabled={
+                        !dirty ||
+                        draft.links.some(
+                            (row) => linkRowState(row) === 'invalid',
+                        )
+                    }
+                    onClick={onSave}
+                >
                     {t('profiles.save')}
                 </Button>
             </div>

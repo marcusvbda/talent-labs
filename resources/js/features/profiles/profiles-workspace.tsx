@@ -16,6 +16,7 @@ import {
     useSaveProfile,
 } from '@/data/hooks/use-profiles';
 import { useTemplatePreview } from '@/data/hooks/use-template-preview';
+import { linkRowState } from '@/features/profiles/links-field';
 import { PreviewCard } from '@/features/profiles/preview-card';
 import {
     ProfileForm,
@@ -82,11 +83,13 @@ const LivePreview = ({
         draft.coverLetter,
         PREVIEW_DEBOUNCE_MS,
     );
+    const links = useDebouncedValue(draft.links, PREVIEW_DEBOUNCE_MS);
     const preview = useTemplatePreview({
         language: profile.language,
         subject,
         body,
         coverLetter,
+        links,
     });
 
     return (
@@ -257,7 +260,13 @@ export const ProfilesWorkspace = ({ data }: { data: ProfilesData }) => {
         }
 
         save.mutate(
-            { language: current.language, ...draft },
+            {
+                language: current.language,
+                ...draft,
+                links: draft.links.filter(
+                    (row) => linkRowState(row) !== 'blank',
+                ),
+            },
             {
                 onSuccess: () => {
                     discardCurrent();

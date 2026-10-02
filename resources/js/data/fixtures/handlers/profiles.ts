@@ -27,9 +27,7 @@ export type SaveProfileInput = {
 };
 
 const sanitizeLinks = (links: ProfileLink[]): ProfileLink[] =>
-    links.filter(
-        (link) => link.label.trim() !== '' || link.url.trim() !== '',
-    );
+    links.filter((link) => link.label.trim() !== '' || link.url.trim() !== '');
 
 // Mirrors ApplicationTemplateRenderer::linksText: one "label : url" line per
 // complete link, in entry order; incomplete rows are skipped.
