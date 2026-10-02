@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # collection-scheduler — automatic daily collection, controlled from the admin
 
 > **Order:** 7 of 10. **Depends on:** `client-core-wiring` DONE (for the

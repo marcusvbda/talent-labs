@@ -105,6 +105,7 @@ export type JobDetail = JobCard & {
     department: string | null;
     publishedAt: ISODateTime | null;
     sourceLabel: string; // e.g. "RemoteOK" — text only, never a link
+    jobUrl: string | null; // captured job page; non-null only on paid plans
 };
 export type JobFilters = {
     q?: string;

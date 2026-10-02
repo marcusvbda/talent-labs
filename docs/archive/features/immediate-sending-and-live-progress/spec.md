@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # immediate-sending-and-live-progress — queued items leave now; the live panel narrates every step
 
 > **Kind:** product change (backend + dashboard). **Supersedes**, where they

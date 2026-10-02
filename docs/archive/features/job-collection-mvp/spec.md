@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # talent-labs — Bootstrap Spec (MVP: job collection + listing + realtime)
 
 > **You (the agent) were told "run it" with this file.** Read it end to end

@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # job-sources
 
 ## Daily batch and availability window

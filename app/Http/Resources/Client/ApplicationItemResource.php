@@ -71,7 +71,7 @@ class ApplicationItemResource extends JsonResource
         return in_array($locale, ['en', 'pt'], true) ? $locale : 'en';
     }
 
-    private static function safeUrl(?string $url): ?string
+    public static function safeUrl(?string $url): ?string
     {
         if ($url === null || $url === '') {
             return null;

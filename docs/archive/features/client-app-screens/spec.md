@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # client-app-screens — every client screen as a navigable prototype on typed fixtures
 
 > **Order:** 2 of 10. **Depends on:** `client-app-foundation` (design system,

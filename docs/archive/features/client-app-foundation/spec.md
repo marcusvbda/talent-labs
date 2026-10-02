@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # client-app-foundation — Inertia client app: design system, shell, data layer, i18n, login
 
 > **Order:** 1 of 10 (see "Roadmap" at the end). **Depends on:** nothing.

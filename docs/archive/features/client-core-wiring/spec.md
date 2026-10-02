@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # client-core-wiring — real auth, invite-only sign-up, account, dashboard, jobs, applications, realtime
 
 > **Order:** 3 of 10. **Depends on:** `client-app-foundation` and

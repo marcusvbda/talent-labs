@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # manual-sending-only — nothing is ever sent without a click; "Send randomly" for everyone
 
 > **Kind:** product change (backend + dashboard/Jobs UI). **Supersedes** the

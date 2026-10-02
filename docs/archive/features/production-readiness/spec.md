@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # production-readiness — hosting, Google verification, legal, opt-out, monitoring
 
 > **Order:** 10 of 10. **Depends on:** specs 1–7 DONE (8–9 optional for the

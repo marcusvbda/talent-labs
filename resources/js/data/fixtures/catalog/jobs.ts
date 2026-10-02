@@ -90,6 +90,7 @@ const job = (
         department,
         publishedAt: extra.noPublishedAt ? null : daysAgo(ageDays),
         sourceLabel: SOURCES[id % SOURCES.length],
+        jobUrl: null,
     };
 };
 

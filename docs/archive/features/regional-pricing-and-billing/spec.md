@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # regional-pricing-and-billing — prices per region and Stripe subscriptions
 
 > **Order:** 8 of 10. **Depends on:** `client-core-wiring` (plan catalog,

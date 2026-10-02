@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # talent-labs — Contact Discovery MVP (spec addition)
 
 > **Prompt to give the agent:** "Read this file end to end. This is a new

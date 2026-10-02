@@ -1,3 +1,4 @@
+import { ArrowUpRight } from 'lucide-react';
 import { CompanyLogo } from '@/components/patterns/company-logo';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
@@ -99,6 +100,17 @@ const DetailBody = ({
                 </p>
             ) : (
                 <Skeleton shape="line" className="w-1/2" />
+            )}
+            {data?.jobUrl && (
+                <Button
+                    variant="secondary-tile"
+                    className="w-full"
+                    href={data.jobUrl}
+                    external
+                    iconRight={ArrowUpRight}
+                >
+                    {t('applications.open_job_page')}
+                </Button>
             )}
             <Button
                 variant={selected ? 'secondary-tile' : 'primary-ink'}

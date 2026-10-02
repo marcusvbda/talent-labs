@@ -195,3 +195,46 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - IMPORTANT: Activate `inertia-react-development` when working with Inertia React client-side patterns.
 
 </laravel-boost-guidelines>
+
+## Specs and Plans
+
+### Lifecycle
+
+- `docs/features/<feature>/` contains ACTIVE work only (spec + plan).
+- `docs/archive/` is history. NEVER read, search, or use anything inside
+  `docs/archive/` unless the user explicitly asks.
+- When reading specs, read only the one for the feature in progress, never the
+  whole `docs/features/` folder.
+
+### Source of truth and conflicts
+
+- Hierarchy, highest to lowest:
+  1. The user's explicit instructions in the current conversation
+  2. The current code (including manual changes by the user)
+  3. The active spec of the feature in progress
+  4. Archived specs (never consulted)
+- A spec describes intent at the time it was written. Code describes current
+  reality. If they conflict, the code wins.
+- NEVER revert, rewrite, or "fix" existing code just to match a spec. This
+  includes changes that look like deviations: assume they were intentional
+  manual adjustments.
+- Before overwriting or removing existing code during a task, check
+  `git log` / `git blame` / `git diff` for the affected lines. If they were
+  recently changed by hand, treat that as intentional and preserve it.
+- On a spec/code divergence: (1) do not resolve it silently, in either
+  direction; (2) implement what the task requires while preserving the current
+  code behavior; (3) report the divergence at the end and propose a spec update
+  (a `Deviation:` note or a rewrite of the affected section).
+- If the spec is ambiguous, outdated, or contradicts itself, ask the user. Do
+  not guess.
+- If the user changes code manually, the active spec must be updated or
+  receive a note like `Deviation: <what changed and why>`.
+
+### Completion checklist (when ALL tasks in a plan are done)
+
+1. Move the feature folder to `docs/archive/features/<feature>/` with `git mv`.
+2. Add the header "Status: IMPLEMENTED on YYYY-MM-DD. Historical record only.
+   The code is the source of truth." to the spec.
+3. Delete the plan file.
+4. If the feature needs permanent documentation, create/update a short summary
+   of the current state and key decisions in `docs/architecture/<area>.md`.

@@ -35,8 +35,15 @@
             "Bash(php artisan migrate:rollback)",
             "Bash(php artisan migrate:rollback *)",
             "Bash(php artisan db:wipe)",
-            "Bash(php artisan db:wipe *)"
+            "Bash(php artisan db:wipe *)",
+            "Read(./docs/archive/**)",
+            "Grep(./docs/archive/**)",
+            "Glob(./docs/archive/**)"
         ]
     },
-    "enabledMcpjsonServers": ["laravel-boost", "context7", "playwright"]
+    "enabledMcpjsonServers": [
+        "laravel-boost",
+        "context7",
+        "playwright"
+    ]
 }

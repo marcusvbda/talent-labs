@@ -1,3 +1,5 @@
+> Status: ARCHIVED (implemented). Historical record only. The code is the source of truth. DO NOT use this document as a reference to implement or change code.
+
 # application-languages — application profiles per language (CV, email, cover letter)
 
 > **Order:** 5 of 10. **Depends on:** `client-core-wiring` (job language
