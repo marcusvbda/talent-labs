@@ -9,7 +9,7 @@ session. Phase status is updated in place in this file.
 
 | Phase | Title                                              | Role             | Depends on | Size | Status  |
 | ----- | -------------------------------------------------- | ---------------- | ---------- | ---- | ------- |
-| 1     | Copy-only replacements (items 1, 3, 4, 5, 6, 8–10) | inertia-frontend | none       | S    | PENDING |
+| 1     | Copy-only replacements (items 1, 3, 4, 5, 6, 8–10) | inertia-frontend | none       | S    | DONE    |
 | 2     | Caption under the matching chips (item 7)          | inertia-frontend | none       | S    | PENDING |
 | 3     | Gmail → email across the landing (item 11)         | inertia-frontend | none       | M    | PENDING |
 | 4     | Hero demo framed as a product preview (item 2)     | inertia-frontend | none       | S    | PENDING |
@@ -21,22 +21,22 @@ parallel.
 
 ## Audit — 2026-10-03
 
-| Check | Result |
-| ----- | ------ |
-| Dictionaries | `lang/en.json` and `lang/pt.json`, flat key → string, 932 keys each, identical key sets (parity holds today). 4-space indent. The **last** key in both files is `landing.gmail.note` (no trailing comma), so take care with commas when renaming it. |
-| Server-side use of dictionaries | `App\Support\I18n\Translations::for()` reads the same JSON files. `resources/views/app.blade.php` reads `landing.meta.description` and `landing.gmail.note` (→ `$landingEssentials['gmailNote']`), and `resources/views/partials/landing-essentials.blade.php` renders `$gmailNote` twice (noscript + sr-only). |
-| `landing.meta.*` | Used in `resources/js/pages/landing.tsx:64-65` (client `<Head>`) and in the Blade root view (description). |
-| Hero headline | `hero.tsx` renders `title.a` + `" "` + `<em class="text-accent not-italic">{title.em}</em>` + `title.b`. With D1 (accent on "automatically") the 3-key structure stays as is, and no key is added or removed. |
-| Hero demo | `hero-demo.tsx` `HeroDemo()` wraps the grid in `<div ref aria-hidden="true" inert className="grid … xl:demo-compact">`. Copy comes from shared `dashboard.hero.*`, `dashboard.live.*`, `dashboard.stat.*`, `dashboard.activity.*` and `sending.stage.*` keys, which the authenticated app also uses, so they are not touched. Mounted via `<Hero demo={<HeroDemo />} />` in `pages/landing.tsx:90`. |
-| Demo sub-step label (spec item 11 heads-up) | **Not rendered on the landing.** `LiveStepper` shows a sub-step only when given the `subStep` prop, and neither `hero-demo.tsx` nor `live-band.tsx` passes it (both only destructure it). `connecting_gmail` in `demo-data.ts:83` is a `SubStep` contract id, not copy. See D4. |
-| Plan-card feature ids | `landing-plan-card.tsx:11-15` `FEATURES` uses `'gmail'` for all three plans, giving `t(\`landing.plans.feature.${feature}\`)`. The app's own `features/plans/plan-card.tsx` also has a `'gmail'` id but uses `plans.*` keys, so it is out of scope. |
-| `landing.gmail.note` | `cta-banner.tsx:22` + Blade (above). |
-| Matching chips | `feature-matching.tsx`: `<Reveal index={3}><ul className="flex flex-wrap gap-2.5">…chips…</ul></Reveal>`. |
-| UI building blocks | `Pill` (`components/ui/pill.tsx`, tones `white-on-accent`, `tile`, `dark`, optional lucide `icon`). Theme tokens: `--radius-shell/card/panel`, `--color-card`, `--color-tile`, `--color-hairline`, `--color-canvas`. `lucide-react` is already a dependency. |
-| Tests touching these keys | None (`tests/` has no reference to `landing.*` or the essentials partial). |
-| Verification commands that exist | `yarn check` (vp check: format + lint), `yarn types:check` (tsc), `composer test` (config:clear, pint --test, phpstan, `php artisan test`), `composer ci:check` (all of the above). `node` is available for a JSON key-parity one-liner. |
-| Working tree | Uncommitted, unrelated changes in `resources/js/features/landing/demo-data.ts` (quote-style only), fixtures and other docs. Phases do not need `demo-data.ts`; leave it alone. |
-| Acceptance criteria | The spec has no separate AC section. Each item's before/after table and notes are taken as its AC (listed below as AC-0.x and AC-n). |
+| Check                                       | Result                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dictionaries                                | `lang/en.json` and `lang/pt.json`, flat key → string, 932 keys each, identical key sets (parity holds today). 4-space indent. The **last** key in both files is `landing.gmail.note` (no trailing comma), so take care with commas when renaming it.                                                                                                                                                |
+| Server-side use of dictionaries             | `App\Support\I18n\Translations::for()` reads the same JSON files. `resources/views/app.blade.php` reads `landing.meta.description` and `landing.gmail.note` (→ `$landingEssentials['gmailNote']`), and `resources/views/partials/landing-essentials.blade.php` renders `$gmailNote` twice (noscript + sr-only).                                                                                     |
+| `landing.meta.*`                            | Used in `resources/js/pages/landing.tsx:64-65` (client `<Head>`) and in the Blade root view (description).                                                                                                                                                                                                                                                                                          |
+| Hero headline                               | `hero.tsx` renders `title.a` + `" "` + `<em class="text-accent not-italic">{title.em}</em>` + `title.b`. With D1 (accent on "automatically") the 3-key structure stays as is, and no key is added or removed.                                                                                                                                                                                       |
+| Hero demo                                   | `hero-demo.tsx` `HeroDemo()` wraps the grid in `<div ref aria-hidden="true" inert className="grid … xl:demo-compact">`. Copy comes from shared `dashboard.hero.*`, `dashboard.live.*`, `dashboard.stat.*`, `dashboard.activity.*` and `sending.stage.*` keys, which the authenticated app also uses, so they are not touched. Mounted via `<Hero demo={<HeroDemo />} />` in `pages/landing.tsx:90`. |
+| Demo sub-step label (spec item 11 heads-up) | **Not rendered on the landing.** `LiveStepper` shows a sub-step only when given the `subStep` prop, and neither `hero-demo.tsx` nor `live-band.tsx` passes it (both only destructure it). `connecting_gmail` in `demo-data.ts:83` is a `SubStep` contract id, not copy. See D4.                                                                                                                     |
+| Plan-card feature ids                       | `landing-plan-card.tsx:11-15` `FEATURES` uses `'gmail'` for all three plans, giving `t(\`landing.plans.feature.${feature}\`)`. The app's own `features/plans/plan-card.tsx`also has a`'gmail'`id but uses`plans.*` keys, so it is out of scope.                                                                                                                                                     |
+| `landing.gmail.note`                        | `cta-banner.tsx:22` + Blade (above).                                                                                                                                                                                                                                                                                                                                                                |
+| Matching chips                              | `feature-matching.tsx`: `<Reveal index={3}><ul className="flex flex-wrap gap-2.5">…chips…</ul></Reveal>`.                                                                                                                                                                                                                                                                                           |
+| UI building blocks                          | `Pill` (`components/ui/pill.tsx`, tones `white-on-accent`, `tile`, `dark`, optional lucide `icon`). Theme tokens: `--radius-shell/card/panel`, `--color-card`, `--color-tile`, `--color-hairline`, `--color-canvas`. `lucide-react` is already a dependency.                                                                                                                                        |
+| Tests touching these keys                   | None (`tests/` has no reference to `landing.*` or the essentials partial).                                                                                                                                                                                                                                                                                                                          |
+| Verification commands that exist            | `yarn check` (vp check: format + lint), `yarn types:check` (tsc), `composer test` (config:clear, pint --test, phpstan, `php artisan test`), `composer ci:check` (all of the above). `node` is available for a JSON key-parity one-liner.                                                                                                                                                            |
+| Working tree                                | Uncommitted, unrelated changes in `resources/js/features/landing/demo-data.ts` (quote-style only), fixtures and other docs. Phases do not need `demo-data.ts`; leave it alone.                                                                                                                                                                                                                      |
+| Acceptance criteria                         | The spec has no separate AC section. Each item's before/after table and notes are taken as its AC (listed below as AC-0.x and AC-n).                                                                                                                                                                                                                                                                |
 
 ## Owner decisions
 
@@ -93,27 +93,28 @@ what the demo renders, not just copy).
 
 ## Acceptance-criteria coverage
 
-| AC | Text (derived from the spec item) | Phases |
-| -- | --------------------------------- | ------ |
-| AC-0.1 | Every new or changed landing string exists in EN and PT | 1, 2, 3, 4, 5 |
-| AC-0.2 | No orphaned landing keys remain in any dictionary | 3, 5 |
-| AC-1 | Hero `<h1>` reads the new EN/PT headline, with "automatically"/"automaticamente" in the accent color | 1 |
-| AC-2 | The hero demo is clearly a product preview that belongs to the hero (framed + labeled, D2), in both languages | 4 |
-| AC-3 | `landing.hero.lead` has the new EN/PT copy | 1 |
-| AC-4 | `landing.hero.trust.1` and `.2` have the new copy; `.3` unchanged | 1 |
-| AC-5 | `landing.guarantee.1.title` has the new copy; its desc and cards 2–4 unchanged | 1 |
-| AC-6 | `landing.matching.text` has the new copy | 1 |
-| AC-7 | A secondary caption "Example of tag filter" / "Exemplo de tag filter" appears directly below the chips; chips unchanged | 2 |
-| AC-8 | `landing.languages.text` has the new copy | 1 |
-| AC-9 | `landing.live.title` has the new copy (trailing period kept); eyebrow and text keys untouched by this item | 1 |
-| AC-10 | `landing.live.text` has the new copy | 1 |
-| AC-11 | No landing copy names Gmail. `meta.title`, `meta.description`, plan feature and note say email. `plans.feature.gmail` → `plans.feature.email`, `gmail.note` → `email.note` (code + both dictionaries, old keys gone). App copy untouched. | 3 |
+| AC     | Text (derived from the spec item)                                                                                                                                                                                                         | Phases        |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| AC-0.1 | Every new or changed landing string exists in EN and PT                                                                                                                                                                                   | 1, 2, 3, 4, 5 |
+| AC-0.2 | No orphaned landing keys remain in any dictionary                                                                                                                                                                                         | 3, 5          |
+| AC-1   | Hero `<h1>` reads the new EN/PT headline, with "automatically"/"automaticamente" in the accent color                                                                                                                                      | 1             |
+| AC-2   | The hero demo is clearly a product preview that belongs to the hero (framed + labeled, D2), in both languages                                                                                                                             | 4             |
+| AC-3   | `landing.hero.lead` has the new EN/PT copy                                                                                                                                                                                                | 1             |
+| AC-4   | `landing.hero.trust.1` and `.2` have the new copy; `.3` unchanged                                                                                                                                                                         | 1             |
+| AC-5   | `landing.guarantee.1.title` has the new copy; its desc and cards 2–4 unchanged                                                                                                                                                            | 1             |
+| AC-6   | `landing.matching.text` has the new copy                                                                                                                                                                                                  | 1             |
+| AC-7   | A secondary caption "Example of tag filter" / "Exemplo de tag filter" appears directly below the chips; chips unchanged                                                                                                                   | 2             |
+| AC-8   | `landing.languages.text` has the new copy                                                                                                                                                                                                 | 1             |
+| AC-9   | `landing.live.title` has the new copy (trailing period kept); eyebrow and text keys untouched by this item                                                                                                                                | 1             |
+| AC-10  | `landing.live.text` has the new copy                                                                                                                                                                                                      | 1             |
+| AC-11  | No landing copy names Gmail. `meta.title`, `meta.description`, plan feature and note say email. `plans.feature.gmail` → `plans.feature.email`, `gmail.note` → `email.note` (code + both dictionaries, old keys gone). App copy untouched. | 3             |
 
 ## Phases
 
 ### Phase 1 — Copy-only replacements (items 1, 3, 4, 5, 6, 8, 9, 10)
 
-Status: PENDING
+Status: DONE
+Evidence: 11 contract keys changed in lang/en.json + lang/pt.json (22 lines each); key parity OK; `yarn types:check` pass; `yarn run check` clean for lang files (21 pre-existing formatting failures in unrelated files); `php artisan test` 33/33 pass; code-reviewer APPROVED.
 Role: inertia-frontend · Depends on: none · Covers: AC-0.1, AC-1, AC-3, AC-4, AC-5, AC-6, AC-8, AC-9, AC-10 · Size: S
 Spec: Part 0, Part 1 items 1, 3, 4, 5, 6, 8, 9, 10 · Decisions: D1, D3
 
@@ -207,22 +208,22 @@ old keys.
 **Contract.**
 
 - Value changes (key: EN | PT):
-  - `landing.meta.title`: `:brand — Job applications sent from your own email` | `:brand — Candidaturas enviadas pelo seu próprio email`
-  - `landing.meta.description`: `:brand finds developer jobs, filters them by your preferences and sends each application from your own email, one company at a time, in the language of the job.` | `O :brand encontra vagas de desenvolvimento, filtra pelas suas preferências e envia cada candidatura pelo seu próprio email, uma empresa por vez, no idioma da vaga.`
+    - `landing.meta.title`: `:brand — Job applications sent from your own email` | `:brand — Candidaturas enviadas pelo seu próprio email`
+    - `landing.meta.description`: `:brand finds developer jobs, filters them by your preferences and sends each application from your own email, one company at a time, in the language of the job.` | `O :brand encontra vagas de desenvolvimento, filtra pelas suas preferências e envia cada candidatura pelo seu próprio email, uma empresa por vez, no idioma da vaga.`
 - Renames (old key removed, new key in the same position):
-  - `landing.plans.feature.gmail` → `landing.plans.feature.email`: `Sent from your own email` | `Sai do seu próprio email`
-  - `landing.gmail.note` → `landing.email.note`: `We only use your email permission to send the applications you choose or allow. We never read your inbox.` | `Usamos a permissão do seu email apenas para enviar as candidaturas que você escolhe ou autoriza. Nunca lemos a sua caixa de entrada.`
-    (This is the last key in each file, so no trailing comma.)
+    - `landing.plans.feature.gmail` → `landing.plans.feature.email`: `Sent from your own email` | `Sai do seu próprio email`
+    - `landing.gmail.note` → `landing.email.note`: `We only use your email permission to send the applications you choose or allow. We never read your inbox.` | `Usamos a permissão do seu email apenas para enviar as candidaturas que você escolhe ou autoriza. Nunca lemos a sua caixa de entrada.`
+      (This is the last key in each file, so no trailing comma.)
 - Code that reads them:
-  - `resources/js/features/landing/landing-plan-card.tsx`: in `FEATURES`, the
-    `'gmail'` id becomes `'email'` for `free`, `starter` and `pro`.
-  - `resources/js/features/landing/cta-banner.tsx:22`:
-    `t('landing.email.note')`.
-  - `resources/views/app.blade.php`: read
-    `$landingStrings['landing.email.note']` and rename the essentials entry
-    `'gmailNote'` → `'emailNote'`.
-  - `resources/views/partials/landing-essentials.blade.php`: `$gmailNote` →
-    `$emailNote` (both occurrences).
+    - `resources/js/features/landing/landing-plan-card.tsx`: in `FEATURES`, the
+      `'gmail'` id becomes `'email'` for `free`, `starter` and `pro`.
+    - `resources/js/features/landing/cta-banner.tsx:22`:
+      `t('landing.email.note')`.
+    - `resources/views/app.blade.php`: read
+      `$landingStrings['landing.email.note']` and rename the essentials entry
+      `'gmailNote'` → `'emailNote'`.
+    - `resources/views/partials/landing-essentials.blade.php`: `$gmailNote` →
+      `$emailNote` (both occurrences).
 - Out of scope, do not touch: `features/plans/plan-card.tsx` (its `'gmail'`
   id uses `plans.*`), `sending.sub.connecting_gmail`, the `connecting_gmail`
   id in `demo-data.ts`, and all non-`landing.*` keys. D4: no new demo sub-step
@@ -265,22 +266,22 @@ live or broken feature.
   `Prévia do produto · dados de exemplo`. Insert it after
   `landing.hero.trust.3` in both dictionaries.
 - `resources/js/features/landing/hero-demo.tsx`, `HeroDemo()` only:
-  - Turn the outer `<div>` into a soft framed panel around the cards, like an
-    app window or screenshot frame. Use existing theme tokens only, e.g.
-    `rounded-shell` (or `rounded-card`), `border border-hairline`, a subtle
-    `bg-tile` (or `bg-card/…`) surface, and modest padding (`p-3 md:p-4`).
-    No new CSS tokens or utilities unless an existing one can't do it.
-  - Above the cards, inside the frame, show
-    `<Pill tone="…" icon={Eye}>{t("landing.hero.demo.label")}</Pill>` (lucide
-    `Eye` or a similar "preview" icon; pick the tone that contrasts with the
-    frame surface).
-  - The label sits **outside** the `aria-hidden="true" inert` grid, so screen
-    readers announce it while the cards stay hidden and inert. Keep the `ref`,
-    `useRegisterDemoInView` wiring and the grid classes
-    (`grid grid-cols-1 gap-gap md:grid-cols-5 xl:demo-compact`) on the inner
-    grid unchanged.
-  - The frame must not look clickable: no hover state, no pointer cursor, no
-    focus ring.
+    - Turn the outer `<div>` into a soft framed panel around the cards, like an
+      app window or screenshot frame. Use existing theme tokens only, e.g.
+      `rounded-shell` (or `rounded-card`), `border border-hairline`, a subtle
+      `bg-tile` (or `bg-card/…`) surface, and modest padding (`p-3 md:p-4`).
+      No new CSS tokens or utilities unless an existing one can't do it.
+    - Above the cards, inside the frame, show
+      `<Pill tone="…" icon={Eye}>{t("landing.hero.demo.label")}</Pill>` (lucide
+      `Eye` or a similar "preview" icon; pick the tone that contrasts with the
+      frame surface).
+    - The label sits **outside** the `aria-hidden="true" inert` grid, so screen
+      readers announce it while the cards stay hidden and inert. Keep the `ref`,
+      `useRegisterDemoInView` wiring and the grid classes
+      (`grid grid-cols-1 gap-gap md:grid-cols-5 xl:demo-compact`) on the inner
+      grid unchanged.
+    - The frame must not look clickable: no hover state, no pointer cursor, no
+      focus ring.
 - The cards keep their current content and shared `dashboard.*` /
   `sending.stage.*` keys. Nothing is renamed, so there is no key cleanup.
 - Layout must still fit the hero grid `xl:grid-cols-[1fr_1.5fr]` and stack
@@ -322,17 +323,17 @@ short manual checklist.
 1. Full gate: `composer ci:check` (yarn check, yarn types:check, composer
    test).
 2. Dictionary checks:
-   - Key parity one-liner (Phase 1).
-   - `grep -n '"landing\.[^"]*": "[^"]*Gmail' lang/en.json lang/pt.json`, which must be empty.
-   - Orphan check for landing keys: for every `landing.*` key in
-     `lang/en.json`, confirm it is referenced in `resources/` or `app/`,
-     either literally or through a template prefix
-     (`landing.hero.trust.${n}`, `landing.guarantee.${n}.*`,
-     `landing.matching.chip.${n}`, `landing.plans.feature.${feature}`,
-     `landing.plans.desc.*`, `landing.plans.region.*`, `landing.faq.${n}.*`,
-     `landing.nav.*`, `landing.footer.*`, etc.). Report any key that is not
-     used.
-   - `grep -rnE "landing\.(plans\.feature\.gmail|gmail\.note)|gmailNote" resources app`, which must be empty.
+    - Key parity one-liner (Phase 1).
+    - `grep -n '"landing\.[^"]*": "[^"]*Gmail' lang/en.json lang/pt.json`, which must be empty.
+    - Orphan check for landing keys: for every `landing.*` key in
+      `lang/en.json`, confirm it is referenced in `resources/` or `app/`,
+      either literally or through a template prefix
+      (`landing.hero.trust.${n}`, `landing.guarantee.${n}.*`,
+      `landing.matching.chip.${n}`, `landing.plans.feature.${feature}`,
+      `landing.plans.desc.*`, `landing.plans.region.*`, `landing.faq.${n}.*`,
+      `landing.nav.*`, `landing.footer.*`, etc.). Report any key that is not
+      used.
+    - `grep -rnE "landing\.(plans\.feature\.gmail|gmail\.note)|gmailNote" resources app`, which must be empty.
 3. Forbidden patterns in the diff: no `->poll(` / `wire:poll`, no hardcoded
    user-facing strings in TSX/Blade (all copy via `t()` / dictionaries), no
    changes outside the landing files and dictionaries listed in Phases 1–4,
