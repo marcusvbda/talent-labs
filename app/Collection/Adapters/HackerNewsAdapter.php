@@ -5,14 +5,18 @@ namespace App\Collection\Adapters;
 use App\Collection\Adapters\Concerns\InteractsWithJobBoardApi;
 use App\Collection\Contracts\JobSourceAdapter;
 use App\Collection\Data\JobPostingData;
+use App\Collection\Data\SourceContactData;
+use App\Enums\SourceContactKind;
 use App\Models\Source;
 use App\Support\RegistrableDomain;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
  * Top-level comments of the latest monthly "Ask HN: Who is hiring?" thread. Each
  * comment's first line is a free-form, pipe-separated header ("Company | Role |
  * Location | Full-time | ...") parsed deterministically; posts without one are skipped.
+ * Emails (mailto links and bracket-obfuscated "jobs [at] acme [dot] io") become source contacts.
  */
 class HackerNewsAdapter implements JobSourceAdapter
 {
@@ -33,6 +37,15 @@ class HackerNewsAdapter implements JobSourceAdapter
     private const WORKPLACE_PATTERN = '/(remote|onsite|on-site|hybrid)/i';
 
     private const CURRENCY_PATTERN = '/[$€£]\s?\d|\d\s?k\b/i';
+
+    private const EMAIL_PATTERN = '/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i';
+
+    private const MAX_EMAILS = 5;
+
+    /**
+     * Email domains that belong to Hacker News itself, never to the hiring company.
+     */
+    private const NON_CONTACT_EMAIL_DOMAINS = ['news.ycombinator.com', 'ycombinator.com'];
 
     /**
      * Hosts (and their subdomains) that are never the company's own website: HN itself,
@@ -140,6 +153,10 @@ class HackerNewsAdapter implements JobSourceAdapter
             publishedAt: $this->parseDate($item['created_at'] ?? null),
             raw: $item,
             companyWebsite: $this->companyWebsite($segments, $html, $companyName),
+            sourceContacts: array_map(
+                fn (string $email) => new SourceContactData(SourceContactKind::Email, email: $email),
+                $this->emails($html),
+            ),
         );
     }
 
@@ -334,5 +351,53 @@ class HackerNewsAdapter implements JobSourceAdapter
         }
 
         return null;
+    }
+
+    /**
+     * Contact emails in the comment: mailto links first, then addresses in the plain
+     * text after undoing bracketed obfuscation only ("[at]", "( at )", "{dot}"); bare
+     * words like " at " are never rewritten. Lowercased, unique, Hacker News's own dropped.
+     *
+     * @return list<string>
+     */
+    private function emails(string $html): array
+    {
+        $candidates = [];
+
+        preg_match_all('/href="mailto:([^"]+)"/i', $html, $matches);
+
+        foreach ($matches[1] as $href) {
+            $candidates[] = explode('?', html_entity_decode($href, ENT_QUOTES | ENT_HTML5, 'UTF-8'), 2)[0];
+        }
+
+        $text = $this->htmlToText($html) ?? '';
+        $text = (string) preg_replace('/\s*(?:\[\s*at\s*\]|\(\s*at\s*\)|\{\s*at\s*\})\s*/i', '@', $text);
+        $text = (string) preg_replace('/\s*(?:\[\s*dot\s*\]|\(\s*dot\s*\)|\{\s*dot\s*\})\s*/i', '.', $text);
+
+        preg_match_all(self::EMAIL_PATTERN, $text, $matches);
+
+        array_push($candidates, ...$matches[0]);
+
+        $emails = [];
+
+        foreach ($candidates as $candidate) {
+            $email = mb_strtolower(rtrim(trim($candidate), '.,;:)'));
+
+            if (
+                filter_var($email, FILTER_VALIDATE_EMAIL) === false
+                || in_array(Str::afterLast($email, '@'), self::NON_CONTACT_EMAIL_DOMAINS, true)
+                || in_array($email, $emails, true)
+            ) {
+                continue;
+            }
+
+            $emails[] = $email;
+
+            if (count($emails) === self::MAX_EMAILS) {
+                break;
+            }
+        }
+
+        return $emails;
     }
 }

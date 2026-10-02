@@ -12,7 +12,7 @@ session. Phase status is updated in place in this file.
 | 1     | Availability window on the client pool (D3)               | laravel-backend | none       | S    | DONE    |
 | 2     | "Today" = first run started today, app timezone (D1)      | laravel-backend | 1          | M    | DONE    |
 | 3     | `source_contacts` on postings (storage + DTO + upsert)    | laravel-backend | none       | M    | DONE    |
-| 4     | Hacker News: extract emails into source contacts          | laravel-backend | 3          | S    | PENDING |
+| 4     | Hacker News: extract emails into source contacts          | laravel-backend | 3          | S    | DONE    |
 | 5     | New source: Y Combinator (jobs + founders)                | laravel-backend | 3          | M    | PENDING |
 | 6     | Admin: show source contacts + Y Combinator settings hint  | filament-admin  | 3, 5       | S    | PENDING |
 | 7     | Verification and report                                   | qa-tester       | 1–6        | S    | PENDING |
@@ -218,7 +218,8 @@ without ever being lost on a later run.
 
 ### Phase 4 — Hacker News: extract emails into source contacts
 
-Status: PENDING
+Status: DONE
+Evidence: reflection fixtures OK (`jobs [at] acme [dot] io` -> `jobs@acme.io`, ycombinator.com dropped, cap 5); live read-only fetch: 114 HN postings, 36 with >= 1 email contact; lint:check, types:check (0 errors), tests (33 passed) green; code-reviewer APPROVED.
 Role: laravel-backend · Depends on: 3 · Covers: AC6 · Size: S
 Spec: "1. Hacker News", D4
 
