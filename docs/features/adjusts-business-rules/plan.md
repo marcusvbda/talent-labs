@@ -12,10 +12,10 @@ session. Phase status is updated in place in this file.
 | 1     | Batch "reviewed" endpoint (Approve all, API)    | laravel-backend  | none       | M    | DONE        |
 | 2     | Approve all in the review modal                 | inertia-frontend | 1          | M    | DONE        |
 | 3     | `JobCard` stack: matches first + `stackMatches` | laravel-backend  | none       | S    | DONE        |
-| 4     | Highlight matching stack chips on job rows      | inertia-frontend | 3          | M    | PENDING     |
+| 4     | Highlight matching stack chips on job rows      | inertia-frontend | 3          | M    | DONE        |
 | 5     | Notifications popover header wraps, no clip     | inertia-frontend | none       | S    | DONE        |
 | 6     | Language menu label alignment                   | inertia-frontend | none       | S    | DONE        |
-| 7     | Job detail sheet highlight (OD2)                | inertia-frontend | 4          | S    | PENDING     |
+| 7     | Job detail sheet highlight (OD2)                | inertia-frontend | 4          | S    | IN_PROGRESS |
 | 8     | Verification and report                         | orchestrator     | 1–7        | S    | PENDING     |
 
 ## Audit — 2026-10-03
@@ -241,7 +241,8 @@ Spec: R10, R11, R12 (order + cap), R13, §4 "Stack tags", §9 (cause = display c
 
 ### Phase 4 — Highlight matching stack chips on job rows
 
-Status: PENDING
+Status: DONE
+Evidence: yarn types:check passes, yarn run check 0 errors in phase files; code-reviewer APPROVED. JobRow accent chips for stackMatches on dashboard + jobs list; fixtures produce the same shape. Owner visual check pending.
 Role: inertia-frontend · Depends on: 3 · Covers: AC13–AC17 (UI) · Size: M
 Spec: R12, R13, §5 job row bullet
 
@@ -318,7 +319,7 @@ Spec: R15, §5 language menu bullet, §9 last assumption
 
 ### Phase 7 — Job detail sheet highlight
 
-Status: PENDING
+Status: IN_PROGRESS
 Role: inertia-frontend · Depends on: 4 · Covers: — (spec OD2, only if D2 = A) · Size: S
 Spec: §10 OD2
 

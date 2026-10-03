@@ -18,6 +18,7 @@ export function JobRow({
     title,
     meta,
     stack,
+    stackMatches = [],
     language,
     disabled = false,
     selectable = true,
@@ -30,6 +31,8 @@ export function JobRow({
     title: string;
     meta: string;
     stack: string[];
+    /** Subset of `stack` highlighted as matching the user's preference. */
+    stackMatches?: string[];
     language: Locale;
     disabled?: boolean;
     /** Only used with `onOpen`: false renders a read-only row without checkbox. */
@@ -66,7 +69,11 @@ export function JobRow({
                         <Chip
                             key={item}
                             variant="stack"
-                            className="border border-hairline bg-card"
+                            className={
+                                stackMatches.includes(item)
+                                    ? 'border border-accent-line bg-accent-soft text-accent-deep'
+                                    : 'border border-hairline bg-card'
+                            }
                         >
                             {item}
                         </Chip>

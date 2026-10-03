@@ -94,7 +94,8 @@ export type JobCard = {
     isRemote: boolean | null;
     language: JobLanguage;
     seniority: Seniority;
-    stack: string[]; // max 6 shown
+    stack: string[]; // max 6 shown, matches first
+    stackMatches: string[]; // subset of stack matching the Stack preference, listed first
     summary: string | null; // one sentence, client-safe
     firstSeenAt: ISODateTime;
     collectedToday: boolean;

@@ -76,6 +76,7 @@ const job = (
         language,
         seniority,
         stack,
+        stackMatches: [], // computed against preferences in findJob
         summary,
         ...seen,
         locations: company.isRemote

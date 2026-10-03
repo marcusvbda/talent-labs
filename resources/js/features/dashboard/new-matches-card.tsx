@@ -112,6 +112,7 @@ export function NewMatchesCard({
                                 job.location ?? t('jobs.remote')
                             } · ${format.relativeTime(job.firstSeenAt)}`}
                             stack={job.stack}
+                            stackMatches={job.stackMatches}
                             language={job.language}
                             jobUrl={job.jobUrl}
                         />

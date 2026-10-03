@@ -36,6 +36,7 @@ export function JobsList({
                     title={job.title}
                     meta={jobMeta(job, t('jobs.remote'))}
                     stack={job.stack}
+                    stackMatches={job.stackMatches}
                     language={job.language}
                     selectable={selectable}
                     onOpen={() => onOpen(job)}

@@ -131,5 +131,7 @@ export function findJob(id: number): JobDetail | null {
         return null;
     }
 
-    return fixtureState.get().jobs.find((job) => job.id === id) ?? null;
+    const job = fixtureState.get().jobs.find((item) => item.id === id);
+
+    return job ? { ...job, ...toJobCard(job) } : null;
 }
