@@ -16,7 +16,7 @@ session. Phase status is updated in place in this file.
 | 5     | Notifications popover header wraps, no clip     | inertia-frontend | none       | S    | DONE        |
 | 6     | Language menu label alignment                   | inertia-frontend | none       | S    | DONE        |
 | 7     | Job detail sheet highlight (OD2)                | inertia-frontend | 4          | S    | DONE        |
-| 8     | Verification and report                         | orchestrator     | 1–7        | S    | IN_PROGRESS |
+| 8     | Verification and report                         | orchestrator     | 1–7        | S    | DONE        |
 
 ## Audit — 2026-10-03
 
@@ -339,7 +339,8 @@ Spec: §10 OD2
 
 ### Phase 8 — Verification and report
 
-Status: IN_PROGRESS
+Status: DONE
+Evidence: phpstan (1G) 0 errors; php artisan test 33/33; yarn types:check and yarn build pass; forbidden-pattern grep clean; protected files untouched; code-reviewer APPROVED across AC1–AC24 (AC19, AC20, AC22 owner visual check). `composer test`'s Pint step still fails only on pre-existing `ApplicationTemplateRenderer.php` and `tests/TestCase.php`.
 Role: orchestrator (+ `code-reviewer`) · Depends on: 1–7 · Covers: AC1–AC24 · Size: S
 Spec: §6, §7
 
