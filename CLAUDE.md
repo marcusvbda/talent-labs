@@ -40,9 +40,7 @@ Details: skill `project-core`.
 - **Scope:** implement only what the task/spec/phase asks. Report extra ideas,
   don't build them.
 - **Docs:** active docs live in `docs/features/<feature>/` — one folder per
-  feature (finished ones go to `docs/archive/`, permanent summaries to
-  `docs/architecture/`; see Specs and Plans), no duplicated content between
-  files.
+  feature (see Specs and Plans), no duplicated content between files.
   `spec.md` is product truth; never delete it or edit it to match code.
   `plan.md` (next to it, from `/plan-spec`) holds the phases and their status
   and is run with `/execute-phases`. Execution state for `execute-feature`
@@ -77,9 +75,9 @@ come from Laravel Boost (`boost.json`) — don't hand-edit them. Use Boost MCP
 
 ### Lifecycle
 
-- `docs/features/<feature>/` contains ACTIVE work only (spec + plan).
-- `docs/archive/` is history. NEVER read, search, or use anything inside
-  `docs/archive/` unless the owner explicitly asks.
+- `docs/features/<feature>/` holds the spec + plan of a feature. Archiving or
+  deleting them after implementation is done manually by the owner; never move,
+  archive or delete spec/plan files yourself.
 - When reading specs, read only the one for the feature in progress, never the
   whole `docs/features/` folder.
 
@@ -89,7 +87,6 @@ come from Laravel Boost (`boost.json`) — don't hand-edit them. Use Boost MCP
   1. The owner's explicit instructions in the current conversation
   2. The current code (including manual changes by the owner)
   3. The active spec of the feature in progress
-  4. Archived specs (never consulted)
 - A spec describes intent at the time it was written. Code describes current
   reality. If they conflict, the code wins.
 - NEVER revert, rewrite, or "fix" existing code just to match a spec. This
@@ -106,12 +103,3 @@ come from Laravel Boost (`boost.json`) — don't hand-edit them. Use Boost MCP
   not guess.
 - If the owner changes code manually, the active spec must be updated or
   receive a note like `Deviation: <what changed and why>`.
-
-### Completion checklist (when ALL tasks in a plan are done)
-
-1. Move the feature folder to `docs/archive/features/<feature>/` with `git mv`.
-2. Add the header "Status: IMPLEMENTED on YYYY-MM-DD. Historical record only.
-   The code is the source of truth." to the spec.
-3. Delete the plan file.
-4. If the feature needs permanent documentation, create/update a short summary
-   of the current state and key decisions in `docs/architecture/<area>.md`.

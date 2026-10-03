@@ -200,9 +200,9 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 
 ### Lifecycle
 
-- `docs/features/<feature>/` contains ACTIVE work only (spec + plan).
-- `docs/archive/` is history. NEVER read, search, or use anything inside
-  `docs/archive/` unless the user explicitly asks.
+- `docs/features/<feature>/` holds the spec + plan of a feature. Archiving or
+  deleting them after implementation is done manually by the user; never move,
+  archive or delete spec/plan files yourself.
 - When reading specs, read only the one for the feature in progress, never the
   whole `docs/features/` folder.
 
@@ -212,7 +212,6 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
   1. The user's explicit instructions in the current conversation
   2. The current code (including manual changes by the user)
   3. The active spec of the feature in progress
-  4. Archived specs (never consulted)
 - A spec describes intent at the time it was written. Code describes current
   reality. If they conflict, the code wins.
 - NEVER revert, rewrite, or "fix" existing code just to match a spec. This
@@ -229,12 +228,3 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
   not guess.
 - If the user changes code manually, the active spec must be updated or
   receive a note like `Deviation: <what changed and why>`.
-
-### Completion checklist (when ALL tasks in a plan are done)
-
-1. Move the feature folder to `docs/archive/features/<feature>/` with `git mv`.
-2. Add the header "Status: IMPLEMENTED on YYYY-MM-DD. Historical record only.
-   The code is the source of truth." to the spec.
-3. Delete the plan file.
-4. If the feature needs permanent documentation, create/update a short summary
-   of the current state and key decisions in `docs/architecture/<area>.md`.
