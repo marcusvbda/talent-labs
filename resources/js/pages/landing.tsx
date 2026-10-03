@@ -76,7 +76,13 @@ export default function Landing({
     return (
         <PublicLayout
             header={<LandingNav betaClosed={betaClosed} />}
-            footer={<LandingFooter contactEmail={contactEmail} legal={legal} />}
+            footer={
+                <LandingFooter
+                    betaClosed={betaClosed}
+                    contactEmail={contactEmail}
+                    legal={legal}
+                />
+            }
         >
             <Head title={title}>
                 <meta name="description" content={description} />
