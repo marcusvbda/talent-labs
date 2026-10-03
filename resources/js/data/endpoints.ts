@@ -104,6 +104,7 @@ export const endpoints = {
     queueRandom: (): Endpoint => ApplicationsController.random(),
     reviewDrafts: (): Endpoint => ReviewController.drafts(),
     queueReviewed: (): Endpoint => ReviewController.reviewed(),
+    queueReviewedBatch: (): Endpoint => ReviewController.reviewedBatch(),
     applications: (filters: ApplicationFilters = {}): Endpoint => {
         const base = ApplicationsController.index();
 

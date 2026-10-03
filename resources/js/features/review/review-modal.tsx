@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
+import { useQueueReviewedBatch } from '@/data/hooks/use-queue-reviewed-batch';
 import { useQueueReviewed } from '@/data/hooks/use-queue-reviewed';
 import { useReviewDrafts } from '@/data/hooks/use-review-drafts';
 import { useT } from '@/i18n/i18n-provider';
@@ -112,6 +113,11 @@ const ReviewSession = ({
     const [index, setIndex] = useState(0);
     const [edits, setEdits] = useState<Record<number, Edit>>({});
     const [outcomes, setOutcomes] = useState<Record<number, Outcome>>({});
+    const [confirming, setConfirming] = useState(false);
+    const [rejected, setRejected] = useState<
+        { jobId: number; reason: string }[]
+    >([]);
+    const batch = useQueueReviewedBatch();
     const { mutate: loadDrafts } = load;
 
     useEffect(() => {
@@ -138,8 +144,23 @@ const ReviewSession = ({
     const serverSubject = fieldErrors?.subject?.[0];
     const serverBody = fieldErrors?.body?.[0];
 
+    const pending = queue.isPending || batch.isPending;
+    const undecided = drafts.filter((item) => !outcomes[item.job.id]);
+    const batchInvalid = undecided.some((item) => {
+        const edit = edits[item.job.id];
+
+        if (!edit) {
+            return false;
+        }
+
+        const s = edit.subject.trim().length;
+        const b = edit.body.trim().length;
+
+        return s < 1 || s > SUBJECT_MAX || b < 1 || b > BODY_MAX;
+    });
+
     const close = () => {
-        if (!queue.isPending) {
+        if (!pending) {
             onClose(queuedCount);
         }
     };
@@ -194,6 +215,45 @@ const ReviewSession = ({
         );
     };
 
+    const approveAll = () => {
+        batch.mutate(
+            {
+                drafts: undecided.map((item) => {
+                    const edit = edits[item.job.id] ?? {
+                        subject: item.subject,
+                        body: item.body,
+                    };
+
+                    return {
+                        jobId: item.job.id,
+                        subject: edit.subject.trim(),
+                        body: edit.body.trim(),
+                    };
+                }),
+            },
+            {
+                onSuccess: (result) => {
+                    const next = { ...outcomes };
+
+                    result.queued.forEach((row) => {
+                        next[row.jobId] = 'queued';
+                    });
+                    setOutcomes(next);
+                    setRejected(result.rejected);
+                    setConfirming(false);
+                    setIndex(drafts.length);
+                },
+                onError: (error) => {
+                    toast.error(
+                        error.status === 403
+                            ? error.message
+                            : t('review.failed'),
+                    );
+                },
+            },
+        );
+    };
+
     let title = t('review.title');
     let footer = null;
     let content = <ReviewSkeleton />;
@@ -209,11 +269,53 @@ const ReviewSession = ({
         title = t('review.done.title');
         footer = <Button onClick={close}>{t('review.close')}</Button>;
         content = (
-            <p className="text-body text-ink" role="status">
-                {t('review.summary', {
-                    queued: queuedCount,
-                    skipped: skippedCount,
-                })}
+            <div className="flex flex-col gap-3" role="status">
+                <p className="text-body text-ink">
+                    {t('review.summary', {
+                        queued: queuedCount,
+                        skipped: skippedCount,
+                    })}
+                </p>
+                {rejected.length > 0 && (
+                    <>
+                        <p className="text-body text-ink">
+                            {t('review.summary_rejected', {
+                                rejected: rejected.length,
+                            })}
+                        </p>
+                        <ul className="flex list-disc flex-col gap-1 pl-5 text-label-sm text-muted">
+                            {rejected.map((row) => (
+                                <li key={row.jobId}>
+                                    {drafts.find(
+                                        (item) => item.job.id === row.jobId,
+                                    )?.job.company.name ?? row.jobId}{' '}
+                                    — {row.reason}
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+            </div>
+        );
+    } else if (confirming) {
+        title = t('review.approve_all.title');
+        footer = (
+            <>
+                <Button
+                    variant="secondary-tile"
+                    disabled={batch.isPending}
+                    onClick={() => setConfirming(false)}
+                >
+                    {t('review.approve_all.cancel')}
+                </Button>
+                <Button loading={batch.isPending} onClick={approveAll}>
+                    {t('review.approve_all')}
+                </Button>
+            </>
+        );
+        content = (
+            <p className="text-body text-ink">
+                {t('review.approve_all.body', { count: undecided.length })}
             </p>
         );
     } else if (draft && current) {
@@ -225,23 +327,37 @@ const ReviewSession = ({
             <>
                 <Button
                     variant="secondary-tile"
-                    disabled={queue.isPending || index === 0}
+                    disabled={pending || index === 0}
                     onClick={() => setIndex(index - 1)}
                 >
                     {t('review.previous')}
                 </Button>
                 <Button
                     variant="secondary-tile"
-                    disabled={queue.isPending}
+                    disabled={pending}
                     onClick={() =>
                         locked ? setIndex(index + 1) : decide('skipped')
                     }
                 >
                     {t('review.skip')}
                 </Button>
+                {undecided.length > 0 && (
+                    <Button
+                        variant="secondary-tile"
+                        disabled={pending || batchInvalid}
+                        onClick={() => setConfirming(true)}
+                    >
+                        {t('review.approve_all')}
+                    </Button>
+                )}
                 <Button
                     loading={queue.isPending}
-                    disabled={locked || subjectInvalid || bodyInvalid}
+                    disabled={
+                        batch.isPending ||
+                        locked ||
+                        subjectInvalid ||
+                        bodyInvalid
+                    }
                     onClick={approve}
                 >
                     {t('review.approve')}
