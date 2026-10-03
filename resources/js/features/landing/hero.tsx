@@ -1,4 +1,4 @@
-import { Check, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Pill } from '@/components/ui/pill';
@@ -7,8 +7,6 @@ import { cn } from '@/lib/utils';
 import { BetaCta } from './beta-cta';
 import { anchorHash, scrollToHash } from './scroll-to-hash';
 import { useReveal } from './use-reveal';
-
-const TRUST = [1, 2, 3] as const;
 
 const Reveal = ({
     index,
@@ -87,20 +85,6 @@ export function Hero({
                             {t('landing.hero.secondary')}
                         </Button>
                     </div>
-                </Reveal>
-                <Reveal index={4}>
-                    <ul className="flex flex-wrap gap-x-6 gap-y-2 text-label-sm text-muted">
-                        {TRUST.map((n) => (
-                            <li key={n} className="flex items-center gap-2">
-                                <Check
-                                    aria-hidden="true"
-                                    strokeWidth={1.8}
-                                    className="size-4 shrink-0 text-accent"
-                                />
-                                {t(`landing.hero.trust.${n}`)}
-                            </li>
-                        ))}
-                    </ul>
                 </Reveal>
             </div>
             {demo && <div className="min-w-0">{demo}</div>}

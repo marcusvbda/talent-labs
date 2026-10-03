@@ -120,21 +120,21 @@ export const SAMPLE_EMAILS: Record<
     { subject: string; lines: string[] }
 > = {
     en: {
-        subject: 'Application: Backend Engineer',
+        subject: 'Application: Senior Backend Engineer',
         lines: [
-            'Hello Northwind team,',
-            `I'm writing to apply for the Backend Engineer position ${JOB_LINK_TOKEN}.`,
-            "I'm a backend-leaning engineer with six years of experience building reliable web products. My CV is attached.",
+            'Hello Northwind Systems team,',
+            `I'm writing to apply for the Senior Backend Engineer position ${JOB_LINK_TOKEN}.`,
+            'For the past six years I have built and scaled Laravel APIs, most recently cutting checkout latency by 40% at a payments startup. My CV is attached.',
             'Best regards,',
             'Luke Skywalker',
         ],
     },
     pt: {
-        subject: 'Candidatura: Engenheiro Backend',
+        subject: 'Candidatura: Senior Backend Engineer',
         lines: [
-            'Olá, equipe Northwind,',
-            `Escrevo para me candidatar à vaga de Engenheiro Backend ${JOB_LINK_TOKEN}.`,
-            'Sou engenheira com foco em backend e seis anos de experiência construindo produtos web confiáveis. Meu currículo está em anexo.',
+            'Olá, equipe Northwind Systems,',
+            `Escrevo para me candidatar à vaga de Senior Backend Engineer ${JOB_LINK_TOKEN}.`,
+            'Nos últimos seis anos construí e escalei APIs em Laravel, e recentemente reduzi em 40% a latência do checkout em uma startup de pagamentos. Meu currículo está em anexo.',
             'Atenciosamente,',
             'Luke Skywalker',
         ],

@@ -9,9 +9,9 @@ import { BetaCta } from './beta-cta';
 import type { LandingPlan } from './types';
 
 const FEATURES: Record<PlanKey, string[]> = {
-    free: ['email', 'filtered', 'profiles'],
-    starter: ['email', 'select', 'profiles'],
-    pro: ['email', 'review', 'profiles'],
+    free: ['auto'],
+    starter: ['auto', 'select'],
+    pro: ['auto', 'select', 'review'],
 };
 
 export const LandingPlanCard = ({

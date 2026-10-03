@@ -83,6 +83,9 @@ export function Pricing({
                     />
                 ))}
             </div>
+            <p className="mt-6 text-body text-muted">
+                {t('landing.plans.included')}
+            </p>
         </section>
     );
 }

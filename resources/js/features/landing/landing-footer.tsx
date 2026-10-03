@@ -1,16 +1,16 @@
-import { usePage } from "@inertiajs/react";
-import { Logo } from "@/components/patterns/logo";
-import { useT } from "@/i18n/i18n-provider";
-import { dashboard, home, login } from "@/routes";
-import type { SharedProps } from "@/types/shared";
-import { BetaCta } from "./beta-cta";
-import { anchorHash, scrollToHash } from "./scroll-to-hash";
-import type { LandingProps } from "./types";
+import { usePage } from '@inertiajs/react';
+import { Logo } from '@/components/patterns/logo';
+import { useT } from '@/i18n/i18n-provider';
+import { dashboard, home, login } from '@/routes';
+import type { SharedProps } from '@/types/shared';
+import { BetaCta } from './beta-cta';
+import { anchorHash, scrollToHash } from './scroll-to-hash';
+import type { LandingProps } from './types';
 
-const SECTIONS = ["product", "how", "languages", "plans", "faq"] as const;
+const SECTIONS = ['product', 'how', 'languages', 'plans', 'faq'] as const;
 
 const LINK =
-    "text-label-sm text-muted transition-colors hover:text-ink focus-visible:focus-ring";
+    'text-label-sm text-muted transition-colors hover:text-ink focus-visible:focus-ring';
 
 function Column({
     title,
@@ -31,19 +31,19 @@ export function LandingFooter({
     betaClosed,
     contactEmail,
     legal,
-}: Pick<LandingProps, "betaClosed" | "contactEmail" | "legal">) {
+}: Pick<LandingProps, 'betaClosed' | 'contactEmail' | 'legal'>) {
     const { t } = useT();
     const { app, auth } = usePage<SharedProps>().props;
 
     const account =
         auth.user === null
-            ? { href: login().url, label: t("landing.nav.signin") }
-            : { href: dashboard().url, label: t("landing.nav.dashboard") };
+            ? { href: login().url, label: t('landing.nav.signin') }
+            : { href: dashboard().url, label: t('landing.nav.dashboard') };
 
     const links = [
-        { key: "privacy", href: legal.privacy },
-        { key: "terms", href: legal.terms },
-        { key: "optout", href: legal.optOut },
+        { key: 'privacy', href: legal.privacy },
+        { key: 'terms', href: legal.terms },
+        { key: 'optout', href: legal.optOut },
     ].filter((link) => link.href !== null);
 
     return (
@@ -53,13 +53,13 @@ export function LandingFooter({
                     <div className="flex max-w-sm flex-col items-start gap-5">
                         <Logo href={home().url} />
                         <p className="text-label-sm text-muted">
-                            {t("landing.footer.tagline")}
+                            {t('landing.footer.tagline')}
                         </p>
                         <BetaCta betaClosed={betaClosed} />
                     </div>
 
                     <nav
-                        aria-label={t("landing.footer.product")}
+                        aria-label={t('landing.footer.product')}
                         onClick={(event) => {
                             const hash = anchorHash(event);
 
@@ -68,7 +68,7 @@ export function LandingFooter({
                             }
                         }}
                     >
-                        <Column title={t("landing.footer.product")}>
+                        <Column title={t('landing.footer.product')}>
                             {SECTIONS.map((section) => (
                                 <li key={section}>
                                     <a href={`#${section}`} className={LINK}>
@@ -79,7 +79,7 @@ export function LandingFooter({
                         </Column>
                     </nav>
 
-                    <Column title={t("landing.footer.account")}>
+                    <Column title={t('landing.footer.account')}>
                         <li>
                             <a href={account.href} className={LINK}>
                                 {account.label}
@@ -91,14 +91,14 @@ export function LandingFooter({
                                     href={`mailto:${contactEmail}`}
                                     className={LINK}
                                 >
-                                    {t("landing.footer.contact")}
+                                    {t('landing.footer.contact')}
                                 </a>
                             </li>
                         ) : null}
                     </Column>
 
                     {links.length > 0 ? (
-                        <Column title={t("landing.footer.legal")}>
+                        <Column title={t('landing.footer.legal')}>
                             {links.map((link) => (
                                 <li key={link.key}>
                                     <a
@@ -113,10 +113,10 @@ export function LandingFooter({
                     ) : null}
                 </div>
 
-                <div className="mt-10 flex flex-col gap-2 border-t border-hairline pt-6 md:flex-row items-center justify-center">
+                <div className="mt-10 flex flex-col items-center justify-center gap-2 border-t border-hairline pt-6 md:flex-row">
                     <p className="text-label-sm text-muted">
-                        &copy; {new Date().getFullYear()} {app.brand.name}.{" "}
-                        {t("landing.footer.rights")}
+                        &copy; {new Date().getFullYear()} {app.brand.name}.{' '}
+                        {t('landing.footer.rights')}
                     </p>
                 </div>
             </div>

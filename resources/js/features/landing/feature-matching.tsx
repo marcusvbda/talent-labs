@@ -100,21 +100,16 @@ export function FeatureMatching() {
                         </p>
                     </Reveal>
                     <Reveal index={3}>
-                        <div className="flex flex-col gap-2">
-                            <ul className="flex flex-wrap gap-2.5">
-                                {CHIPS.map((n) => (
-                                    <li
-                                        key={n}
-                                        className="rounded-full bg-card px-4 py-2.5 text-label-sm text-ink"
-                                    >
-                                        {t(`landing.matching.chip.${n}`)}
-                                    </li>
-                                ))}
-                            </ul>
-                            <p className="text-label-sm text-muted">
-                                {t('landing.matching.chips.caption')}
-                            </p>
-                        </div>
+                        <ul className="flex flex-wrap gap-2.5">
+                            {CHIPS.map((n) => (
+                                <li
+                                    key={n}
+                                    className="rounded-full bg-card px-4 py-2.5 text-label-sm text-ink"
+                                >
+                                    {t(`landing.matching.chip.${n}`)}
+                                </li>
+                            ))}
+                        </ul>
                     </Reveal>
                 </div>
                 <Reveal index={2}>
