@@ -15,6 +15,8 @@ export type MenuEntry = {
     label: string;
     icon?: LucideIcon;
     danger?: boolean;
+    /** Reserve the icon slot when there is no icon, so labels stay aligned. */
+    inset?: boolean;
 } & (
     | { onSelect?: () => void; href?: never }
     | { href: string; onSelect?: never }
@@ -59,6 +61,11 @@ export function Menu({
                                     size={20}
                                     strokeWidth={1.8}
                                     className="shrink-0"
+                                />
+                            ) : item.inset ? (
+                                <span
+                                    aria-hidden="true"
+                                    className="size-5 shrink-0"
                                 />
                             ) : null}
                             <span className="truncate">{item.label}</span>

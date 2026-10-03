@@ -26,7 +26,7 @@ export function LanguageSwitcher() {
 
     return (
         <Menu
-            items={entries}
+            items={entries.map((entry) => ({ ...entry, inset: true }))}
             trigger={
                 <button
                     type="button"

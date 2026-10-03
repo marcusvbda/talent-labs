@@ -14,7 +14,7 @@ session. Phase status is updated in place in this file.
 | 3     | `JobCard` stack: matches first + `stackMatches` | laravel-backend  | none       | S    | DONE        |
 | 4     | Highlight matching stack chips on job rows      | inertia-frontend | 3          | M    | PENDING     |
 | 5     | Notifications popover header wraps, no clip     | inertia-frontend | none       | S    | DONE        |
-| 6     | Language menu label alignment                   | inertia-frontend | none       | S    | IN_PROGRESS |
+| 6     | Language menu label alignment                   | inertia-frontend | none       | S    | DONE        |
 | 7     | Job detail sheet highlight (OD2)                | inertia-frontend | 4          | S    | PENDING     |
 | 8     | Verification and report                         | orchestrator     | 1–7        | S    | PENDING     |
 
@@ -296,7 +296,8 @@ Spec: R14, §5 notifications bullet
 
 ### Phase 6 — Language menu label alignment
 
-Status: IN_PROGRESS
+Status: DONE
+Evidence: MenuEntry inset spacer + LanguageSwitcher inset entries; yarn types:check passes, yarn run check 0 errors; code-reviewer APPROVED. Owner visual check pending (both locales).
 Role: inertia-frontend · Depends on: none · Covers: AC22, AC23, AC24 · Size: S
 Spec: R15, §5 language menu bullet, §9 last assumption
 
