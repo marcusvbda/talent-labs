@@ -60,6 +60,7 @@ Route::middleware(['auth', 'client', 'throttle:120,1'])
         Route::post('/applications/random', [ApplicationsController::class, 'random'])->name('applications.random');
         Route::post('/applications/drafts', [ReviewController::class, 'drafts'])->name('applications.drafts');
         Route::post('/applications/reviewed', [ReviewController::class, 'reviewed'])->name('applications.reviewed');
+        Route::post('/applications/reviewed/batch', [ReviewController::class, 'reviewedBatch'])->name('applications.reviewed.batch');
         Route::get('/applications/counts', [ApplicationsController::class, 'counts'])->name('applications.counts');
         Route::get('/applications/{application}', [ApplicationsController::class, 'show'])->name('applications.show');
         Route::get('/sending', [SendingController::class, 'show'])->name('sending.show');

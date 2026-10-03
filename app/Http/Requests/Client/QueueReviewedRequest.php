@@ -35,28 +35,8 @@ class QueueReviewedRequest extends FormRequest
     {
         return [
             'jobId' => ['required', 'integer'],
-            'subject' => [
-                'required', 'string', 'min:1', 'max:200',
-                function (string $attribute, mixed $value, Closure $fail): void {
-                    if (is_string($value) && preg_match('/\{\{.*?\}\}/', $value) === 1) {
-                        $fail(__('review.subject.variables'));
-                    }
-                },
-            ],
-            'body' => [
-                'required', 'string', 'min:1', 'max:5000',
-                function (string $attribute, mixed $value, Closure $fail): void {
-                    if (! is_string($value)) {
-                        return;
-                    }
-
-                    preg_match_all('/\{\{\s*(.*?)\s*\}\}/', $value, $matches);
-
-                    if (array_diff($matches[1], ['job_url']) !== []) {
-                        $fail(__('review.body.variables'));
-                    }
-                },
-            ],
+            'subject' => self::subjectRules(),
+            'body' => self::bodyRules(),
         ];
     }
 
@@ -64,6 +44,56 @@ class QueueReviewedRequest extends FormRequest
      * @return array<string, string>
      */
     public function messages(): array
+    {
+        return self::contentMessages();
+    }
+
+    /**
+     * Subject rules, shared with the batch request: no variables allowed.
+     *
+     * @return array<int, Closure|string>
+     */
+    public static function subjectRules(): array
+    {
+        return [
+            'required', 'string', 'min:1', 'max:200',
+            function (string $attribute, mixed $value, Closure $fail): void {
+                if (is_string($value) && preg_match('/\{\{.*?\}\}/', $value) === 1) {
+                    $fail(__('review.subject.variables'));
+                }
+            },
+        ];
+    }
+
+    /**
+     * Body rules, shared with the batch request: only `{{ job_url }}` allowed.
+     *
+     * @return array<int, Closure|string>
+     */
+    public static function bodyRules(): array
+    {
+        return [
+            'required', 'string', 'min:1', 'max:5000',
+            function (string $attribute, mixed $value, Closure $fail): void {
+                if (! is_string($value)) {
+                    return;
+                }
+
+                preg_match_all('/\{\{\s*(.*?)\s*\}\}/', $value, $matches);
+
+                if (array_diff($matches[1], ['job_url']) !== []) {
+                    $fail(__('review.body.variables'));
+                }
+            },
+        ];
+    }
+
+    /**
+     * Subject and body messages, shared with the batch request.
+     *
+     * @return array<string, string>
+     */
+    public static function contentMessages(): array
     {
         return [
             'subject.required' => __('review.subject.length'),
