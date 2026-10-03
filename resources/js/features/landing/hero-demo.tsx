@@ -1,18 +1,18 @@
-import { Clock, Eye, Radio, Send } from "lucide-react";
-import { ActivityRow } from "@/components/patterns/activity-row";
-import { CompanyLogo } from "@/components/patterns/company-logo";
-import { CountdownBar } from "@/components/patterns/countdown-bar";
-import { DarkCard } from "@/components/patterns/dark-card";
-import { DataCard } from "@/components/patterns/data-card";
-import { HeroCard } from "@/components/patterns/hero-card";
-import { LiveStepper } from "@/components/patterns/live-stepper";
-import { QueueRow } from "@/components/patterns/queue-row";
-import { StatTile } from "@/components/patterns/stat-tile";
-import { Chip } from "@/components/ui/chip";
-import { LiveDot } from "@/components/ui/live-dot";
-import { Pill } from "@/components/ui/pill";
-import { useT } from "@/i18n/i18n-provider";
-import { useFormat } from "@/lib/format";
+import { Clock, Eye, Radio, Send } from 'lucide-react';
+import { ActivityRow } from '@/components/patterns/activity-row';
+import { CompanyLogo } from '@/components/patterns/company-logo';
+import { CountdownBar } from '@/components/patterns/countdown-bar';
+import { DarkCard } from '@/components/patterns/dark-card';
+import { DataCard } from '@/components/patterns/data-card';
+import { HeroCard } from '@/components/patterns/hero-card';
+import { LiveStepper } from '@/components/patterns/live-stepper';
+import { QueueRow } from '@/components/patterns/queue-row';
+import { StatTile } from '@/components/patterns/stat-tile';
+import { Chip } from '@/components/ui/chip';
+import { LiveDot } from '@/components/ui/live-dot';
+import { Pill } from '@/components/ui/pill';
+import { useT } from '@/i18n/i18n-provider';
+import { useFormat } from '@/lib/format';
 import {
     DEMO_DAILY_LIMIT,
     DEMO_JOBS,
@@ -20,16 +20,16 @@ import {
     DEMO_WEEK_BARS,
     DEMO_WEEK_LABELS,
     QUEUE_GAP_MS,
-} from "./demo-data";
-import { useDemoLoopState, useRegisterDemoInView } from "./demo-loop-context";
-import { useInView } from "./use-in-view";
+} from './demo-data';
+import { useDemoLoopState, useRegisterDemoInView } from './demo-loop-context';
+import { useInView } from './use-in-view';
 
 const LIMIT_TICKS = 25;
 
 const clockOf = (ms: number): string => {
     const total = Math.max(0, Math.ceil(ms / 1000));
 
-    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 };
 
 const HeroStats = () => {
@@ -39,30 +39,30 @@ const HeroStats = () => {
 
     return (
         <HeroCard
-            label={t("dashboard.hero.label")}
+            label={t('dashboard.hero.label')}
             icon={Send}
             value={String(sentToday)}
             suffix={`/ ${DEMO_DAILY_LIMIT}`}
             bars={[...DEMO_WEEK_BARS, sentToday]}
-            barLabels={[...DEMO_WEEK_LABELS, t("dashboard.hero.now")]}
-            caption={t("dashboard.hero.caption", {
+            barLabels={[...DEMO_WEEK_LABELS, t('dashboard.hero.now')]}
+            caption={t('dashboard.hero.caption', {
                 queued: queue.length,
                 left: DEMO_DAILY_LIMIT - sentToday,
             })}
             stats={[
                 {
-                    label: t("dashboard.hero.queued"),
+                    label: t('dashboard.hero.queued'),
                     value: format.number(queue.length),
                 },
                 {
-                    label: t("dashboard.hero.not_delivered"),
+                    label: t('dashboard.hero.not_delivered'),
                     value: format.number(0),
                 },
                 {
-                    label: t("dashboard.hero.next_send"),
+                    label: t('dashboard.hero.next_send'),
                     value: countdown
                         ? clockOf(countdown.endsAt - now)
-                        : t("dashboard.hero.no_next"),
+                        : t('dashboard.hero.no_next'),
                 },
             ]}
         />
@@ -82,12 +82,12 @@ const LiveSending = () => {
     return (
         <DarkCard
             icon={Radio}
-            title={t("dashboard.live.title")}
-            subtitle={t("dashboard.live.subtitle")}
+            title={t('dashboard.live.title')}
+            subtitle={t('dashboard.live.subtitle')}
             actions={
                 <Pill tone="dark" className="gap-2.5 py-2.5">
                     <LiveDot />
-                    {t("dashboard.live.badge")}
+                    {t('dashboard.live.badge')}
                 </Pill>
             }
         >
@@ -109,7 +109,7 @@ const LiveSending = () => {
                             {job.language.toUpperCase()}
                         </Chip>
                         <span className="text-label-sm text-dark-muted">
-                            {t("dashboard.live.position", {
+                            {t('dashboard.live.position', {
                                 position: cycle + 1,
                                 limit: DEMO_JOBS.length,
                             })}
@@ -136,9 +136,9 @@ const LiveSending = () => {
                         meta={item.company}
                         language={item.language}
                         eta={format.date(now + (index + 1) * QUEUE_GAP_MS, {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hourCycle: "h23",
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hourCycle: 'h23',
                         })}
                     />
                 ))}
@@ -154,12 +154,12 @@ const LimitTile = () => {
 
     return (
         <StatTile
-            label={t("dashboard.stat.limit")}
+            label={t('dashboard.stat.limit')}
             icon={Clock}
             tint="orange"
             value={format.number(sentToday)}
             unit={`/ ${format.number(DEMO_DAILY_LIMIT)}`}
-            context={t("dashboard.stat.left", {
+            context={t('dashboard.stat.left', {
                 count: DEMO_DAILY_LIMIT - sentToday,
             })}
             meter={{
@@ -178,12 +178,12 @@ const RecentActivity = () => {
 
     return (
         <DataCard
-            title={t("dashboard.activity.title")}
-            subtitle={t("dashboard.activity.subtitle")}
+            title={t('dashboard.activity.title')}
+            subtitle={t('dashboard.activity.subtitle')}
             actions={
                 <Pill tone="tile">
                     <LiveDot className="size-2" />
-                    {t("dashboard.live.badge")}
+                    {t('dashboard.live.badge')}
                 </Pill>
             }
         >
@@ -195,7 +195,7 @@ const RecentActivity = () => {
                     >
                         <ActivityRow
                             status="done"
-                            title={t("dashboard.activity.sent")}
+                            title={t('dashboard.activity.sent')}
                             subtitle={`${item.job.title} · ${item.job.company}`}
                             time={new Date(item.at).toISOString()}
                             timeFormat="clock"
@@ -218,7 +218,7 @@ export function HeroDemo() {
         <div className="flex flex-col gap-3 rounded-card border border-hairline bg-tile p-3 md:p-4">
             <div>
                 <Pill tone="white-on-accent" icon={Eye}>
-                    {t("landing.hero.demo.label")}
+                    {t('landing.hero.demo.label')}
                 </Pill>
             </div>
             <div

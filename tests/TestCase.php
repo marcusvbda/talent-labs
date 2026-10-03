@@ -16,7 +16,7 @@ abstract class TestCase extends BaseTestCase
     public static function assertTestingDatabase(): void
     {
         $connection = config('database.default');
-        $database = config('database.connections.'.$connection.'.database');
+        $database = config('database.connections.' . $connection . '.database');
 
         if ($connection !== 'pgsql' || $database !== self::TESTING_DATABASE) {
             throw new RuntimeException(sprintf(

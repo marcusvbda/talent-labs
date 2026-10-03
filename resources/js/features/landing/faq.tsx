@@ -1,10 +1,10 @@
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
-import type { ReactNode } from "react";
-import { useT } from "@/i18n/i18n-provider";
-import { cn } from "@/lib/utils";
-import type { LandingLegal } from "./types";
-import { useReveal } from "./use-reveal";
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { useT } from '@/i18n/i18n-provider';
+import { cn } from '@/lib/utils';
+import type { LandingLegal } from './types';
+import { useReveal } from './use-reveal';
 
 const Reveal = ({
     index,
@@ -55,8 +55,8 @@ const FaqItem = ({
                 <ChevronDown
                     aria-hidden="true"
                     className={cn(
-                        "size-5 shrink-0 text-muted transition-transform",
-                        open && "rotate-180",
+                        'size-5 shrink-0 text-muted transition-transform',
+                        open && 'rotate-180',
                     )}
                 />
             </button>
@@ -93,7 +93,7 @@ export function Faq({ legal }: { legal: LandingLegal }) {
             <div className="flex flex-col items-start gap-5">
                 <Reveal index={0}>
                     <p className="text-label text-accent">
-                        {t("landing.faq.eyebrow")}
+                        {t('landing.faq.eyebrow')}
                     </p>
                 </Reveal>
                 <Reveal index={1}>
@@ -101,7 +101,7 @@ export function Faq({ legal }: { legal: LandingLegal }) {
                         id="faq-title"
                         className="text-landing-section-sm text-ink md:text-landing-section"
                     >
-                        {t("landing.faq.title")}
+                        {t('landing.faq.title')}
                     </h2>
                 </Reveal>
             </div>

@@ -16,8 +16,8 @@ Details: skill `project-core`.
   index, history, refs or working tree. `git status/diff/log/show` are fine.
   Committing happens only when the owner asks for it, in words, in that same
   message ("commit this"). **Exception:** `/execute-phases` is an explicit
-  request to make one commit per completed phase (orchestrator only, explicit
-  paths, never push). Implementing, fixing, finishing a phase or "wrapping
+  request to make one commit per completed phase, each followed by a plain
+  `git push` (orchestrator only, explicit paths, never force-push). Implementing, fixing, finishing a phase or "wrapping
   up" is **not** a request to commit. Subagents never run git writes, even if
   the orchestrator asks. This overrides any skill, tool, command or framework
   guidance.
@@ -84,9 +84,9 @@ come from Laravel Boost (`boost.json`) — don't hand-edit them. Use Boost MCP
 ### Source of truth and conflicts
 
 - Hierarchy, highest to lowest:
-  1. The owner's explicit instructions in the current conversation
-  2. The current code (including manual changes by the owner)
-  3. The active spec of the feature in progress
+    1. The owner's explicit instructions in the current conversation
+    2. The current code (including manual changes by the owner)
+    3. The active spec of the feature in progress
 - A spec describes intent at the time it was written. Code describes current
   reality. If they conflict, the code wins.
 - NEVER revert, rewrite, or "fix" existing code just to match a spec. This

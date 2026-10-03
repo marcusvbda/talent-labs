@@ -209,9 +209,9 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 ### Source of truth and conflicts
 
 - Hierarchy, highest to lowest:
-  1. The user's explicit instructions in the current conversation
-  2. The current code (including manual changes by the user)
-  3. The active spec of the feature in progress
+    1. The user's explicit instructions in the current conversation
+    2. The current code (including manual changes by the user)
+    3. The active spec of the feature in progress
 - A spec describes intent at the time it was written. Code describes current
   reality. If they conflict, the code wins.
 - NEVER revert, rewrite, or "fix" existing code just to match a spec. This

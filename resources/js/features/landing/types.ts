@@ -1,4 +1,4 @@
-import type { PlanKey, RegionKey, SendMode } from "@/types/contracts";
+import type { PlanKey, RegionKey, SendMode } from '@/types/contracts';
 
 export type LandingPlan = {
     key: PlanKey;

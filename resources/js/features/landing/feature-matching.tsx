@@ -1,11 +1,11 @@
-import type { ReactNode } from "react";
-import { JobRow } from "@/components/patterns/job-row";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { useT } from "@/i18n/i18n-provider";
-import { cn } from "@/lib/utils";
-import { DEMO_JOBS, DEMO_MATCH_STACK } from "./demo-data";
-import { useReveal } from "./use-reveal";
+import type { ReactNode } from 'react';
+import { JobRow } from '@/components/patterns/job-row';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { useT } from '@/i18n/i18n-provider';
+import { cn } from '@/lib/utils';
+import { DEMO_JOBS, DEMO_MATCH_STACK, DEMO_STACK_MATCHES } from './demo-data';
+import { useReveal } from './use-reveal';
 
 const CHIPS = [1, 2, 3, 4] as const;
 const PANEL_JOBS = DEMO_JOBS.slice(0, 3);
@@ -42,10 +42,10 @@ const Panel = () => {
             <Card tone="light">
                 <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
                     <h3 className="text-row-title text-ink">
-                        {t("landing.matching.panel.title")}
+                        {t('landing.matching.panel.title')}
                     </h3>
                     <span className="text-body text-muted">
-                        {t("landing.matching.panel.count")}
+                        {t('landing.matching.panel.count')}
                     </span>
                 </div>
                 <div className="flex flex-col gap-2.5">
@@ -58,15 +58,16 @@ const Panel = () => {
                             title={job.title}
                             meta={job.company}
                             stack={DEMO_MATCH_STACK[job.id] ?? []}
+                            stackMatches={DEMO_STACK_MATCHES[job.id]}
                             language={job.language}
                         />
                     ))}
                 </div>
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                     <span className="text-body text-muted">
-                        {t("landing.matching.panel.selected")}
+                        {t('landing.matching.panel.selected')}
                     </span>
-                    <Button inert>{t("landing.matching.panel.send")}</Button>
+                    <Button inert>{t('landing.matching.panel.send')}</Button>
                 </div>
             </Card>
         </div>
@@ -82,7 +83,7 @@ export function FeatureMatching() {
                 <div className="flex flex-col items-start gap-5 self-baseline">
                     <Reveal index={0}>
                         <p className="text-label text-accent">
-                            {t("landing.matching.eyebrow")}
+                            {t('landing.matching.eyebrow')}
                         </p>
                     </Reveal>
                     <Reveal index={1}>
@@ -90,12 +91,12 @@ export function FeatureMatching() {
                             id="product-title"
                             className="text-landing-section-sm text-ink md:text-landing-section"
                         >
-                            {t("landing.matching.title")}
+                            {t('landing.matching.title')}
                         </h2>
                     </Reveal>
                     <Reveal index={2}>
                         <p className="max-w-2xl text-landing-body text-muted">
-                            {t("landing.matching.text")}
+                            {t('landing.matching.text')}
                         </p>
                     </Reveal>
                     <Reveal index={3}>
@@ -111,7 +112,7 @@ export function FeatureMatching() {
                                 ))}
                             </ul>
                             <p className="text-label-sm text-muted">
-                                {t("landing.matching.chips.caption")}
+                                {t('landing.matching.chips.caption')}
                             </p>
                         </div>
                     </Reveal>

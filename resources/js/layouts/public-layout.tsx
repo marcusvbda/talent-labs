@@ -1,8 +1,8 @@
-import { usePage } from "@inertiajs/react";
-import { useEffect } from "react";
-import type { ReactNode } from "react";
-import { useFlashToasts } from "@/lib/use-flash-toasts";
-import type { SharedProps } from "@/types/shared";
+import { usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { useFlashToasts } from '@/lib/use-flash-toasts';
+import type { SharedProps } from '@/types/shared';
 
 export function PublicLayout({
     header,

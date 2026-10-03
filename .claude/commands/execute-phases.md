@@ -12,8 +12,17 @@ Full arguments: $ARGUMENTS
 Load and follow the `execute-feature` skill in **plan mode**, together with
 `CLAUDE.md`. Invoking this command is the owner's explicit request to commit:
 **one commit per phase, made by you (the orchestrator) right after that phase
-passes.** This is the only git write allowed. Never push, branch, amend, reset,
-stash or touch other refs. Subagents never run git writes.
+passes, followed by a plain `git push`.** Those are the only git writes
+allowed. Never force-push, branch, amend, reset, stash or touch other refs.
+Subagents never run git writes.
+
+**Unattended by default.** The owner often leaves this running overnight. Never
+pause to ask "should I continue?", for confirmation to commit, or for approval
+between phases. Run every requested phase back to back. Stop only on a real
+block (failed checks after 2 correction rounds, or an open `BLOCKED (Dn)`
+decision), and then say so in the report. If a commit is denied for any reason,
+keep going without it and list the uncommitted phases in the final report.
+Pushing is denied by settings; don't attempt it.
 
 ## 1. Resolve the phase list
 
@@ -53,16 +62,16 @@ If the gate fails, stop and report. Don't partially run a phase.
    line under it (checks and tests run with results, the observable outcome),
    then update the status board.
 5. **Commit the phase** (only after step 4 is green):
-   - `git status` / `git diff` first; stage only this phase's files by explicit
-     path (including `plan.md`), never `git add -A` or `.`. Don't stage
-     unrelated changes or secrets (`.env`).
-   - One commit per phase, English, conventional style matching the repo log
-     (e.g. `feat(dashboard): ...`), subject naming the phase, body with a short
-     summary. End with the attribution line from the session's system-reminder.
-   - Don't use `--no-verify`. If a hook fails, fix the cause and make a new
-     commit; never amend.
-   - If tests/checks fail after the correction rounds, do **not** commit:
-     follow the block rule below.
+    - `git status` / `git diff` first; stage only this phase's files by explicit
+      path (including `plan.md`), never `git add -A` or `.`. Don't stage
+      unrelated changes or secrets (`.env`).
+    - One commit per phase, English, conventional style matching the repo log
+      (e.g. `feat(dashboard): ...`), subject naming the phase, body with a short
+      summary. End with the attribution line from the session's system-reminder.
+    - Don't use `--no-verify`. If a hook fails, fix the cause and make a new
+      commit; never amend.
+    - If tests/checks fail after the correction rounds, do **not** commit:
+      follow the block rule below.
 6. If it fails or needs a decision: set `Status: BLOCKED` with a one-line
    reason plus options and a recommendation, then stop. Don't move on to
    later requested phases that depend on it.
@@ -84,4 +93,4 @@ Report:
 - non-blocking review findings left open;
 - anything the owner should check manually now;
 - the next dependency-ready phase and the exact command to run it;
-- the commits made (hash + subject per phase); nothing is pushed.
+- the commits made (hash + subject per phase) and whether each was pushed.

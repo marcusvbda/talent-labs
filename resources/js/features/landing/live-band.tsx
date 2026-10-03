@@ -1,18 +1,18 @@
-import type { ReactNode } from "react";
-import { CompanyLogo } from "@/components/patterns/company-logo";
-import { CountdownBar } from "@/components/patterns/countdown-bar";
-import { LiveStepper } from "@/components/patterns/live-stepper";
-import { Card } from "@/components/ui/card";
-import { Chip } from "@/components/ui/chip";
-import { useT } from "@/i18n/i18n-provider";
-import { useFormat } from "@/lib/format";
-import { cn } from "@/lib/utils";
-import { BetaCta } from "./beta-cta";
-import { DEMO_JOBS, DEMO_STAGES } from "./demo-data";
-import { useDemoLoopState, useRegisterDemoInView } from "./demo-loop-context";
-import { useCountUp } from "./use-count-up";
-import { useInView } from "./use-in-view";
-import { useReveal } from "./use-reveal";
+import type { ReactNode } from 'react';
+import { CompanyLogo } from '@/components/patterns/company-logo';
+import { CountdownBar } from '@/components/patterns/countdown-bar';
+import { LiveStepper } from '@/components/patterns/live-stepper';
+import { Card } from '@/components/ui/card';
+import { Chip } from '@/components/ui/chip';
+import { useT } from '@/i18n/i18n-provider';
+import { useFormat } from '@/lib/format';
+import { cn } from '@/lib/utils';
+import { BetaCta } from './beta-cta';
+import { DEMO_JOBS, DEMO_STAGES } from './demo-data';
+import { useDemoLoopState, useRegisterDemoInView } from './demo-loop-context';
+import { useCountUp } from './use-count-up';
+import { useInView } from './use-in-view';
+import { useReveal } from './use-reveal';
 
 const Reveal = ({
     index,
@@ -84,7 +84,7 @@ const LiveDemo = () => {
                 <div className="flex shrink-0 items-center gap-3 max-md:hidden">
                     <Chip variant="language">{job.language.toUpperCase()}</Chip>
                     <span className="text-label-sm text-dark-muted">
-                        {t("dashboard.live.position", {
+                        {t('dashboard.live.position', {
                             position: cycle + 1,
                             limit: DEMO_JOBS.length,
                         })}
@@ -98,12 +98,12 @@ const LiveDemo = () => {
                 }
             />
             <div className="grid grid-cols-3 gap-3">
-                <DarkTile label={t("dashboard.hero.label")} value={sentToday} />
+                <DarkTile label={t('dashboard.hero.label')} value={sentToday} />
                 <DarkTile
-                    label={t("dashboard.hero.queued")}
+                    label={t('dashboard.hero.queued')}
                     value={queue.length}
                 />
-                <DarkTile label={t("dashboard.hero.not_delivered")} value={0} />
+                <DarkTile label={t('dashboard.hero.not_delivered')} value={0} />
             </div>
         </div>
     );
@@ -122,7 +122,7 @@ export function LiveBand({ betaClosed }: { betaClosed: boolean }) {
                     <div className="flex flex-col items-start gap-5">
                         <Reveal index={0}>
                             <p className="text-label text-accent">
-                                {t("landing.live.eyebrow")}
+                                {t('landing.live.eyebrow')}
                             </p>
                         </Reveal>
                         <Reveal index={1}>
@@ -130,12 +130,12 @@ export function LiveBand({ betaClosed }: { betaClosed: boolean }) {
                                 id="how-title"
                                 className="text-landing-section-sm md:text-landing-section"
                             >
-                                {t("landing.live.title")}
+                                {t('landing.live.title')}
                             </h2>
                         </Reveal>
                         <Reveal index={2}>
                             <p className="max-w-2xl text-landing-body text-dark-soft">
-                                {t("landing.live.text")}
+                                {t('landing.live.text')}
                             </p>
                         </Reveal>
                         <Reveal index={3}>

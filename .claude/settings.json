@@ -1,10 +1,8 @@
 {
     "$schema": "https://json.schemastore.org/claude-code-settings.json",
     "permissions": {
-        "ask": [
-            "Bash(git add)",
+        "allow": [
             "Bash(git add *)",
-            "Bash(git commit)",
             "Bash(git commit *)",
             "Bash(git push)",
             "Bash(git push *)"
@@ -36,14 +34,8 @@
             "Bash(php artisan migrate:rollback *)",
             "Bash(php artisan db:wipe)",
             "Bash(php artisan db:wipe *)",
-            "Read(./docs/archive/**)",
-            "Grep(./docs/archive/**)",
-            "Glob(./docs/archive/**)"
+            "Read(./docs/archive/**)"
         ]
     },
-    "enabledMcpjsonServers": [
-        "laravel-boost",
-        "context7",
-        "playwright"
-    ]
+    "enabledMcpjsonServers": ["laravel-boost", "context7", "playwright"]
 }
