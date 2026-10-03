@@ -85,7 +85,15 @@ const DetailBody = ({
             {job.stack.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                     {job.stack.map((item) => (
-                        <Chip key={item} variant="stack">
+                        <Chip
+                            key={item}
+                            variant="stack"
+                            className={
+                                job.stackMatches.includes(item)
+                                    ? 'border border-accent-line bg-accent-soft text-accent-deep'
+                                    : undefined
+                            }
+                        >
                             {item}
                         </Chip>
                     ))}

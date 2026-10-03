@@ -15,8 +15,8 @@ session. Phase status is updated in place in this file.
 | 4     | Highlight matching stack chips on job rows      | inertia-frontend | 3          | M    | DONE        |
 | 5     | Notifications popover header wraps, no clip     | inertia-frontend | none       | S    | DONE        |
 | 6     | Language menu label alignment                   | inertia-frontend | none       | S    | DONE        |
-| 7     | Job detail sheet highlight (OD2)                | inertia-frontend | 4          | S    | IN_PROGRESS |
-| 8     | Verification and report                         | orchestrator     | 1–7        | S    | PENDING     |
+| 7     | Job detail sheet highlight (OD2)                | inertia-frontend | 4          | S    | DONE        |
+| 8     | Verification and report                         | orchestrator     | 1–7        | S    | IN_PROGRESS |
 
 ## Audit — 2026-10-03
 
@@ -319,7 +319,8 @@ Spec: R15, §5 language menu bullet, §9 last assumption
 
 ### Phase 7 — Job detail sheet highlight
 
-Status: IN_PROGRESS
+Status: DONE
+Evidence: yarn types:check passes, yarn run check clean for job-detail-sheet.tsx; detail chips in stackMatches use the same accent classes as rows. Reviewed together with the final feature diff in Phase 8.
 Role: inertia-frontend · Depends on: 4 · Covers: — (spec OD2, only if D2 = A) · Size: S
 Spec: §10 OD2
 
@@ -338,7 +339,7 @@ Spec: §10 OD2
 
 ### Phase 8 — Verification and report
 
-Status: PENDING
+Status: IN_PROGRESS
 Role: orchestrator (+ `code-reviewer`) · Depends on: 1–7 · Covers: AC1–AC24 · Size: S
 Spec: §6, §7
 
