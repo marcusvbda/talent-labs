@@ -13,7 +13,7 @@ session. Phase status is updated in place in this file.
 | 2     | Approve all in the review modal                 | inertia-frontend | 1          | M    | DONE        |
 | 3     | `JobCard` stack: matches first + `stackMatches` | laravel-backend  | none       | S    | DONE        |
 | 4     | Highlight matching stack chips on job rows      | inertia-frontend | 3          | M    | PENDING     |
-| 5     | Notifications popover header wraps, no clip     | inertia-frontend | none       | S    | IN_PROGRESS |
+| 5     | Notifications popover header wraps, no clip     | inertia-frontend | none       | S    | DONE        |
 | 6     | Language menu label alignment                   | inertia-frontend | none       | S    | IN_PROGRESS |
 | 7     | Job detail sheet highlight (OD2)                | inertia-frontend | 4          | S    | PENDING     |
 | 8     | Verification and report                         | orchestrator     | 1–7        | S    | PENDING     |
@@ -273,7 +273,8 @@ Spec: R12, R13, §5 job row bullet
 
 ### Phase 5 — Notifications popover header wraps instead of clipping
 
-Status: IN_PROGRESS
+Status: DONE
+Evidence: popover header now flex-wrap with min-w-0 title and wrapping button label; yarn run check 0 errors (warnings in unrelated files), yarn types:check passes; reviewed against contract. Owner visual check pending (PT/EN, desktop + mobile).
 Role: inertia-frontend · Depends on: none · Covers: AC19, AC20, AC21 · Size: S
 Spec: R14, §5 notifications bullet
 

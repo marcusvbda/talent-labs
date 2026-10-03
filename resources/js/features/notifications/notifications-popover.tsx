@@ -109,18 +109,19 @@ function NotificationsList({ showTitle = true }: { showTitle?: boolean }) {
         <div className="flex flex-col gap-2">
             <div
                 className={cn(
-                    'flex items-center gap-2 px-1',
+                    'flex flex-wrap items-center gap-x-2 gap-y-1 px-1',
                     showTitle ? 'justify-between' : 'justify-end',
                 )}
             >
                 {showTitle && (
-                    <h2 className="text-card-title-sm text-ink">
+                    <h2 className="min-w-0 text-card-title-sm text-ink">
                         {t('notifications.title')}
                     </h2>
                 )}
                 <Button
                     variant="ghost"
                     size="sm"
+                    className="text-left whitespace-normal"
                     onClick={() => markAllRead.mutate()}
                     disabled={
                         markAllRead.isPending ||
