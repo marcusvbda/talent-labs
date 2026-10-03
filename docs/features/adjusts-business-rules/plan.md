@@ -11,10 +11,10 @@ session. Phase status is updated in place in this file.
 | ----- | ----------------------------------------------- | ---------------- | ---------- | ---- | ----------- |
 | 1     | Batch "reviewed" endpoint (Approve all, API)    | laravel-backend  | none       | M    | DONE        |
 | 2     | Approve all in the review modal                 | inertia-frontend | 1          | M    | DONE        |
-| 3     | `JobCard` stack: matches first + `stackMatches` | laravel-backend  | none       | S    | PENDING     |
+| 3     | `JobCard` stack: matches first + `stackMatches` | laravel-backend  | none       | S    | DONE        |
 | 4     | Highlight matching stack chips on job rows      | inertia-frontend | 3          | M    | PENDING     |
-| 5     | Notifications popover header wraps, no clip     | inertia-frontend | none       | S    | PENDING     |
-| 6     | Language menu label alignment                   | inertia-frontend | none       | S    | PENDING     |
+| 5     | Notifications popover header wraps, no clip     | inertia-frontend | none       | S    | IN_PROGRESS |
+| 6     | Language menu label alignment                   | inertia-frontend | none       | S    | IN_PROGRESS |
 | 7     | Job detail sheet highlight (OD2)                | inertia-frontend | 4          | S    | PENDING     |
 | 8     | Verification and report                         | orchestrator     | 1–7        | S    | PENDING     |
 
@@ -196,7 +196,8 @@ Spec: R1–R3, R7, R8, §4 "Approve all" steps 1–6 + unhappy paths, §5 review
 
 ### Phase 3 — `JobCard` stack: matches first + `stackMatches`
 
-Status: PENDING
+Status: DONE
+Evidence: tinker checks on StackHighlight::forCard pass (matches first, normalized comparison, empty prefs keep order, >6 matches capped); pint clean on phase files; phpstan 0 errors (needs --memory-limit=1G; composer types:check hits the 128M default); php artisan test 33/33; code-reviewer APPROVED.
 Role: laravel-backend · Depends on: none · Covers: AC13, AC14, AC16, AC17, AC18 (server side) · Size: S
 Spec: R10, R11, R12 (order + cap), R13, §4 "Stack tags", §9 (cause = display cap)
 
@@ -272,7 +273,7 @@ Spec: R12, R13, §5 job row bullet
 
 ### Phase 5 — Notifications popover header wraps instead of clipping
 
-Status: PENDING
+Status: IN_PROGRESS
 Role: inertia-frontend · Depends on: none · Covers: AC19, AC20, AC21 · Size: S
 Spec: R14, §5 notifications bullet
 
@@ -294,7 +295,7 @@ Spec: R14, §5 notifications bullet
 
 ### Phase 6 — Language menu label alignment
 
-Status: PENDING
+Status: IN_PROGRESS
 Role: inertia-frontend · Depends on: none · Covers: AC22, AC23, AC24 · Size: S
 Spec: R15, §5 language menu bullet, §9 last assumption
 
