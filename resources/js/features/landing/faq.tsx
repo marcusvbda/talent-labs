@@ -78,7 +78,7 @@ const FaqItem = ({
 
 export function Faq({ legal }: { legal: LandingLegal }) {
     const { t } = useT();
-    const items = legal.optOut ? [1, 2, 3, 4, 5] : [1, 2, 3, 4];
+    const items = legal.optOut ? [1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5];
     const [openItems, setOpenItems] = useState<number[]>([1]);
 
     const toggle = (item: number) =>

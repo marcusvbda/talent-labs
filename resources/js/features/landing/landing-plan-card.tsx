@@ -50,20 +50,12 @@ export const LandingPlanCard = ({
                     )}
                 </div>
                 <p className="flex flex-wrap items-baseline gap-x-2">
-                    {amount === 0 ? (
-                        <span className="text-numeral-lg-sm md:text-numeral-lg">
-                            {t('landing.plans.free')}
-                        </span>
-                    ) : (
-                        <>
-                            <span className="text-numeral-lg-sm md:text-numeral-lg">
-                                {format.currency(amount / 100, currency)}
-                            </span>
-                            <span className="text-body text-muted">
-                                {t('plans.per_month')}
-                            </span>
-                        </>
-                    )}
+                    <span className="text-numeral-lg-sm md:text-numeral-lg">
+                        {format.currency(amount / 100, currency)}
+                    </span>
+                    <span className="text-body text-muted">
+                        {t('plans.per_month')}
+                    </span>
                 </p>
                 <p className="text-body font-semibold">
                     {t('landing.plans.per_day', { n: plan.dailyLimit })}
@@ -93,6 +85,11 @@ export const LandingPlanCard = ({
                 size="lg"
                 fullWidth
             />
+            {betaClosed && (
+                <p className="text-center text-label-sm text-muted">
+                    {t('landing.plans.beta_note')}
+                </p>
+            )}
         </Card>
     );
 };
