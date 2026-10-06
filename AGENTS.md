@@ -200,9 +200,13 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 
 ### Lifecycle
 
-- `docs/features/<feature>/` holds the spec + plan of a feature. Archiving or
-  deleting them after implementation is done manually by the user; never move,
-  archive or delete spec/plan files yourself.
+- `docs/features/<feature>/spec.md` is permanent and describes the feature.
+  Its body is the current behaviour; `## Pending changes` holds what the
+  user wants changed and isn't implemented yet (for a new feature,
+  "Requirements" is the target until built). The two never mix.
+- `plan.md` is transient. After the last phase, `/exec-phase` folds the
+  pending changes the plan covered into the spec body; the user then deletes
+  `plan.md` manually. Never move or delete spec/plan files yourself.
 - When reading specs, read only the one for the feature in progress, never the
   whole `docs/features/` folder.
 
@@ -211,20 +215,25 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - Hierarchy, highest to lowest:
     1. The user's explicit instructions in the current conversation
     2. The current code (including manual changes by the user)
-    3. The active spec of the feature in progress
-- A spec describes intent at the time it was written. Code describes current
-  reality. If they conflict, the code wins.
-- NEVER revert, rewrite, or "fix" existing code just to match a spec. This
-  includes changes that look like deviations: assume they were intentional
-  manual adjustments.
+    3. The spec body of the feature in progress
+- `## Pending changes` (and the "Requirements" of a feature not yet built) is
+  the user's recorded intent and the target of `/plan-feature`, not a claim
+  about the current code.
+- Where the spec body and the code conflict, the code wins. NEVER revert,
+  rewrite, or "fix" existing code just to match the spec body; assume
+  deviations were intentional manual adjustments. Only the user can decide,
+  in `/plan-feature`, that the code should follow the spec.
 - Before overwriting or removing existing code during a task, check
   `git log` / `git blame` / `git diff` for the affected lines. If they were
   recently changed by hand, treat that as intentional and preserve it.
-- On a spec/code divergence: (1) do not resolve it silently, in either
-  direction; (2) implement what the task requires while preserving the current
-  code behavior; (3) report the divergence at the end and propose a spec update
-  (a `Deviation:` note or a rewrite of the affected section).
+- The spec is edited only through the commands: `/create-feature-spec`
+  (user's items), `/update-feature-spec` (reconcile with code),
+  `/plan-feature` (user's decisions) and `/exec-phase` (fold implemented
+  pending changes after the last phase). Outside them, on a spec/code
+  divergence: don't resolve it silently, implement what the task requires
+  while preserving current behaviour, and report it recommending
+  `/update-feature-spec <feature>`.
 - If the spec is ambiguous, outdated, or contradicts itself, ask the user. Do
   not guess.
-- If the user changes code manually, the active spec must be updated or
-  receive a note like `Deviation: <what changed and why>`.
+- If the user changes code manually, the spec is brought up to date with
+  `/update-feature-spec <feature>`.

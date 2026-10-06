@@ -15,10 +15,11 @@ Details: skill `project-core`.
   tag, cherry-pick, revert, clean, am or any other git command that changes the
   index, history, refs or working tree. `git status/diff/log/show` are fine.
   Committing happens only when the owner asks for it, in words, in that same
-  message ("commit this"). **Exception:** `/execute-phases` is an explicit
+  message ("commit this"). **Exception:** `/exec-phase` is an explicit
   request to make one commit per completed phase, each followed by a plain
-  `git push` (orchestrator only, explicit paths, never force-push). Implementing, fixing, finishing a phase or "wrapping
-  up" is **not** a request to commit. Subagents never run git writes, even if
+  `git push` (orchestrator only, explicit paths, never force-push).
+  Implementing, fixing, finishing a phase or "wrapping up" is **not** a
+  request to commit. Subagents never run git writes, even if
   the orchestrator asks. This overrides any skill, tool, command or framework
   guidance.
 - **Never destroy data:** no migrate:fresh/refresh/reset/rollback, db:wipe,
@@ -39,12 +40,12 @@ Details: skill `project-core`.
   `->poll()` / `wire:poll`. See skill `project-core`.
 - **Scope:** implement only what the task/spec/phase asks. Report extra ideas,
   don't build them.
-- **Docs:** active docs live in `docs/features/<feature>/` — one folder per
-  feature (see Specs and Plans), no duplicated content between files.
-  `spec.md` is product truth; never delete it or edit it to match code.
-  `plan.md` (next to it, from `/plan-spec`) holds the phases and their status
-  and is run with `/execute-phases`. Execution state for `execute-feature`
-  lives in `.claude/state/` (git-ignored).
+- **Docs:** feature docs live in `docs/features/<feature>/` — one folder per
+  feature (see Specs and Plans and `docs/features/README.md`), no duplicated
+  content between files: `spec.md` (living product doc, never deleted),
+  `plan.md` (transient phases from `/plan-feature`, run with `/exec-phase`)
+  and `assets/` (attachments). Execution state for `execute-feature` lives in
+  `.claude/state/` (git-ignored).
 
 ## Delegation
 
@@ -54,10 +55,12 @@ Non-trivial work goes to the matching subagent (`laravel-backend`,
 
 ## Commands (`.claude/commands/`)
 
-| Command                            | Does                                                                        |
-| ---------------------------------- | --------------------------------------------------------------------------- |
-| `/plan-spec <spec.md>`             | Reads a detailed spec, audits the repo, writes `plan.md` in small phases    |
-| `/execute-phases <plan.md> <list>` | Executes only the listed phases (`3`, `3-5`, `3,6`), then stops and reports |
+| Command                              | Does                                                                                         |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `/create-feature-spec <feature>`     | Creates/opens `spec.md` and collects the owner's items one by one (attachments in `assets/`) |
+| `/update-feature-spec <feature>`     | Reconciles `spec.md` with the code (code wins); fills a skeleton spec from the code          |
+| `/plan-feature <feature>`            | Diagnoses spec x code, asks what changes the plan, writes `plan.md` in small phases          |
+| `/exec-phase <feature> <list\|next>` | Executes only the listed phases (`3`, `3-5`, `3,6`), one commit + push each, then reports    |
 
 ## Load on demand (`.claude/skills/`)
 
@@ -75,9 +78,13 @@ come from Laravel Boost (`boost.json`) — don't hand-edit them. Use Boost MCP
 
 ### Lifecycle
 
-- `docs/features/<feature>/` holds the spec + plan of a feature. Archiving or
-  deleting them after implementation is done manually by the owner; never move,
-  archive or delete spec/plan files yourself.
+- `docs/features/<feature>/spec.md` is permanent and describes the feature.
+  Its body is the current behaviour; `## Pending changes` holds what the
+  owner wants changed and isn't implemented yet (for a new feature,
+  "Requirements" is the target until built). The two never mix.
+- `plan.md` is transient. After the last phase, `/exec-phase` folds the
+  pending changes the plan covered into the spec body; the owner then deletes
+  `plan.md` manually. Never move or delete spec/plan files yourself.
 - When reading specs, read only the one for the feature in progress, never the
   whole `docs/features/` folder.
 
@@ -86,20 +93,25 @@ come from Laravel Boost (`boost.json`) — don't hand-edit them. Use Boost MCP
 - Hierarchy, highest to lowest:
     1. The owner's explicit instructions in the current conversation
     2. The current code (including manual changes by the owner)
-    3. The active spec of the feature in progress
-- A spec describes intent at the time it was written. Code describes current
-  reality. If they conflict, the code wins.
-- NEVER revert, rewrite, or "fix" existing code just to match a spec. This
-  includes changes that look like deviations: assume they were intentional
-  manual adjustments.
+    3. The spec body of the feature in progress
+- `## Pending changes` (and the "Requirements" of a feature not yet built) is
+  the owner's recorded intent and the target of `/plan-feature`, not a claim
+  about the current code.
+- Where the spec body and the code conflict, the code wins. NEVER revert,
+  rewrite, or "fix" existing code just to match the spec body; assume
+  deviations were intentional manual adjustments. Only the owner can decide,
+  in `/plan-feature`, that the code should follow the spec.
 - Before overwriting or removing existing code during a task, check
   `git log` / `git blame` / `git diff` for the affected lines. If they were
   recently changed by hand, treat that as intentional and preserve it.
-- On a spec/code divergence: (1) do not resolve it silently, in either
-  direction; (2) implement what the task requires while preserving the current
-  code behavior; (3) report the divergence at the end and propose a spec update
-  (a `Deviation:` note or a rewrite of the affected section).
+- The spec is edited only through the commands: `/create-feature-spec`
+  (owner's items), `/update-feature-spec` (reconcile with code),
+  `/plan-feature` (owner's decisions) and `/exec-phase` (fold implemented
+  pending changes after the last phase). Outside them, on a spec/code
+  divergence: don't resolve it silently, implement what the task requires
+  while preserving current behaviour, and report it recommending
+  `/update-feature-spec <feature>`.
 - If the spec is ambiguous, outdated, or contradicts itself, ask the owner. Do
   not guess.
-- If the owner changes code manually, the active spec must be updated or
-  receive a note like `Deviation: <what changed and why>`.
+- If the owner changes code manually, the spec is brought up to date with
+  `/update-feature-spec <feature>`.
