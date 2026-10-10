@@ -9,6 +9,7 @@ use App\Enums\SendSubStep;
 use App\Events\Client\ApplicationProgressed;
 use App\Events\Client\Concerns\DispatchesClientEvent;
 use App\Models\Concerns\BroadcastsRealtime;
+use App\Outreach\OutreachLimits;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -109,6 +110,17 @@ class Application extends Model
         $query
             ->whereIn('status', ApplicationStatus::countedTowardsQuota())
             ->whereBetween('queued_at', [now()->startOfDay(), now()->endOfDay()]);
+    }
+
+    /**
+     * Destination type: 'generic' when the recipient local part is a shared
+     * mailbox (OutreachLimits::GENERIC_LOCAL_PARTS), otherwise 'named'.
+     */
+    public function recipientKind(): string
+    {
+        $localPart = strtolower(explode('@', (string) $this->recipient_email)[0]);
+
+        return in_array($localPart, OutreachLimits::GENERIC_LOCAL_PARTS, true) ? 'generic' : 'named';
     }
 
     /**

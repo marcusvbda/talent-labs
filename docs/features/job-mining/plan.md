@@ -42,7 +42,7 @@ apply…".
 | 6 | Restrictions enforced by the match | laravel-backend | 5 | P7 | S | DONE |
 | 7 | Out-of-profile role/seniority rejected by the match | laravel-backend | 6 | P8 | S | DONE |
 | 8 | New default templates EN/PT | laravel-backend | 4 | P9 | S | DONE |
-| 9 | Destination type (generic vs named) | laravel-backend | 1 | P10 | S | PENDING |
+| 9 | Destination type (generic vs named) | laravel-backend | 1 | P10 | S | DONE |
 | 10 | `Cancelled` application status (backend + client display) | inertia-frontend | none | P11 | M | PENDING |
 | 11 | Propose and cancel flagged queued applications | laravel-backend | 1, 10 | P11 | S | PENDING |
 | 12 | Verification and report | laravel-backend | 1–11 | P12 | S | PENDING |
@@ -622,7 +622,8 @@ single role; close with a concrete ask… English and Portuguese only"; P9-D.
 
 ### Phase 9 — Destination type (generic vs named)
 
-Status: PENDING
+Status: DONE
+Evidence: pint passed; phpstan 0 errors; `php artisan test --compact` 33/33; tinker: careers@ and Jobs@ -> generic, jane@ and null -> named; filter SQL compiles (`lower(split_part(recipient_email,'@',1)) [not] in (...)`); reviewer APPROVED. Admin UI not exercised in a browser (local DB has no applications).
 Role: laravel-backend · Depends on: 1 · Covers: P10 · Size: S
 Origin: P10 "do NOT block for now; only record the flag so response can be
 measured per destination type later"; P10-D.

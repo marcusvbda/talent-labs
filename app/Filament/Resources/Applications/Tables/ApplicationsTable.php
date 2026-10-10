@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Applications\Tables;
 
 use App\Enums\ApplicationOrigin;
 use App\Enums\ApplicationStatus;
+use App\Models\Application;
+use App\Outreach\OutreachLimits;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
@@ -34,6 +36,12 @@ class ApplicationsTable
                 TextColumn::make('recipient_email')
                     ->label('Recipient')
                     ->searchable(),
+
+                TextColumn::make('recipient_kind')
+                    ->label('Recipient type')
+                    ->state(fn (Application $record): string => $record->recipientKind())
+                    ->badge()
+                    ->color(fn (string $state): string => $state === 'generic' ? 'gray' : 'info'),
 
                 TextColumn::make('status')
                     ->badge(),
@@ -67,6 +75,25 @@ class ApplicationsTable
 
                 SelectFilter::make('status')
                     ->options(ApplicationStatus::class),
+
+                SelectFilter::make('recipient_kind')
+                    ->label('Recipient type')
+                    ->options(['generic' => 'Generic', 'named' => 'Named'])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+
+                        if (! in_array($value, ['generic', 'named'], true)) {
+                            return $query;
+                        }
+
+                        $placeholders = implode(',', array_fill(0, count(OutreachLimits::GENERIC_LOCAL_PARTS), '?'));
+                        $operator = $value === 'generic' ? 'in' : 'not in';
+
+                        return $query->whereRaw(
+                            "lower(split_part(recipient_email, '@', 1)) {$operator} ({$placeholders})",
+                            OutreachLimits::GENERIC_LOCAL_PARTS,
+                        );
+                    }),
 
                 SelectFilter::make('origin')
                     ->options(ApplicationOrigin::class),
