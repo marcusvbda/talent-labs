@@ -44,7 +44,7 @@ apply…".
 | 8 | New default templates EN/PT | laravel-backend | 4 | P9 | S | DONE |
 | 9 | Destination type (generic vs named) | laravel-backend | 1 | P10 | S | DONE |
 | 10 | `Cancelled` application status (backend + client display) | inertia-frontend | none | P11 | M | DONE |
-| 11 | Propose and cancel flagged queued applications | laravel-backend | 1, 10 | P11 | S | PENDING |
+| 11 | Propose and cancel flagged queued applications | laravel-backend | 1, 10 | P11 | S | DONE |
 | 12 | Verification and report | laravel-backend | 1–11 | P12 | S | PENDING |
 
 Phase 2 needs the dump to be restored. It blocks only itself and the live
@@ -694,7 +694,8 @@ uses it.
 
 ### Phase 11 — Propose and cancel flagged queued applications
 
-Status: PENDING
+Status: DONE
+Evidence: pint passed; phpstan 0 errors; `php artisan test --compact` 33/33; dry run prints "No flagged queued applications." (exit 0, no files written); `--ids=1` without `--force` -> "Pass --force to cancel." exit 1; malformed ids rejected; `list applications` shows the command; reviewer APPROVED. The `--force` path was NOT run (no data, and it needs the owner's confirmation of ids). Additions beyond contract: strict `--ids` format check, duplicate ids removed.
 Role: laravel-backend · Depends on: 1, 10 · Covers: P11 · Size: S
 Origin: P11 "Applications already sent are not changed. For `queued`
 applications with a flag, propose cancelling them and ask the owner for
