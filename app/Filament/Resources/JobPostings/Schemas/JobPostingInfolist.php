@@ -35,6 +35,11 @@ class JobPostingInfolist
                     ->color(fn (?RoleFamily $state): string => $state === null ? 'gray' : 'primary')
                     ->placeholder('Other'),
 
+                TextEntry::make('ineligible_reason')
+                    ->label('Not eligible')
+                    ->color('danger')
+                    ->hidden(fn (?JobPosting $record): bool => blank($record?->ineligible_reason)),
+
                 TextEntry::make('department')
                     ->placeholder('—'),
 

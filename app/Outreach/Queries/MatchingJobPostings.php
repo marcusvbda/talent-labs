@@ -27,7 +27,8 @@ final class MatchingJobPostings
      * write to (an smtp_verified contact in the priority list) and this client has not
      * applied to that company yet. Only postings whose role family is one of the target
      * families (talent.collection.target_role_families) are in the pool, so a company verified
-     * through a dev posting never surfaces its non-target (e.g. sales) postings. Postings are
+     * through a dev posting never surfaces its non-target (e.g. sales) postings. Postings marked
+     * not eligible (ineligible_reason, e.g. multi-role posts) never enter the pool. Postings are
      * left out unless their language has an active, complete application profile for this
      * user (skippable with $withLanguageRule = false). Only postings whose first run (collection_run_id)
      * started inside the last talent.collection.window_days app-timezone days, today included, are kept.
@@ -55,6 +56,7 @@ final class MatchingJobPostings
             ->where('job_posting_profiles.status', ProfileStatus::Done->value)
             ->when($withLanguageRule, fn (Builder $query) => $query->whereIn('job_posting_profiles.language', ApplicationProfile::activeCompleteLanguagesFor($user)))
             ->whereIn('job_postings.role_family', config('talent.collection.target_role_families'))
+            ->whereNull('job_postings.ineligible_reason')
             ->where('first_run.started_at', '>=', PostingDay::windowStartsAt())
             ->whereExists(function ($contacts): void {
                 $contacts->select(DB::raw(1))

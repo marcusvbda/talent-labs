@@ -26,5 +26,6 @@ final readonly class JobPostingData
         public array $raw,
         public ?string $companyWebsite = null,
         public array $sourceContacts = [],
+        public ?string $ineligibleReason = null,
     ) {}
 }

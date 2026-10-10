@@ -30,6 +30,11 @@ class HackerNewsAdapter implements JobSourceAdapter
 
     private const ROLE_PATTERN = '/(engineer|developer|programmer|software|swe|devops|sre|frontend|front-end|backend|back-end|full[- ]?stack|fullstack|manager|designer|support|success|product|architect|scientist|analyst|lead|head of|director|founder|researcher|qa|ios|android)/i';
 
+    /**
+     * Nouns that name a role on their own; used to detect multi-role titles and body role lines.
+     */
+    private const ROLE_NOUN_PATTERN = '/\b(engineer|developer|manager|designer|scientist|analyst|architect|sdet|qa)s?\b/i';
+
     private const URL_PATTERN = '/https?:\/\/\S+/i';
 
     private const EMPLOYMENT_PATTERN = '/full[- ]?time|part[- ]?time|contract|intern/i';
@@ -75,9 +80,7 @@ class HackerNewsAdapter implements JobSourceAdapter
         $postings = [];
 
         foreach ($this->items($response->json('children')) as $item) {
-            $posting = $this->map($item);
-
-            if ($posting !== null) {
+            foreach ($this->map($item) as $posting) {
                 $postings[$posting->externalId] ??= $posting;
             }
         }
@@ -108,29 +111,35 @@ class HackerNewsAdapter implements JobSourceAdapter
     }
 
     /**
+     * One posting per role: a comment listing several clearly delimited roles (header
+     * segments, title separators or a bulleted body list) becomes "{id}#{n}" children
+     * plus the original id marked not eligible; a multi-role title that can't be split
+     * reliably stays one posting marked not eligible.
+     *
      * @param  array<string, mixed>  $item
+     * @return list<JobPostingData>
      */
-    private function map(array $item): ?JobPostingData
+    private function map(array $item): array
     {
         $externalId = $this->stringOrNull($item['id'] ?? null);
         $html = $this->stringOrNull($item['text'] ?? null);
 
         // Deleted comments have no text.
         if ($externalId === null || $html === null) {
-            return null;
+            return [];
         }
 
         $segments = $this->headerSegments($html);
 
         if (count($segments) < 2) {
-            return null;
+            return [];
         }
 
         $companyName = $this->companyName($segments[0]);
         $titleIndex = $this->titleIndex($segments);
 
         if ($companyName === null || $titleIndex === null) {
-            return null;
+            return [];
         }
 
         $header = implode(' | ', $segments);
@@ -138,7 +147,7 @@ class HackerNewsAdapter implements JobSourceAdapter
 
         unset($item['children']);
 
-        return new JobPostingData(
+        $parent = new JobPostingData(
             externalId: $externalId,
             title: $segments[$titleIndex],
             companyName: $companyName,
@@ -157,6 +166,224 @@ class HackerNewsAdapter implements JobSourceAdapter
                 fn (string $email) => new SourceContactData(SourceContactKind::Email, email: $email),
                 $this->emails($html),
             ),
+        );
+
+        $roles = $this->splitRoles($segments, $titleIndex, $html);
+
+        if (count($roles) >= 2) {
+            $postings = [];
+
+            foreach ($roles as $index => $role) {
+                $postings[] = $this->forRole($parent, $role, $index + 1);
+            }
+
+            // The original id stays (marked not eligible) so a row stored before the split leaves the pool.
+            $postings[] = $this->withIneligibleReason($parent, 'Split into one posting per role.');
+
+            return $postings;
+        }
+
+        if ($this->hasAmbiguousRoles($segments[$titleIndex])) {
+            return [$this->withIneligibleReason($parent, 'Multiple roles in one post; could not split reliably.')];
+        }
+
+        return [$parent];
+    }
+
+    /**
+     * The roles of a multi-role post, in order, when each one is clearly delimited:
+     * 2+ role-like header segments, else 2+ role-like parts of the title segment split
+     * on " · ", " • " or ";", else 2+ bulleted body lines that are role phrases.
+     *
+     * @param  list<string>  $segments
+     * @return list<string>
+     */
+    private function splitRoles(array $segments, int $titleIndex, string $html): array
+    {
+        $headerRoles = [];
+
+        foreach ($segments as $index => $segment) {
+            if ($index !== 0 && $this->isRoleLike($segment)) {
+                $headerRoles[] = $segment;
+            }
+        }
+
+        if (count($headerRoles) >= 2) {
+            return $headerRoles;
+        }
+
+        $parts = $this->nonEmptyParts((array) preg_split('/ · | • |;/u', $segments[$titleIndex]));
+
+        // A separator inside parentheses ("Software Engineer (Backend; Frontend)") is not a role boundary.
+        $balanced = array_filter($parts, fn (string $part): bool => substr_count($part, '(') === substr_count($part, ')'));
+
+        if (count($parts) >= 2 && count($balanced) === count($parts) && count(array_filter($parts, $this->isRoleLike(...))) === count($parts)) {
+            return $parts;
+        }
+
+        return $this->bodyRoleLines($html);
+    }
+
+    /**
+     * Body lines (paragraphs, <br> and newlines, header excluded) that start with a
+     * bullet ("-", "*", "•", "1." or "1)") followed by a title-shaped role (see
+     * isTitleShapedRole); the bullet is dropped. Requirement bullets ("- 5+ years as a
+     * software engineer", "- Mentor junior engineers") never count as roles.
+     *
+     * @return list<string>
+     */
+    private function bodyRoleLines(string $html): array
+    {
+        $body = preg_split('/<p>/i', $html, 2)[1] ?? '';
+        $roles = [];
+
+        foreach ((array) preg_split('/<p>|<br\s*\/?>|\R/i', $body) as $line) {
+            $text = $this->htmlToText(is_string($line) ? $line : null);
+
+            if ($text === null || preg_match('/^(?:[-*•]|\d{1,2}[.)])\s+(.+)$/u', $text, $matches) !== 1) {
+                continue;
+            }
+
+            $role = trim($matches[1]);
+
+            if ($this->isTitleShapedRole($role)) {
+                $roles[] = $role;
+            }
+        }
+
+        return $roles;
+    }
+
+    /**
+     * A job title, not a sentence: at most 80 chars and 8 words that end in a role noun
+     * ("Senior Backend Engineer"), optionally followed by one parenthetical or a
+     * " - location" suffix; no sentence punctuation, and every word is capitalized
+     * (or has a capital/digit, like "iOS") except short connectors ("of", "and", "&").
+     */
+    private function isTitleShapedRole(string $role): bool
+    {
+        if (preg_match('/^([^().:;]+?)(?:\s*\([^()]*\)|\s+[-–—]\s+[^().:;]+)?$/u', $role, $matches) !== 1) {
+            return false;
+        }
+
+        $title = trim($matches[1]);
+        $words = preg_split('/\s+/u', $title) ?: [];
+
+        if (
+            mb_strlen($title) > 80
+            || count($words) > 8
+            || preg_match('/\b(engineer|developer|manager|designer|scientist|analyst|architect|sdet|qa)s?$/i', $title) !== 1
+            || ! $this->isRoleLike($role)
+        ) {
+            return false;
+        }
+
+        foreach ($words as $word) {
+            if (preg_match('/[\p{Lu}\d]/u', $word) !== 1 && preg_match('/^(of|and|&|\/|for|the|in|on|at|to|[-–—])$/iu', $word) !== 1) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * A title like "Designer / Engineer" (2+ parts that each name a role noun) or
+     * "Backend and Frontend Engineers" (role-like parts sharing a trailing plural role
+     * noun): several roles, but nothing delimits them well enough to split.
+     */
+    private function hasAmbiguousRoles(string $title): bool
+    {
+        $parts = $this->nonEmptyParts((array) preg_split('/ and | & | \/ |, /iu', $title));
+
+        if (count($parts) < 2) {
+            return false;
+        }
+
+        $withNoun = array_filter($parts, fn (string $part): bool => preg_match(self::ROLE_NOUN_PATTERN, $part) === 1);
+
+        if (count($withNoun) === count($parts)) {
+            return true;
+        }
+
+        return preg_match('/\b(engineer|developer|manager|designer|scientist|analyst|architect|sdet|qa)s\b/i', $parts[count($parts) - 1]) === 1
+            && count(array_filter($parts, fn (string $part): bool => preg_match(self::ROLE_PATTERN, $part) === 1)) === count($parts);
+    }
+
+    /**
+     * @param  array<mixed>  $parts
+     * @return list<string>
+     */
+    private function nonEmptyParts(array $parts): array
+    {
+        $result = [];
+
+        foreach ($parts as $part) {
+            $part = is_string($part) ? trim($part) : '';
+
+            if ($part !== '') {
+                $result[] = $part;
+            }
+        }
+
+        return $result;
+    }
+
+    private function isRoleLike(string $text): bool
+    {
+        return preg_match(self::ROLE_PATTERN, $text) === 1 && ! $this->isNonTitle($text);
+    }
+
+    /**
+     * Child posting "{id}#{n}" for one role: its own parenthetical location (and remote
+     * flag) when it has one, else the parent's; every other field copied from the parent.
+     */
+    private function forRole(JobPostingData $parent, string $role, int $n): JobPostingData
+    {
+        $location = null;
+
+        if (preg_match('/\(([^()]*)\)/u', $role, $matches) === 1 && preg_match('/(remote|onsite|on-site|hybrid|,)/i', $matches[1]) === 1) {
+            $location = trim($matches[1]);
+        }
+
+        return new JobPostingData(
+            externalId: "{$parent->externalId}#{$n}",
+            title: $role,
+            companyName: $parent->companyName,
+            location: $location ?? $parent->location,
+            isRemote: $location === null ? $parent->isRemote : preg_match('/remote/i', "{$role} {$location}") === 1,
+            department: $parent->department,
+            employmentType: $parent->employmentType,
+            url: $parent->url,
+            applyUrl: $parent->applyUrl,
+            descriptionHtml: $parent->descriptionHtml,
+            descriptionText: $parent->descriptionText,
+            publishedAt: $parent->publishedAt,
+            raw: $parent->raw,
+            companyWebsite: $parent->companyWebsite,
+            sourceContacts: $parent->sourceContacts,
+        );
+    }
+
+    private function withIneligibleReason(JobPostingData $posting, string $reason): JobPostingData
+    {
+        return new JobPostingData(
+            externalId: $posting->externalId,
+            title: $posting->title,
+            companyName: $posting->companyName,
+            location: $posting->location,
+            isRemote: $posting->isRemote,
+            department: $posting->department,
+            employmentType: $posting->employmentType,
+            url: $posting->url,
+            applyUrl: $posting->applyUrl,
+            descriptionHtml: $posting->descriptionHtml,
+            descriptionText: $posting->descriptionText,
+            publishedAt: $posting->publishedAt,
+            raw: $posting->raw,
+            companyWebsite: $posting->companyWebsite,
+            sourceContacts: $posting->sourceContacts,
+            ineligibleReason: $reason,
         );
     }
 

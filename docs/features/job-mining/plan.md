@@ -36,7 +36,7 @@ apply…".
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | `reports:application-audit` + shared aggregator/generic helpers | laravel-backend | none | P1, P2 | M | DONE |
 | 2 | Run the audit on the restored data and present the report | laravel-backend | 1 | P1–P4 | S | PENDING (needs the dump) |
-| 3 | Multi-role HN posts: split or mark not eligible | laravel-backend | none | P5 | M | PENDING |
+| 3 | Multi-role HN posts: split or mark not eligible | laravel-backend | none | P5 | M | DONE |
 | 4 | Safe `job_url` + link line removed when empty | laravel-backend | 1 | P6 | M | PENDING |
 | 5 | Detect and store posting restrictions | laravel-backend | 3 | P7 | M | PENDING |
 | 6 | Restrictions enforced by the match | laravel-backend | 5 | P7 | S | PENDING |
@@ -302,7 +302,8 @@ Origin: P1–P4; P1-D1.
 
 ### Phase 3 — Multi-role HN posts: split or mark not eligible
 
-Status: PENDING
+Status: DONE
+Evidence: migration applied forward (`ineligible_reason`); pint passed; phpstan 0 errors; `php artisan test --compact` 33/33; tinker via reflection: 3 plan examples OK (#1/#2 + ineligible parent; single ineligible; single normal), requirement bullets and `Software Engineer (Backend; Frontend)` do not split; `forUser()` SQL has `ineligible_reason is null`; reviewer APPROVED after 1 correction round (rule 3 made title-shaped). Deviations: rule 4 also fires for a plural last role noun; rule 3 needs bullet + title-shaped role line. Local DB has 0 postings, so no live data exercised.
 Role: laravel-backend · Depends on: none · Covers: P5 · Size: M
 Origin: P5 "split into one posting per role, or mark the posting as not
 eligible with a reason when the split is not reliable. Never send one email
