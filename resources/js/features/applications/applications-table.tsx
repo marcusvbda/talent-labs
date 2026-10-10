@@ -16,6 +16,8 @@ const ACTIVITY: Record<ApplicationStatus, ActivityStatus> = {
     sent: 'done',
     failed: 'failed',
     ambiguous: 'failed',
+    // Closed without being sent; no neutral finished bucket exists, so it shares failed's.
+    cancelled: 'failed',
 };
 
 const timeOf = (item: ApplicationItem) =>

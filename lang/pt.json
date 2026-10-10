@@ -742,6 +742,7 @@
     "applications.status.sent": "Enviada",
     "applications.status.failed": "Não entregue",
     "applications.status.ambiguous": "Precisa de revisão",
+    "applications.status.cancelled": "Cancelada",
     "applications.stage.validating_recipient": "Validando destinatário",
     "applications.stage.adapting_template": "Adaptando o modelo",
     "applications.stage.attaching_cv": "Anexando o currículo",

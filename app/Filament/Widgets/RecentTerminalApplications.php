@@ -13,7 +13,7 @@ class RecentTerminalApplications extends TableWidget
     public function table(Table $table): Table
     {
         $ids = Application::query()
-            ->whereIn('status', [ApplicationStatus::Sent, ApplicationStatus::Failed, ApplicationStatus::Ambiguous])
+            ->whereIn('status', [ApplicationStatus::Sent, ApplicationStatus::Failed, ApplicationStatus::Ambiguous, ApplicationStatus::Cancelled])
             ->orderByDesc('updated_at')
             ->limit(50)
             ->pluck('id');

@@ -1,4 +1,4 @@
-import { Check, CircleAlert, CircleHelp, Clock } from 'lucide-react';
+import { Ban, Check, CircleAlert, CircleHelp, Clock } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Pill } from '@/components/ui/pill';
 import { Spinner } from '@/components/ui/spinner';
@@ -9,6 +9,7 @@ const TINTS: Partial<Record<ApplicationStatus, string>> = {
     sent: 'bg-success-bg text-success-text',
     failed: 'bg-danger-bg text-danger-text',
     ambiguous: 'bg-accent-soft text-accent-deep',
+    cancelled: 'bg-tile text-muted',
 };
 
 const ICONS: Partial<Record<ApplicationStatus, LucideIcon>> = {
@@ -16,6 +17,7 @@ const ICONS: Partial<Record<ApplicationStatus, LucideIcon>> = {
     sent: Check,
     failed: CircleAlert,
     ambiguous: CircleHelp,
+    cancelled: Ban,
 };
 
 export const StatusBadge = ({ status }: { status: ApplicationStatus }) => {

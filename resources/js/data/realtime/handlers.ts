@@ -16,7 +16,12 @@ import type {
 
 const ACTIVITY_CAP = 5;
 const JOBS_DEBOUNCE_MS = 2000;
-const SETTLED: ApplicationStatus[] = ['sent', 'failed', 'ambiguous'];
+const SETTLED: ApplicationStatus[] = [
+    'sent',
+    'failed',
+    'ambiguous',
+    'cancelled',
+];
 
 let jobsTimer: ReturnType<typeof setTimeout> | undefined;
 

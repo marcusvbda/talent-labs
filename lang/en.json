@@ -742,6 +742,7 @@
     "applications.status.sent": "Sent",
     "applications.status.failed": "Not delivered",
     "applications.status.ambiguous": "Needs review",
+    "applications.status.cancelled": "Cancelled",
     "applications.stage.validating_recipient": "Validating recipient",
     "applications.stage.adapting_template": "Adapting template",
     "applications.stage.attaching_cv": "Attaching CV",

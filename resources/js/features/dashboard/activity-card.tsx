@@ -15,6 +15,8 @@ const ACTIVITY: Record<ApplicationStatus, ActivityStatus> = {
     sent: 'done',
     failed: 'failed',
     ambiguous: 'failed',
+    // Closed without being sent; no neutral finished bucket exists, so it shares failed's.
+    cancelled: 'failed',
 };
 
 const timeOf = (item: ApplicationItem) =>
@@ -48,7 +50,9 @@ export function ActivityCard({ activity }: { activity: ApplicationItem[] }) {
                                 ? t('dashboard.activity.needs_review')
                                 : item.status === 'queued'
                                   ? t('dashboard.hero.queued')
-                                  : t('dashboard.activity.failed');
+                                  : item.status === 'cancelled'
+                                    ? t('applications.status.cancelled')
+                                    : t('dashboard.activity.failed');
                     const subtitle =
                         item.status === 'failed' || item.status === 'ambiguous'
                             ? (item.lastError ?? line)

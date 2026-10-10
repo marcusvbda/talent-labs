@@ -43,7 +43,7 @@ apply…".
 | 7 | Out-of-profile role/seniority rejected by the match | laravel-backend | 6 | P8 | S | DONE |
 | 8 | New default templates EN/PT | laravel-backend | 4 | P9 | S | DONE |
 | 9 | Destination type (generic vs named) | laravel-backend | 1 | P10 | S | DONE |
-| 10 | `Cancelled` application status (backend + client display) | inertia-frontend | none | P11 | M | PENDING |
+| 10 | `Cancelled` application status (backend + client display) | inertia-frontend | none | P11 | M | DONE |
 | 11 | Propose and cancel flagged queued applications | laravel-backend | 1, 10 | P11 | S | PENDING |
 | 12 | Verification and report | laravel-backend | 1–11 | P12 | S | PENDING |
 
@@ -651,7 +651,8 @@ sending.
 
 ### Phase 10 — `Cancelled` application status
 
-Status: PENDING
+Status: DONE
+Evidence: pint passed; phpstan 0 errors; `php artisan test --compact` 33/33; `yarn types:check` passed; no DB constraint on `applications.status`; no exhaustive match broke; nothing writes `cancelled`; reviewer APPROVED. Deviation: no extra key (activity card reuses `applications.status.cancelled`). `yarn run check` still fails only on pre-existing unrelated formatting (.claude/commands, docs, lang/*.json).
 Role: inertia-frontend (with the backend enum) · Depends on: none · Covers:
 P11 · Size: M
 Origin: P11 (cancel flagged queued applications); P11-D.

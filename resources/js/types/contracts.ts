@@ -21,7 +21,8 @@ export type ApplicationStatus =
     | 'sending'
     | 'sent'
     | 'failed'
-    | 'ambiguous';
+    | 'ambiguous'
+    | 'cancelled';
 export type SendStage =
     | 'validating_recipient'
     | 'adapting_template'

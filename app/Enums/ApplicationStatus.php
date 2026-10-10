@@ -12,9 +12,10 @@ enum ApplicationStatus: string implements HasColor, HasLabel
     case Sent = 'sent';
     case Failed = 'failed';
     case Ambiguous = 'ambiguous';
+    case Cancelled = 'cancelled';
 
     /**
-     * Statuses that consume the daily send quota (everything except failed).
+     * Statuses that consume the daily send quota (everything except failed and cancelled).
      *
      * @return list<self>
      */
@@ -31,6 +32,7 @@ enum ApplicationStatus: string implements HasColor, HasLabel
             self::Sent => 'Sent',
             self::Failed => 'Failed',
             self::Ambiguous => 'Needs review',
+            self::Cancelled => 'Cancelled',
         };
     }
 
@@ -42,6 +44,7 @@ enum ApplicationStatus: string implements HasColor, HasLabel
             self::Sent => 'success',
             self::Failed => 'danger',
             self::Ambiguous => 'warning',
+            self::Cancelled => 'gray',
         };
     }
 }
