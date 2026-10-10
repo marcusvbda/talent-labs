@@ -37,7 +37,7 @@ apply…".
 | 1 | `reports:application-audit` + shared aggregator/generic helpers | laravel-backend | none | P1, P2 | M | DONE |
 | 2 | Run the audit on the restored data and present the report | laravel-backend | 1 | P1–P4 | S | PENDING (needs the dump) |
 | 3 | Multi-role HN posts: split or mark not eligible | laravel-backend | none | P5 | M | DONE |
-| 4 | Safe `job_url` + link line removed when empty | laravel-backend | 1 | P6 | M | PENDING |
+| 4 | Safe `job_url` + link line removed when empty | laravel-backend | 1 | P6 | M | DONE |
 | 5 | Detect and store posting restrictions | laravel-backend | 3 | P7 | M | PENDING |
 | 6 | Restrictions enforced by the match | laravel-backend | 5 | P7 | S | PENDING |
 | 7 | Out-of-profile role/seniority rejected by the match | laravel-backend | 6 | P8 | S | PENDING |
@@ -386,7 +386,8 @@ not-eligible posting with a reason otherwise.
 
 ### Phase 4 — Safe `job_url` and link line removed when empty
 
-Status: PENDING
+Status: DONE
+Evidence: pint passed; phpstan 0 errors; `php artisan test --compact` 33/33; tinker: Lever apply_url wins over HN url, HN-only -> null; empty `job_url` renders `"Hi\n\nBye"` and `"I'm applying for X."`; non-empty unchanged; reviewer APPROVED. `ApplicationTemplateRenderer.php` now pint-clean. Follow-up (not built): `AccountExportController` still tokenizes `->url` (redacted anyway).
 Role: laravel-backend · Depends on: 1 · Covers: P6 · Size: M
 Origin: P6 "never use an aggregator/thread URL. Use only the company's own
 page or ATS; otherwise omit the link line from the email."; P6-D.

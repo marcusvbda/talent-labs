@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Ai\Agents\ExtractJobPostingProfile;
 use App\Enums\ProfileStatus;
 use App\Enums\RoleFamily;
+use App\Support\AggregatorUrl;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -118,9 +119,19 @@ class JobPosting extends Model
 
     /**
      * The job link the application email renders as `{{ job_url }}`; the only source of that URL.
+     * Company page or ATS only: the first non-aggregator of `apply_url`, `url`; null when only
+     * aggregator/thread links exist.
      */
     public function applicationUrl(): ?string
     {
-        return trim($this->url) === '' ? null : $this->url;
+        foreach ([$this->apply_url, $this->url] as $candidate) {
+            $candidate = trim((string) $candidate);
+
+            if ($candidate !== '' && ! AggregatorUrl::is($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 }

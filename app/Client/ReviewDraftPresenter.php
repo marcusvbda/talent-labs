@@ -12,7 +12,8 @@ use App\Outreach\Support\ClientSafeText;
 /**
  * The `ReviewDraft` contract. Expects `company` and `profile` loaded on the posting.
  * Posting-derived values are redacted and the job link stays as the `{{ job_url }}`
- * token; the recipient address and the real job URL are never included.
+ * token (the link line is dropped when there is no company/ATS URL); the recipient
+ * address and the real job URL are never included.
  */
 final class ReviewDraftPresenter
 {
@@ -25,7 +26,7 @@ final class ReviewDraftPresenter
 
         $variables = ApplicationTemplateRenderer::variablesFor($user, $posting, $profile);
 
-        $variables['job_url'] = ClientSafeText::JOB_URL_TOKEN;
+        $variables['job_url'] = $posting->applicationUrl() === null ? '' : ClientSafeText::JOB_URL_TOKEN;
         $variables['company'] = ClientSafeText::redact($variables['company']);
         $variables['job_title'] = ClientSafeText::redact($variables['job_title']);
         $variables['job_location'] = ClientSafeText::redact($variables['job_location']);

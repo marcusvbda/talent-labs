@@ -101,15 +101,20 @@ final class ApplicationTemplateRenderer
      * pattern as unknownVariables()). Unknown names are left untouched and
      * substituted values are never re-scanned. Never compiled by Blade.
      * Line endings are normalized, runs of blank lines collapse to one and
-     * the result is trimmed.
+     * the result is trimmed. When `job_url` is given as '', the link line is
+     * dropped first (see dropEmptyJobUrlLines()).
      *
      * @param  array<string, string>  $variables
      */
     public static function render(string $template, array $variables): string
     {
+        if (array_key_exists('job_url', $variables) && $variables['job_url'] === '') {
+            $template = self::dropEmptyJobUrlLines($template);
+        }
+
         $rendered = preg_replace_callback(
             '/\{\{\s*(.*?)\s*\}\}/',
-            fn(array $match): string => in_array(trim($match[1]), self::ALLOWED_VARIABLES, true)
+            fn (array $match): string => in_array(trim($match[1]), self::ALLOWED_VARIABLES, true)
                 ? (string) ($variables[trim($match[1])] ?? '')
                 : $match[0],
             $template,
@@ -119,6 +124,38 @@ final class ApplicationTemplateRenderer
         $rendered = preg_replace('/\n(?:[ \t]*\n){2,}/', "\n\n", $rendered) ?? $rendered;
 
         return trim($rendered);
+    }
+
+    /**
+     * For each line with `{{ job_url }}`: remove the placeholder (and an enclosing
+     * ` (...)`); drop the line when nothing or only a short label ("Job posting:")
+     * is left, otherwise collapse double spaces and the space before `.`/`,`.
+     */
+    private static function dropEmptyJobUrlLines(string $template): string
+    {
+        $placeholder = '\{\{\s*job_url\s*\}\}';
+        $lines = [];
+
+        foreach (explode("\n", str_replace("\r\n", "\n", $template)) as $line) {
+            if (preg_match("/{$placeholder}/", $line) !== 1) {
+                $lines[] = $line;
+
+                continue;
+            }
+
+            $line = preg_replace("/\s*\(\s*{$placeholder}\s*\)/", '', $line) ?? $line;
+            $line = preg_replace("/{$placeholder}/", '', $line) ?? $line;
+            $rest = trim($line);
+
+            if ($rest === '' || preg_match('/^[\p{L} ]{1,30}:$/u', $rest) === 1) {
+                continue;
+            }
+
+            $line = preg_replace('/ {2,}/', ' ', $line) ?? $line;
+            $lines[] = preg_replace('/ +([.,])/', '$1', $line) ?? $line;
+        }
+
+        return implode("\n", $lines);
     }
 
     public static function html(string $text): string

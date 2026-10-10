@@ -41,8 +41,8 @@ final class TemplatePreviewPresenter
         $linksText = $variables['links'] ?? '';
 
         return [
-            'subject' => self::clientSafe(ApplicationTemplateRenderer::render($subject, $variables), $posting->url, $linksText),
-            'body' => self::clientSafe(ApplicationTemplateRenderer::render($body, $variables), $posting->url, $linksText),
+            'subject' => self::clientSafe(ApplicationTemplateRenderer::render($subject, $variables), (string) $posting->applicationUrl(), $linksText),
+            'body' => self::clientSafe(ApplicationTemplateRenderer::render($body, $variables), (string) $posting->applicationUrl(), $linksText),
             'sampleJob' => [
                 'company' => $posting->company->name ?? $posting->company_name,
                 'title' => $posting->title,
