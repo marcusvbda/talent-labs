@@ -39,7 +39,7 @@ apply…".
 | 3 | Multi-role HN posts: split or mark not eligible | laravel-backend | none | P5 | M | DONE |
 | 4 | Safe `job_url` + link line removed when empty | laravel-backend | 1 | P6 | M | DONE |
 | 5 | Detect and store posting restrictions | laravel-backend | 3 | P7 | M | DONE |
-| 6 | Restrictions enforced by the match | laravel-backend | 5 | P7 | S | PENDING |
+| 6 | Restrictions enforced by the match | laravel-backend | 5 | P7 | S | DONE |
 | 7 | Out-of-profile role/seniority rejected by the match | laravel-backend | 6 | P8 | S | PENDING |
 | 8 | New default templates EN/PT | laravel-backend | 4 | P9 | S | PENDING |
 | 9 | Destination type (generic vs named) | laravel-backend | 1 | P10 | S | PENDING |
@@ -264,6 +264,7 @@ writes `storage/app/private/reports/application-audit-{Ymd-His}.csv` and
 ### Phase 2 — Run the audit on the restored data and present the report
 
 Status: PENDING
+Blocked note (2026-10-10): `applications` is empty locally (no `sent`/`queued` rows), so the dump is not restored. Not run; re-run `/exec-phase job-mining 2` after restoring it.
 Role: laravel-backend · Depends on: 1 · Covers: P1, P2, P3, P4 · Size: S
 Origin: P1–P4; P1-D1.
 
@@ -503,7 +504,8 @@ restrictions. This is the recorded reason Phase 6 uses.
 
 ### Phase 6 — Restrictions enforced by the match
 
-Status: PENDING
+Status: DONE
+Evidence: pint passed; phpstan 0 errors; `php artisan test --compact` 33/33; tinker in a rolled-back transaction (14 cases): region:us excluded and `[]`+remote kept for locations ["Brazil"]; null-value work_authorization, hybrid/onsite without location match, and empty-criteria restrictions excluded; timezone not filtered; reviewer APPROVED. Deviation: region whole-word match done in PHP (lookarounds) since `WordPattern` emits Postgres `\m\M`. Open: Phase 5 false positives ("Join us", "hybrid cloud") now exclude postings.
 Role: laravel-backend · Depends on: 5 · Covers: P7 · Size: S
 Origin: P7 "incompatible postings do not become applications"; P7-D.
 

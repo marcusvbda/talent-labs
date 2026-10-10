@@ -3,6 +3,7 @@
 namespace App\Outreach\Queries;
 
 use App\Collection\Support\PostingDay;
+use App\Collection\Support\PostingRestrictions;
 use App\Enums\ContactConfidence;
 use App\Enums\OutreachStatus;
 use App\Enums\ProfileStatus;
@@ -42,6 +43,15 @@ final class MatchingJobPostings
      * in a listed location (no filter when locations are empty); locations_only keeps
      * postings in a listed location. Each exclude word drops postings whose title,
      * normalized title or stack contains it. The description is never read.
+     *
+     * Detected restrictions (job_postings.restrictions, PostingRestrictions) are enforced
+     * last, with or without preferences. A location "names" a region when it contains one of
+     * the region's PostingRestrictions::REGION_ALIASES as a whole word (case-insensitive).
+     * A region / work_authorization restriction with a value passes only when a preference
+     * location names that region (no locations = excluded); a work_authorization restriction
+     * without a value always excludes. An onsite / hybrid posting is treated as not remote:
+     * excluded under remote_only, otherwise kept only when it matches a preference location
+     * (no locations = excluded). Timezone restrictions are recorded only, never filtered.
      *
      * @return Builder<JobPosting>
      */
@@ -129,7 +139,70 @@ final class MatchingJobPostings
             );
         }
 
+        self::applyRestrictions($query, $criteria);
+
         return $query;
+    }
+
+    /**
+     * Drops postings whose detected restrictions (job_postings.restrictions) the criteria
+     * can't satisfy. Applies with empty criteria too.
+     *
+     * @param  Builder<JobPosting>  $query
+     */
+    private static function applyRestrictions(Builder $query, PreferenceCriteria $criteria): void
+    {
+        $locations = $criteria->locations;
+        $namedRegions = self::regionsNamedBy($locations);
+
+        $query->whereRaw(
+            "not exists (select 1 from jsonb_array_elements(job_postings.restrictions) as r where r->>'kind' in ('region', 'work_authorization') and r->>'value' is not null and r->>'value' <> all(?::text[]))",
+            ['{'.implode(',', array_map(fn (string $region): string => '"'.$region.'"', $namedRegions)).'}'],
+        );
+
+        $query->whereRaw(
+            'not (job_postings.restrictions @> ?::jsonb)',
+            [json_encode([['kind' => 'work_authorization', 'value' => null]])],
+        );
+
+        $query->where(function (Builder $group) use ($criteria, $locations): void {
+            $group->whereRaw(
+                'not (job_postings.restrictions @> ?::jsonb or job_postings.restrictions @> ?::jsonb)',
+                [json_encode([['kind' => 'onsite']]), json_encode([['kind' => 'hybrid']])],
+            );
+
+            if ($criteria->remoteMode !== RemoteMode::RemoteOnly && $locations !== []) {
+                $group->orWhere(fn (Builder $match) => self::orLocationMatch($match, $locations));
+            }
+        });
+    }
+
+    /**
+     * Canonical regions (PostingRestrictions::REGION_ALIASES keys) that any of the given
+     * locations names: a whole-word, case-insensitive match of one of the region's aliases.
+     *
+     * @param  list<string>  $locations
+     * @return list<string>
+     */
+    private static function regionsNamedBy(array $locations): array
+    {
+        $regions = [];
+
+        foreach (PostingRestrictions::REGION_ALIASES as $region => $aliases) {
+            foreach ($aliases as $alias) {
+                $pattern = '/(?<![\p{L}\p{N}])'.preg_quote($alias, '/').'(?![\p{L}\p{N}])/iu';
+
+                foreach ($locations as $location) {
+                    if (preg_match($pattern, $location) === 1) {
+                        $regions[] = $region;
+
+                        continue 3;
+                    }
+                }
+            }
+        }
+
+        return $regions;
     }
 
     /**
