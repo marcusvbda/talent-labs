@@ -11,13 +11,13 @@ final class ApplicationTemplateRenderer
 {
     public const ALLOWED_VARIABLES = ['company', 'job_title', 'job_location', 'job_url', 'client_name', 'cover_letter', 'links'];
 
-    private const DEFAULT_SUBJECT_EN = '{{ job_title }} – {{ client_name }}';
+    private const DEFAULT_SUBJECT_EN = 'Application: {{ job_title }} – {{ client_name }}';
 
-    private const DEFAULT_BODY_EN = "Hi {{ company }} team,\n\n{{ cover_letter }}\n\nJob posting: {{ job_url }}\n\nMy CV is attached.\n\n{{ links }}\n\nWorth a 15-minute chat this week about the {{ job_title }} role?\n\nBest regards,\n{{ client_name }}";
+    private const DEFAULT_BODY_EN = "Hi {{ company }} team,\n\n{{ cover_letter }}\n\nJob posting: {{ job_url }}\n\nMy CV is attached.\n\n{{ links }}\n\nWorth a 15-minute chat this week about this role?\n\nBest regards,\n{{ client_name }}";
 
-    private const DEFAULT_SUBJECT_PT = '{{ job_title }} – {{ client_name }}';
+    private const DEFAULT_SUBJECT_PT = 'Aplicação: {{ job_title }} – {{ client_name }}';
 
-    private const DEFAULT_BODY_PT = "Olá, equipe {{ company }},\n\n{{ cover_letter }}\n\nVaga: {{ job_url }}\n\nMeu currículo está em anexo.\n\n{{ links }}\n\nPodemos conversar 15 minutos esta semana sobre a vaga de {{ job_title }}?\n\nAtenciosamente,\n{{ client_name }}";
+    private const DEFAULT_BODY_PT = "Olá, equipe {{ company }},\n\n{{ cover_letter }}\n\nVaga: {{ job_url }}\n\nMeu currículo está em anexo.\n\n{{ links }}\n\nPodemos conversar 15 minutos esta semana sobre esta vaga?\n\nAtenciosamente,\n{{ client_name }}";
 
     /**
      * Variable names used in the text that are not allowed.
@@ -114,7 +114,7 @@ final class ApplicationTemplateRenderer
 
         $rendered = preg_replace_callback(
             '/\{\{\s*(.*?)\s*\}\}/',
-            fn (array $match): string => in_array(trim($match[1]), self::ALLOWED_VARIABLES, true)
+            fn(array $match): string => in_array(trim($match[1]), self::ALLOWED_VARIABLES, true)
                 ? (string) ($variables[trim($match[1])] ?? '')
                 : $match[0],
             $template,
