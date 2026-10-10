@@ -40,7 +40,7 @@ apply…".
 | 4 | Safe `job_url` + link line removed when empty | laravel-backend | 1 | P6 | M | DONE |
 | 5 | Detect and store posting restrictions | laravel-backend | 3 | P7 | M | DONE |
 | 6 | Restrictions enforced by the match | laravel-backend | 5 | P7 | S | DONE |
-| 7 | Out-of-profile role/seniority rejected by the match | laravel-backend | 6 | P8 | S | PENDING |
+| 7 | Out-of-profile role/seniority rejected by the match | laravel-backend | 6 | P8 | S | DONE |
 | 8 | New default templates EN/PT | laravel-backend | 4 | P9 | S | PENDING |
 | 9 | Destination type (generic vs named) | laravel-backend | 1 | P10 | S | PENDING |
 | 10 | `Cancelled` application status (backend + client display) | inertia-frontend | none | P11 | M | PENDING |
@@ -550,7 +550,8 @@ against any `PreferenceCriteria::$locations` term).**
 
 ### Phase 7 — Out-of-profile role/seniority rejected by the match
 
-Status: PENDING
+Status: DONE
+Evidence: pint passed; phpstan 0 errors; `php artisan test --compact` 33/33; tinker in a rolled-back transaction: titles ["Backend Engineer"] excludes the manager and qa/SDET postings and keeps "Senior Backend Engineer"; ["Engineering Manager"] keeps the manager posting; reviewer APPROVED. Note: dev/qa/support regexes are substring matches as specified (e.g. `ios`, `test` can match inside other words).
 Role: laravel-backend · Depends on: 6 · Covers: P8 · Size: S
 Origin: P8 "Out-of-profile role/seniority: the match must reject."; P8-D.
 

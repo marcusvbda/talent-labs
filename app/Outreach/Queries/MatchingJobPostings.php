@@ -8,6 +8,7 @@ use App\Enums\ContactConfidence;
 use App\Enums\OutreachStatus;
 use App\Enums\ProfileStatus;
 use App\Enums\RemoteMode;
+use App\Enums\RoleFamily;
 use App\Models\ApplicationProfile;
 use App\Models\JobPosting;
 use App\Models\User;
@@ -20,6 +21,11 @@ use Illuminate\Support\Facades\DB;
 
 final class MatchingJobPostings
 {
+    /**
+     * Title words (management, intern) that drop a posting unless a preference title contains them.
+     */
+    private const EXCLUDED_TITLE_WORDS = ['manager', 'director', 'head of', 'vp', 'vice president', 'chief', 'cto', 'ceo', 'intern', 'internship', 'trainee'];
+
     /**
      * The single source of truth for which postings a client sees and may apply to.
      *
@@ -52,6 +58,16 @@ final class MatchingJobPostings
      * without a value always excludes. An onsite / hybrid posting is treated as not remote:
      * excluded under remote_only, otherwise kept only when it matches a preference location
      * (no locations = excluded). Timezone restrictions are recorded only, never filtered.
+     *
+     * Out-of-profile roles are rejected, with or without preferences. Each of
+     * EXCLUDED_TITLE_WORDS (manager, director, head of, VP, chief, intern...) that no
+     * preference title contains (whole word, case-insensitive) drops postings whose title or
+     * normalized title contains it. A development profile (a preference title mentions
+     * engineer, developer, programmer, software, backend, frontend, full stack, devops, sre,
+     * mobile, ios or android) only keeps the backend, frontend, fullstack, software, mobile
+     * and devops role families, plus qa when a title mentions qa/test/sdet/quality, support
+     * and customer_service when one mentions support/success, and product when one mentions
+     * product. Without preference titles only the excluded-words rule applies.
      *
      * @return Builder<JobPosting>
      */
@@ -141,7 +157,86 @@ final class MatchingJobPostings
 
         self::applyRestrictions($query, $criteria);
 
+        self::applyRoleProfile($query, $criteria);
+
         return $query;
+    }
+
+    /**
+     * Drops management/intern titles the criteria titles don't ask for and, for a
+     * development profile, role families outside it. Applies with empty criteria too.
+     *
+     * @param  Builder<JobPosting>  $query
+     */
+    private static function applyRoleProfile(Builder $query, PreferenceCriteria $criteria): void
+    {
+        $titles = $criteria->titles;
+
+        foreach (self::EXCLUDED_TITLE_WORDS as $word) {
+            if (self::anyContainsWord($titles, $word)) {
+                continue;
+            }
+
+            $pattern = WordPattern::toRegex($word);
+            $query->whereRaw(
+                "not (job_postings.title ~* ? or coalesce(job_posting_profiles.normalized_title, '') ~* ?)",
+                [$pattern, $pattern],
+            );
+        }
+
+        if (! self::anyMatches($titles, '/(engineer|developer|programmer|software|backend|frontend|full ?stack|devops|sre|mobile|ios|android)/i')) {
+            return;
+        }
+
+        $families = [
+            RoleFamily::Backend->value,
+            RoleFamily::Frontend->value,
+            RoleFamily::Fullstack->value,
+            RoleFamily::Software->value,
+            RoleFamily::Mobile->value,
+            RoleFamily::Devops->value,
+        ];
+
+        if (self::anyMatches($titles, '/(qa|test|sdet|quality)/i')) {
+            $families[] = RoleFamily::Qa->value;
+        }
+
+        if (self::anyMatches($titles, '/(support|success)/i')) {
+            $families[] = RoleFamily::Support->value;
+            $families[] = RoleFamily::CustomerService->value;
+        }
+
+        if (self::anyMatches($titles, '/product/i')) {
+            $families[] = RoleFamily::Product->value;
+        }
+
+        $query->whereIn('job_postings.role_family', $families);
+    }
+
+    /**
+     * Whether any of the titles contains the word (or phrase) as a whole word, case-insensitively.
+     *
+     * @param  list<string>  $titles
+     */
+    private static function anyContainsWord(array $titles, string $word): bool
+    {
+        $phrase = implode('\\s+', array_map(fn (string $part): string => preg_quote($part, '/'), explode(' ', $word)));
+
+        return self::anyMatches($titles, '/(?<![\p{L}\p{N}])'.$phrase.'(?![\p{L}\p{N}])/iu');
+    }
+
+    /**
+     * @param  list<string>  $titles
+     */
+    private static function anyMatches(array $titles, string $pattern): bool
+    {
+        foreach ($titles as $title) {
+            if (preg_match($pattern, $title) === 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
