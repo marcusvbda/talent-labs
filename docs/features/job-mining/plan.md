@@ -34,7 +34,7 @@ apply…".
 
 | Phase | Title | Role | Depends on | Origin | Size | Status |
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
-| 1 | `reports:application-audit` + shared aggregator/generic helpers | laravel-backend | none | P1, P2 | M | PENDING |
+| 1 | `reports:application-audit` + shared aggregator/generic helpers | laravel-backend | none | P1, P2 | M | DONE |
 | 2 | Run the audit on the restored data and present the report | laravel-backend | 1 | P1–P4 | S | PENDING (needs the dump) |
 | 3 | Multi-role HN posts: split or mark not eligible | laravel-backend | none | P5 | M | PENDING |
 | 4 | Safe `job_url` + link line removed when empty | laravel-backend | 1 | P6 | M | PENDING |
@@ -150,7 +150,8 @@ confirms in that session (P11-D).
 
 ### Phase 1 — `reports:application-audit` + shared helpers
 
-Status: PENDING
+Status: DONE
+Evidence: pint passed; phpstan 0 errors (needs `--memory-limit=1G`, 128M default crashes); `php artisan test --compact` 33/33; empty-DB run prints "No applications to audit." exit 0 with no files; AggregatorUrl tinker -> true,false,true; unknown status/user validated; reviewer APPROVED. `composer lint:check` still fails on two pre-existing files not in this phase (`ApplicationTemplateRenderer.php`, `tests/TestCase.php`, from 6545e8c). Per-application path untested until Phase 2 (empty DB).
 Role: laravel-backend · Depends on: none · Covers: P1, P2 · Size: M
 Origin: P1 "For ALL applications with status `sent` (and `queued`), produce a
 report… flags a–e"; P2 "total, count and % per flag, % with 2+ flags, % with no
