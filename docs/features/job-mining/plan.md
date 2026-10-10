@@ -41,7 +41,7 @@ apply…".
 | 5 | Detect and store posting restrictions | laravel-backend | 3 | P7 | M | DONE |
 | 6 | Restrictions enforced by the match | laravel-backend | 5 | P7 | S | DONE |
 | 7 | Out-of-profile role/seniority rejected by the match | laravel-backend | 6 | P8 | S | DONE |
-| 8 | New default templates EN/PT | laravel-backend | 4 | P9 | S | PENDING |
+| 8 | New default templates EN/PT | laravel-backend | 4 | P9 | S | DONE |
 | 9 | Destination type (generic vs named) | laravel-backend | 1 | P10 | S | PENDING |
 | 10 | `Cancelled` application status (backend + client display) | inertia-frontend | none | P11 | M | PENDING |
 | 11 | Propose and cancel flagged queued applications | laravel-backend | 1, 10 | P11 | S | PENDING |
@@ -587,7 +587,8 @@ profiles.
 
 ### Phase 8 — New default templates EN/PT
 
-Status: PENDING
+Status: DONE
+Evidence: pint passed; phpstan 0 errors; `php artisan test --compact` 33/33; `yarn types:check` passed; tinker `defaultsFor(Pt)` shows new copy; grep for old copy in app/resources/js/data empty; subject 35 chars < MAX_SUBJECT_LENGTH 200; reviewer APPROVED. Pre-existing failures not from this phase: `composer lint:check` (`tests/TestCase.php`), `yarn run check` formatting on .claude/commands, docs, lang/*.json. Reported: landing demo still has "I'm writing to apply…" (out of scope).
 Role: laravel-backend · Depends on: 4 · Covers: P9 · Size: S
 Origin: P9 "remove the opening 'I'm writing to apply for…'; subject with a
 single role; close with a concrete ask… English and Portuguese only"; P9-D.

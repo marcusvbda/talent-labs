@@ -23,12 +23,12 @@ export const defaultTemplates: Record<
     { subject: string; body: string }
 > = {
     en: {
-        subject: 'Application: {{ job_title }}',
-        body: "Hello {{ company }} team,\n\nI'm writing to apply for the {{ job_title }} position ({{ job_url }}).\n\n{{ cover_letter }}\n\nMy CV is attached. Thank you for your time.\n\n{{ links }}\n\nBest regards,\n{{ client_name }}",
+        subject: '{{ job_title }} – {{ client_name }}',
+        body: 'Hi {{ company }} team,\n\n{{ cover_letter }}\n\nJob posting: {{ job_url }}\n\nMy CV is attached.\n\n{{ links }}\n\nWorth a 15-minute chat this week about the {{ job_title }} role?\n\nBest regards,\n{{ client_name }}',
     },
     pt: {
-        subject: 'Candidatura: {{ job_title }}',
-        body: 'Olá, equipe {{ company }},\n\nGostaria de me candidatar à vaga de {{ job_title }} ({{ job_url }}).\n\n{{ cover_letter }}\n\nMeu currículo está em anexo. Obrigado pelo seu tempo.\n\n{{ links }}\n\nAtenciosamente,\n{{ client_name }}',
+        subject: '{{ job_title }} – {{ client_name }}',
+        body: 'Olá, equipe {{ company }},\n\n{{ cover_letter }}\n\nVaga: {{ job_url }}\n\nMeu currículo está em anexo.\n\n{{ links }}\n\nPodemos conversar 15 minutos esta semana sobre a vaga de {{ job_title }}?\n\nAtenciosamente,\n{{ client_name }}',
     },
 };
 
