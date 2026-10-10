@@ -38,7 +38,7 @@ apply…".
 | 2 | Run the audit on the restored data and present the report | laravel-backend | 1 | P1–P4 | S | PENDING (needs the dump) |
 | 3 | Multi-role HN posts: split or mark not eligible | laravel-backend | none | P5 | M | DONE |
 | 4 | Safe `job_url` + link line removed when empty | laravel-backend | 1 | P6 | M | DONE |
-| 5 | Detect and store posting restrictions | laravel-backend | 3 | P7 | M | PENDING |
+| 5 | Detect and store posting restrictions | laravel-backend | 3 | P7 | M | DONE |
 | 6 | Restrictions enforced by the match | laravel-backend | 5 | P7 | S | PENDING |
 | 7 | Out-of-profile role/seniority rejected by the match | laravel-backend | 6 | P8 | S | PENDING |
 | 8 | New default templates EN/PT | laravel-backend | 4 | P9 | S | PENDING |
@@ -447,7 +447,8 @@ link when it is empty.
 
 ### Phase 5 — Detect and store posting restrictions
 
-Status: PENDING
+Status: DONE
+Evidence: migration applied forward (`restrictions` jsonb); pint passed; phpstan 0 errors; `php artisan test --compact` 33/33; tinker: US-remote + authorization -> region:us + work_authorization:us, `NYC, Hybrid` -> hybrid, worldwide remote -> []; reviewer APPROVED. `ApplicationAuditFlags` now reuses `PostingRestrictions` (behaviour-identical). Regexes differ slightly from the plan text (more regions, `(?![a-z])`), adding matches only. Open for Phase 6: bare "us" captured by work_authorization window ("Join us"), and "hybrid cloud/app" flagged as hybrid.
 Role: laravel-backend · Depends on: 3 · Covers: P7 · Size: M
 Origin: P7 "Location / work-authorization eligibility versus the client's
 preferences… (reason recorded)"; P7-D.

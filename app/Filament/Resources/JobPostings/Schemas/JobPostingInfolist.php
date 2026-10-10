@@ -40,6 +40,16 @@ class JobPostingInfolist
                     ->color('danger')
                     ->hidden(fn (?JobPosting $record): bool => blank($record?->ineligible_reason)),
 
+                TextEntry::make('restrictions')
+                    ->label('Restrictions')
+                    ->state(fn (?JobPosting $record): array => array_map(
+                        fn (array $restriction): string => $restriction['value'] === null ? $restriction['kind'] : "{$restriction['kind']}: {$restriction['value']}",
+                        $record->restrictions ?? [],
+                    ))
+                    ->badge()
+                    ->color('warning')
+                    ->hidden(fn (?JobPosting $record): bool => blank($record?->restrictions)),
+
                 TextEntry::make('department')
                     ->placeholder('—'),
 

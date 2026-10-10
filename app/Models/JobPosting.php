@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $employment_type
  * @property RoleFamily|null $role_family
  * @property string|null $ineligible_reason
+ * @property list<array{kind: string, value: string|null}> $restrictions
  * @property string $url
  * @property string|null $apply_url
  * @property string|null $company_website
@@ -42,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $updated_at
  * @property-read JobPostingProfile|null $profile
  */
-#[Fillable(['source_id', 'collection_run_id', 'last_seen_run_id', 'external_id', 'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'role_family', 'ineligible_reason', 'url', 'apply_url', 'company_website', 'source_contacts', 'description_html', 'description_text', 'published_at', 'raw', 'first_seen_at', 'last_seen_at'])]
+#[Fillable(['source_id', 'collection_run_id', 'last_seen_run_id', 'external_id', 'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'role_family', 'ineligible_reason', 'restrictions', 'url', 'apply_url', 'company_website', 'source_contacts', 'description_html', 'description_text', 'published_at', 'raw', 'first_seen_at', 'last_seen_at'])]
 class JobPosting extends Model
 {
     /**
@@ -56,6 +57,7 @@ class JobPosting extends Model
             'is_remote' => 'boolean',
             'raw' => 'array',
             'source_contacts' => 'array',
+            'restrictions' => 'array',
             'role_family' => RoleFamily::class,
             'published_at' => 'datetime',
             'first_seen_at' => 'datetime',

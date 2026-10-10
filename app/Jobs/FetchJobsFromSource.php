@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Collection\Data\JobPostingData;
 use App\Collection\Data\SourceContactData;
+use App\Collection\Support\PostingRestrictions;
 use App\Collection\Support\PostingTitle;
 use App\Collection\Support\RoleClassifier;
 use App\Contacts\Jobs\DiscoverContactsForPosting;
@@ -43,7 +44,7 @@ class FetchJobsFromSource implements ShouldQueue
      */
     private const MUTABLE_COLUMNS = [
         'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'role_family',
-        'ineligible_reason', 'url', 'apply_url', 'company_website', 'description_html', 'description_text', 'published_at', 'raw',
+        'ineligible_reason', 'restrictions', 'url', 'apply_url', 'company_website', 'description_html', 'description_text', 'published_at', 'raw',
         'last_seen_run_id', 'last_seen_at', 'updated_at',
     ];
 
@@ -102,6 +103,7 @@ class FetchJobsFromSource implements ShouldQueue
                     'employment_type' => $this->fit($item->employmentType),
                     'role_family' => $classifier->classify($item->title, $this->tags($item))?->value,
                     'ineligible_reason' => $this->fit($item->ineligibleReason),
+                    'restrictions' => json_encode(PostingRestrictions::detect($item->title, $item->location, $item->descriptionText)),
                     'url' => $item->url,
                     'apply_url' => $item->applyUrl,
                     'company_website' => $item->companyWebsite,

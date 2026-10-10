@@ -2,6 +2,7 @@
 
 namespace App\Reports;
 
+use App\Collection\Support\PostingRestrictions;
 use App\Enums\RemoteMode;
 use App\Outreach\OutreachLimits;
 
@@ -27,25 +28,6 @@ final class ApplicationAuditFlags
      * @var list<string>
      */
     private const array DEV_FAMILIES = ['backend', 'frontend', 'fullstack', 'software', 'mobile', 'devops'];
-
-    private const string REGION_TOKENS = 'us|u\.s\.|usa|united states|canada|uk|united kingdom|eu|europe|brazil|brasil|emea|latam|americas';
-
-    /**
-     * Same aliases Phase 5 PostingRestrictions uses: a preference location names a region when
-     * one of these words appears in it as a whole word.
-     *
-     * @var array<string, list<string>>
-     */
-    private const array REGION_ALIASES = [
-        'us' => ['us', 'usa', 'u.s.', 'united states', 'america'],
-        'canada' => ['canada'],
-        'uk' => ['uk', 'united kingdom', 'england', 'london'],
-        'europe' => ['eu', 'europe', 'european union', 'emea'],
-        'brazil' => ['brazil', 'brasil'],
-        'emea' => ['emea', 'europe', 'eu'],
-        'latam' => ['latam', 'latin america', 'brazil', 'brasil'],
-        'americas' => ['americas', 'us', 'usa', 'canada', 'latam', 'brazil', 'brasil'],
-    ];
 
     /**
      * Flag a: one application covering two or more roles.
@@ -86,7 +68,7 @@ final class ApplicationAuditFlags
      */
     public static function geo(?string $title, ?string $location, ?string $text, ?RemoteMode $remoteMode, array $locations): array
     {
-        $restrictions = self::restrictions($title, $location, $text);
+        $restrictions = PostingRestrictions::detect($title, $location, $text);
 
         if ($remoteMode === null) {
             return array_values(array_unique(array_map(
@@ -195,76 +177,6 @@ final class ApplicationAuditFlags
     }
 
     /**
-     * Location / work-authorization / workplace / timezone restrictions in the posting.
-     *
-     * @return list<array{kind: string, value: string|null}>
-     */
-    private static function restrictions(?string $title, ?string $location, ?string $text): array
-    {
-        $haystack = mb_strtolower(implode("\n", [(string) $title, (string) $location, mb_substr((string) $text, 0, 6000)]));
-        $regions = self::REGION_TOKENS;
-        $found = [];
-
-        $regionPatterns = [
-            '/\b(us|u\.s\.|usa|united states|canada|uk|united kingdom|eu|europe|brazil|brasil)[- ]?(only|based)\b/u',
-            "/remote\\s*[\\(\\-–,]\\s*({$regions})(?![a-z])/u",
-            '/\b(us|u\.s\.|usa)\s+remote\b/u',
-        ];
-
-        foreach ($regionPatterns as $pattern) {
-            if (preg_match_all($pattern, $haystack, $matches) > 0) {
-                foreach ($matches[1] as $token) {
-                    $found[] = ['kind' => 'region', 'value' => self::canonicalRegion($token)];
-                }
-            }
-        }
-
-        $authorization = '/(authori[sz]ed to work|work authori[sz]ation|right to work|must (be located|reside|live) in|unable to sponsor|no (visa )?sponsorship|not (able|offering) to sponsor)/u';
-
-        if (preg_match_all($authorization, $haystack, $matches, PREG_OFFSET_CAPTURE) > 0) {
-            foreach ($matches[0] as [$phrase, $offset]) {
-                // Byte offsets: the window may cut a multibyte char, so it is matched without /u.
-                $window = substr($haystack, max(0, $offset - 40), strlen($phrase) + 80);
-                $value = preg_match("/(?<![a-z])({$regions})(?![a-z])/", $window, $region) === 1 ? self::canonicalRegion($region[1]) : null;
-                $found[] = ['kind' => 'work_authorization', 'value' => $value];
-            }
-        }
-
-        if (preg_match('/\b(on-?site|in[- ]office|in the office)\b/u', $haystack) === 1 && preg_match('/\bnot (on-?site|in[- ]office)\b/u', $haystack) !== 1) {
-            $found[] = ['kind' => 'onsite', 'value' => null];
-        }
-
-        if (preg_match('/\bhybrid\b/u', $haystack) === 1) {
-            $found[] = ['kind' => 'hybrid', 'value' => null];
-        }
-
-        if (preg_match_all('/\b(est|edt|pst|pdt|cst|cet|cest|gmt[+-]?\d*|utc[+-]?\d*|brt)\b.{0,20}(hours|overlap|time ?zone)/u', $haystack, $matches) > 0) {
-            foreach ($matches[1] as $zone) {
-                $found[] = ['kind' => 'timezone', 'value' => $zone];
-            }
-        }
-
-        $unique = [];
-
-        foreach ($found as $restriction) {
-            $unique[$restriction['kind'].':'.$restriction['value']] = $restriction;
-        }
-
-        return array_values($unique);
-    }
-
-    private static function canonicalRegion(string $token): string
-    {
-        return match ($token) {
-            'us', 'u.s.', 'usa', 'united states' => 'us',
-            'uk', 'united kingdom' => 'uk',
-            'eu', 'europe' => 'europe',
-            'brazil', 'brasil' => 'brazil',
-            default => $token,
-        };
-    }
-
-    /**
      * Canonical regions named (whole word, case-insensitive) by any preference location.
      *
      * @param  list<string>  $locations
@@ -274,7 +186,7 @@ final class ApplicationAuditFlags
     {
         $named = [];
 
-        foreach (self::REGION_ALIASES as $region => $aliases) {
+        foreach (PostingRestrictions::REGION_ALIASES as $region => $aliases) {
             foreach ($aliases as $alias) {
                 $pattern = '/(?<![\p{L}\p{N}])'.preg_quote($alias, '/').'(?![\p{L}\p{N}])/iu';
 
