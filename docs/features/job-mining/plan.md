@@ -35,7 +35,7 @@ apply…".
 | Phase | Title | Role | Depends on | Origin | Size | Status |
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | `reports:application-audit` + shared aggregator/generic helpers | laravel-backend | none | P1, P2 | M | DONE |
-| 2 | Run the audit on the restored data and present the report | laravel-backend | 1 | P1–P4 | S | PENDING (needs the dump) |
+| 2 | Run the audit on the restored data and present the report | laravel-backend | 1 | P1–P4 | S | WAIVED (D1) |
 | 3 | Multi-role HN posts: split or mark not eligible | laravel-backend | none | P5 | M | DONE |
 | 4 | Safe `job_url` + link line removed when empty | laravel-backend | 1 | P6 | M | DONE |
 | 5 | Detect and store posting restrictions | laravel-backend | 3 | P7 | M | DONE |
@@ -45,7 +45,7 @@ apply…".
 | 9 | Destination type (generic vs named) | laravel-backend | 1 | P10 | S | DONE |
 | 10 | `Cancelled` application status (backend + client display) | inertia-frontend | none | P11 | M | DONE |
 | 11 | Propose and cancel flagged queued applications | laravel-backend | 1, 10 | P11 | S | DONE |
-| 12 | Verification and report | laravel-backend | 1–11 | P12 | S | PENDING |
+| 12 | Verification and report | laravel-backend | 1–11 | P12 | S | DONE |
 
 Phase 2 needs the dump to be restored. It blocks only itself and the live
 part of Phase 11, not the other phases.
@@ -263,8 +263,8 @@ writes `storage/app/private/reports/application-audit-{Ymd-His}.csv` and
 
 ### Phase 2 — Run the audit on the restored data and present the report
 
-Status: PENDING
-Blocked note (2026-10-10): `applications` is empty locally (no `sent`/`queued` rows), so the dump is not restored. Not run; re-run `/exec-phase job-mining 2` after restoring it.
+Status: WAIVED (D1)
+Owner decision 2026-10-10: there is no dump and the local DB was reset (`migrate:fresh`), so the audit has no data. Owner chose to waive this phase and run Phase 12. P3 and P4 stay in the spec's `## Pending changes`; `reports:application-audit` can be run when real data exists.
 Role: laravel-backend · Depends on: 1 · Covers: P1, P2, P3, P4 · Size: S
 Origin: P1–P4; P1-D1.
 
@@ -737,7 +737,8 @@ cancels exactly the ids the owner confirms.
 
 ### Phase 12 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: `composer types:check` 0 errors; `yarn types:check` passed; `php artisan test --compact` 33/33; `composer lint:check` and `yarn run check` fail only on pre-existing files not from this feature (`tests/TestCase.php` concat_space; formatting in .claude/commands, docs/features/README.md, plan.md/spec.md, lang/*.json), left as is (tests must not be modified); no `->poll(`/`wire:poll`/`pollingInterval` in the feature diff; no Spanish copy added (matches in lang/pt.json are PT "estimado"); only the two new forward migrations under `database/migrations`; audit/report code has no write calls; step 3 not applicable (no data). Pending items P1, P2, P5–P12 folded into the spec body (section 2.7 and §2.2/2.4/2.5).
 Role: laravel-backend · Depends on: 1–11 · Covers: P12 · Size: S
 Origin: P12 "run `composer lint:check`, `composer types:check`, `yarn check`
 and `yarn types:check`; then list the changed files and how to verify

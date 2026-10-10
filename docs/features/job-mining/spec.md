@@ -93,6 +93,15 @@ Flow:
   429 before anything was collected fails the source run.
 - Direct field mapping, no AI/NLP in the adapters; `raw` keeps the full
   item. `companyName` comes from the payload.
+- `JobPostingData` also carries a trailing `ineligibleReason` (nullable).
+  `hacker_news` posts one role per posting: when a comment has 2+ role-like
+  header segments, title parts separated by ` · `, ` • ` or `;`, or 2+ title-
+  shaped role lines in the body, the adapter yields one posting per role
+  (`external_id` = `{id}#{n}`, n 1-based, same `raw`, description and
+  contacts) plus the original comment with `ineligibleReason` "Split into one
+  posting per role.". When the title only looks multi-role (` and `, ` & `,
+  ` / `, `, ` between role nouns) the single posting is marked "Multiple roles
+  in one post; could not split reliably.". Otherwise it is one normal posting.
 
 ### 2.3 Collection runs
 
@@ -142,8 +151,8 @@ Flow:
 - New posting: `collection_run_id` = current run, `first_seen_at` = now. On
   an existing posting only mutable columns are refreshed (`title`,
   `company_name`, `location`, `is_remote`, `department`, `employment_type`,
-  `role_family`, `url`, `apply_url`, `company_website`, descriptions,
-  `published_at`, `raw`, `last_seen_run_id`, `last_seen_at`); never
+  `role_family`, `ineligible_reason`, `restrictions`, `url`, `apply_url`,
+  `company_website`, descriptions, `published_at`, `raw`, `last_seen_run_id`, `last_seen_at`); never
   `collection_run_id` or `first_seen_at`. `source_contacts` is kept when a run
   brings none.
 - String columns are truncated to 255 chars. An unusable title
@@ -160,6 +169,18 @@ Flow:
   run on `job_postings` (never once per posting). Contact discovery
   (`DiscoverContactsForPosting`) is dispatched only for **new** postings whose
   `role_family` is in `talent.collection.target_role_families`.
+- `ineligible_reason` (nullable string): a posting with a reason never
+  reaches the client pool (`MatchingJobPostings::forUser()` requires it null).
+- `restrictions` (jsonb list of `{kind, value}`, default `[]`) is detected at
+  collection time by `PostingRestrictions::detect()` (deterministic, from
+  title, location and the first 6000 chars of the description). Kinds:
+  `region` (us, canada, uk, europe, brazil, emea, latam, americas),
+  `work_authorization` (value = region found nearby, or null), `onsite`,
+  `hybrid` and `timezone`. Existing postings get it on their next collection.
+- `JobPosting::applicationUrl()` returns the first of `apply_url`, `url` that
+  is not an aggregator/thread URL (`AggregatorUrl`, hosts in
+  `talent.outreach.aggregator_domains`), else `null`. It feeds both the email
+  `{{ job_url }}` and the client job link; the stored `url` is untouched.
 - `talent.collection.window_days` (env `COLLECTION_WINDOW_DAYS`, default 5):
   days, today included in the app timezone, that a posting stays in the client
   pool, counted from the `started_at` of the run that first collected it
@@ -194,8 +215,10 @@ Flow:
   filters: run (last 50), source, adapter, role family (incl. "Other"),
   "Today's runs only", "Show not-verifiable" (off by default: hides postings
   whose company outreach status is not verifiable) and contact status; row
-  actions View and "Open posting". View page shows all fields, source contacts
-  (labelled "not used as application recipients") and the description.
+  actions View and "Open posting". View page shows all fields, "Not eligible"
+  (the `ineligible_reason`, hidden when null), "Restrictions" (badges
+  `kind: value`, hidden when empty), source contacts (labelled "not used as
+  application recipients") and the description.
   Realtime `job_postings` / `JobPostingsUpdated`.
 
 ### 2.6 Realtime channels (public, ids only)
@@ -208,6 +231,70 @@ Flow:
 | `sources`             | `SourceUpdated`             | `Source` saved/deleted                         |
 | `collection_schedule` | `CollectionScheduleUpdated` | `CollectionSchedule` saved/deleted             |
 | `jobs`                | `jobs.collected`            | `FinalizeCollectionRun` (client side)          |
+
+### 2.7 Application quality
+
+- **Audit** (`php artisan reports:application-audit {--status=sent,queued}
+  {--user=} {--json}`, read-only): audits applications and writes
+  `storage/app/private/reports/application-audit-{Ymd-His}.csv` and `.md`
+  (never committed), printing the summary (`--json` prints JSON). Heuristic
+  flags per application: a multi-role title/subject, b aggregator or missing
+  job URL, c restriction incompatible with the client's preferences, d
+  role/seniority outside the profile, e generic recipient. The summary gives
+  per flag the count, %, top sources and domains and 10 examples, plus % with
+  2+ flags and % with none. Flag c is a looser quality heuristic than the
+  match: it also counts timezone and work-authorization restrictions the
+  match would let through, and any restriction when the client has no
+  preference row. With no rows it prints "No applications to audit." and
+  writes nothing. Logic in `App\Reports\ApplicationAudit` and
+  `ApplicationAuditFlags`.
+- **Match** (`MatchingJobPostings::forUser()`, single source of truth for the
+  pool and for queueing; `QueueApplication` re-checks through it):
+    - a region / work-authorization restriction passes only when a preference
+      location names that region (whole word, via
+      `PostingRestrictions::REGION_ALIASES`); a work-authorization restriction
+      without a region is excluded;
+    - an `onsite` or `hybrid` restriction makes the posting count as not
+      remote: excluded under `remote_only`, otherwise it must match a
+      preference location (excluded with no locations);
+    - `timezone` is recorded but never excludes;
+    - titles with manager, director, head of, VP, vice president, chief, CTO,
+      CEO, intern, internship or trainee are excluded unless a preference
+      title contains that word;
+    - for a development profile (a preference title names an engineering
+      role) `role_family` must be backend, frontend, fullstack, software,
+      mobile or devops, plus qa / support and customer_service / product when
+      a preference title names them;
+    - these rules apply with and without a preference row (empty criteria
+      only keep postings with no region, authorization, onsite or hybrid
+      restriction). Seniority and `talent.matching.unknown_seniority_passes`
+      are unchanged.
+- **Email link line:** when the rendered `job_url` is empty, the template
+  line holding `{{ job_url }}` is removed (a bare label such as "Job
+  posting:" goes with it; an enclosing `( )` is dropped and the sentence
+  kept). Applies to profile templates, reviewed drafts and previews.
+- **Default templates** (new profiles only; existing profiles unchanged):
+  subject `{{ job_title }} – {{ client_name }}` in EN and PT; body opens with
+  "Hi {{ company }} team," / "Olá, equipe {{ company }},", then the cover
+  letter, the job line, the CV note, links and a closing ask for a 15-minute
+  chat. Mirrored in `resources/js/data/fixtures/catalog/profiles.ts`.
+- **Recipient type:** `Application::recipientKind()` is `generic` when the
+  local part of `recipient_email` is in `OutreachLimits::GENERIC_LOCAL_PARTS`
+  (careers, jobs, hr, info, contact, talent, recruiting, people), else
+  `named`. It is derived, not stored, and does not change sending. The admin
+  Applications table has a "Recipient type" badge column and filter.
+- **Cancelled status:** `ApplicationStatus::Cancelled` ("Cancelled" /
+  "Cancelada", gray, not counted toward the quota) is shown in the admin
+  terminal widget and the client app. A cancelled application keeps blocking
+  that company for the user (unique `(user_id, company_id)`).
+- **Cancel flagged queued applications** (`php artisan
+  applications:cancel-flagged {--ids=} {--force}`): without `--ids` it is a
+  dry run listing queued applications with 1+ audit flag and their ids.
+  `--ids=1,2,3` requires `--force` ("Pass --force to cancel."); it then
+  cancels, in a transaction with row locks, only the ids still `queued`
+  (`last_error` "Cancelled by the owner (quality audit)."), lists the skipped
+  ones and broadcasts `SendingUpdated` once per affected user. `sent`
+  applications are never changed. It runs only on ids the owner confirms.
 
 ## 3. Attachments and references
 
@@ -245,121 +332,35 @@ None.
       needed. The rule is shown to the owner before implementing.
 - P11: cancelling queued applications changes existing data; it only runs
   after the owner's explicit confirmation (already required by P11).
-- Stage 2 questions (P5–P11) were decided on 2026-10-10; see
-  `## Pending changes` → "Decisions for Stage 2".
+- Stage 2 questions (P5–P11) were decided on 2026-10-10 and are implemented
+  (section 2.7). The final aggregator domain list is the one in
+  `talent.outreach.aggregator_domains`; it was not confirmed against real
+  data because no Stage 1 report has been produced yet.
 
 ## Pending changes
 
 Context (owner): in local testing the system already sent several
-applications and many came out poor. Example seen: a Hacker News "Who is
-hiring" post (OneChronos) with two roles was sent with subject "Application:
-Engineering Manager, Data Platform (NYC, Hybrid) · Software Engineer, Quality
-/ SDET (Flexible/U.S. Remote)" and `job_url` pointing to the HN thread
-(`news.ycombinator.com/item?id=...`), not to a job page. This is only a
-sample; the size of the problem must be measured across ALL sent applications.
+applications and many came out poor (for example a Hacker News post with two
+roles sent with one subject and a `job_url` pointing to the HN thread). The
+audit command and the Stage 2 fixes are built (section 2.7); what remains is
+running the audit on real data.
 
-Work happens in two stages. Stage 2 starts only after the owner approves the
-Stage 1 diagnosis, and fixes only the error classes the report confirms.
+### Stage 1 — Audit report on real data
 
-### Stage 1 — Audit (no code changes)
-
-- **P1.** For ALL applications with status `sent` (and `queued`), produce a
-  report (a CSV in `storage/` or the output of a throwaway artisan command,
-  not committed) with: application id, source, raw posting title, sent
-  subject, `job_url`, destination domain, and flags computed by heuristic:
-    - **a.** title/subject with several roles (" · ", " | ", " / ", "and",
-      lists, HN comment posts);
-    - **b.** `job_url` of an aggregator/thread (news.ycombinator.com, reddit,
-      etc.) instead of the company page or ATS;
-    - **c.** geographic restriction incompatible with the client's
-      preferences (US only, U.S. Remote, "authorized to work in", hybrid /
-      on-site + city, fixed timezone);
-    - **d.** seniority/role outside the configured profile (e.g. Manager,
-      Director, Intern, SDET/QA when the profile is development);
-    - **e.** generic destination email (careers@, jobs@, hr@, info@,
-      contact@).
-- **P2.** The report summary must give: total audited, count and % per flag,
-  % with 2 or more flags, % with no flag, and the top 10 sources/domains per
-  flag. It must include 10 real examples per flag (id + title + subject).
 - **P3.** For each flag, state where it originates in the pipeline (source
   parser, normalization, match, eligibility, template) and whether it is a bug
   or a limitation of the model.
 - **P4.** Stop after Stage 1 and show the report to the owner.
 
-Decisions for Stage 1 (owner, `/plan-feature` 2026-10-10):
+Decisions:
 
 - **P1-D1.** The audit runs locally: the owner restores into the local
   database a dump of the environment that sent the applications. The audit
-  reads data only and never changes it.
-- **P1-D2.** The audit is a permanent, committed read-only artisan command
-  `reports:application-audit` (same style as `reports:funnel`). Only its
-  output (CSV and summary under `storage/app/private/reports/`) is not
-  committed.
-
-### Stage 2 — Fixes (only the classes the report confirms)
-
-- **P5.** Multi-role posts: split into one posting per role, or mark the
-  posting as not eligible with a reason when the split is not reliable. Never
-  send one email for two roles.
-- **P6.** `job_url`: never use an aggregator/thread URL. Use only the
-  company's own page or ATS; otherwise omit the link line from the email.
-- **P7.** Location / work-authorization eligibility versus the client's
-  preferences: incompatible postings do not become applications (reason
-  recorded). The rule must be shown to the owner before implementing.
-- **P8.** Out-of-profile role/seniority: the match must reject. The rule must
-  be shown to the owner before implementing.
-- **P9.** Template: remove the opening "I'm writing to apply for…"; subject
-  with a single role; close with a concrete ask (e.g. "Worth a 15-minute chat
-  this week?"). Update the default templates consistently in English and
-  Portuguese only (no Spanish).
-- **P10.** Generic destination email (careers@, jobs@…): do NOT block for
-  now; only record the flag so response can be measured per destination type
-  later.
-- **P11.** Applications already sent are not changed. For `queued`
-  applications with a flag, propose cancelling them and ask the owner for
-  confirmation before executing.
-Decisions for Stage 2 (owner, `/plan-feature` 2026-10-10):
-
-- **P-D3.** Stage 2 does not wait for the approval of the Stage 1 report and
-  covers every class P5–P11. The Stage 1 report (P1–P4) is still produced and
-  shown to the owner.
-- **P5-D.** A posting the adapter marks as not eligible stores the reason in
-  a nullable `job_postings.ineligible_reason`; `MatchingJobPostings` never
-  returns such postings. The original unsplit post is kept and marked not
-  eligible ("Split into one posting per role.").
-- **P6-D.** The safe URL applies to both the email `{{ job_url }}` and the
-  client job link (`JobPosting::applicationUrl()` stays the single source).
-  The aggregator/thread domain list lives in
-  `talent.outreach.aggregator_domains`.
-- **P7-D.** Rule from existing preference fields (`locations`,
-  `remote_mode`) plus restrictions detected in the posting text and stored in
-  `job_postings.restrictions`: a region / work-authorization restriction
-  passes only when a preference location names that region; an on-site or
-  hybrid restriction makes the posting count as not remote (it must match a
-  preference location, and never passes `remote_only`); a fixed timezone is
-  recorded but does not exclude. The recorded reason is the stored
-  restriction.
-- **P8-D.** Rule from existing fields: titles with manager, director, head
-  of, VP, vice president, chief, CTO, CEO, intern, internship or trainee are
-  rejected unless a preference title contains that word; for a development
-  profile (a preference title names an engineering/developer role) only the
-  role families backend, frontend, fullstack, software, mobile and devops
-  pass, unless a preference title names the other family (QA/test/SDET,
-  support/success, product).
-- **P9-D.** The new defaults apply to new profiles only; existing profiles
-  are not changed.
-- **P10-D.** The destination type is derived from the local part of
-  `applications.recipient_email` (generic vs named), not stored.
-- **P11-D.** Cancelling uses a new `ApplicationStatus::Cancelled` (label
-  "Cancelled" / "Cancelada", not counted toward the quota). A cancelled
-  application keeps blocking that company for the user (unique
-  `(user_id, company_id)`). It runs only on the ids the owner confirms.
-- **D8.** Schema changes of this feature use new forward migrations (the
-  restored data must survive); no `migrate:fresh`.
-
-- **P12.** At the end of Stage 2 run `composer lint:check`,
-  `composer types:check`, `yarn check` and `yarn types:check`; then list the
-  changed files and how to verify manually.
+  reads data only and never changes it. (2026-10-10: no dump is available, so
+  the plan phase that runs it was waived; run `reports:application-audit`
+  when real data exists.)
+- **P-D3.** Stage 2 does not wait for the approval of the Stage 1 report. The
+  Stage 1 report is still to be produced and shown to the owner.
 
 ### Out of scope for now
 
