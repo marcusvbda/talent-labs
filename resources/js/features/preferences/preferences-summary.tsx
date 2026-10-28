@@ -56,7 +56,7 @@ export function usePreferencesSentence(draft: Preferences): string {
 
     if (draft.remoteMode === 'remote_only') {
         parts.push(t('preferences.summary.remote'));
-    } else if (draft.locations.length > 0) {
+    } else if (draft.remoteMode !== 'any' && draft.locations.length > 0) {
         parts.push(
             t(
                 draft.remoteMode === 'remote_or_locations'

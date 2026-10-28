@@ -244,6 +244,10 @@ export function jobMatchesPreferences(
         return false;
     }
 
+    if (prefs.remoteMode === 'any') {
+        return true;
+    }
+
     if (prefs.remoteMode === 'remote_only') {
         return job.isRemote === true;
     }

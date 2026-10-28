@@ -11,6 +11,7 @@ const REMOTE_MODES: RemoteMode[] = [
     'remote_only',
     'remote_or_locations',
     'locations_only',
+    'any',
 ];
 
 const SUGGESTION_LIMIT = 10;
@@ -18,7 +19,8 @@ const SUGGESTION_LIMIT = 10;
 const CHIP =
     'inline-flex h-control-xs items-center rounded-full px-5 text-label-sm whitespace-nowrap transition-colors focus-visible:focus-ring';
 
-export const showsLocations = (mode: RemoteMode) => mode !== 'remote_only';
+export const showsLocations = (mode: RemoteMode) =>
+    mode !== 'remote_only' && mode !== 'any';
 
 // "Only these locations" is useless without at least one location.
 export const hasMissingLocations = (value: Preferences) =>

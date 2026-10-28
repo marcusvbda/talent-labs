@@ -50,6 +50,14 @@ final class MatchingJobPostings
      * postings in a listed location. Each exclude word drops postings whose title,
      * normalized title or stack contains it. The description is never read.
      *
+     * The "any" remote mode (All jobs) applies no remote/location filter and lets onsite / hybrid
+     * postings through; region and work_authorization restrictions are still enforced, with no
+     * location naming a region.
+     *
+     * With the remote mode "any" and every other preference field empty
+     * (PreferenceCriteria::isUnfiltered()) none of the rules below applies: the pool is every
+     * posting the client can still send.
+     *
      * Detected restrictions (job_postings.restrictions, PostingRestrictions) are enforced
      * last, with or without preferences. A location "names" a region when it contains one of
      * the region's PostingRestrictions::REGION_ALIASES as a whole word (case-insensitive).
@@ -133,7 +141,7 @@ final class MatchingJobPostings
 
         if ($criteria->remoteMode === RemoteMode::RemoteOnly) {
             $query->where('job_posting_profiles.is_remote', true);
-        } elseif ($locations !== []) {
+        } elseif ($criteria->remoteMode !== RemoteMode::Any && $locations !== []) {
             $orRemote = $criteria->remoteMode === RemoteMode::RemoteOrLocations;
 
             $query->where(function (Builder $group) use ($locations, $orRemote): void {
@@ -153,6 +161,10 @@ final class MatchingJobPostings
                 "not (job_postings.title ~* ? or coalesce(job_posting_profiles.normalized_title, '') ~* ? or job_posting_profiles.stack ?? ?)",
                 [$pattern, $pattern, $stackValue],
             );
+        }
+
+        if ($criteria->isUnfiltered()) {
+            return $query;
         }
 
         self::applyRestrictions($query, $criteria);
@@ -247,7 +259,9 @@ final class MatchingJobPostings
      */
     private static function applyRestrictions(Builder $query, PreferenceCriteria $criteria): void
     {
-        $locations = $criteria->locations;
+        // "All jobs" ignores remote and locations; region and work-authorization restrictions still apply.
+        $any = $criteria->remoteMode === RemoteMode::Any;
+        $locations = $any ? [] : $criteria->locations;
         $namedRegions = self::regionsNamedBy($locations);
 
         $query->whereRaw(
@@ -259,6 +273,10 @@ final class MatchingJobPostings
             'not (job_postings.restrictions @> ?::jsonb)',
             [json_encode([['kind' => 'work_authorization', 'value' => null]])],
         );
+
+        if ($any) {
+            return;
+        }
 
         $query->where(function (Builder $group) use ($criteria, $locations): void {
             $group->whereRaw(

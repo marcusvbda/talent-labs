@@ -116,7 +116,7 @@ final class DashboardPresenter
     }
 
     /**
-     * Pool postings first seen from `$from` up to `$to`, counted once per company.
+     * Pool postings first seen from `$from` up to `$to`.
      *
      * @param  '<'|'<='  $toOperator
      */
@@ -125,8 +125,7 @@ final class DashboardPresenter
         return MatchingJobPostings::forUser($user)
             ->where('job_postings.first_seen_at', '>=', $from)
             ->where('job_postings.first_seen_at', $toOperator, $to)
-            ->distinct()
-            ->count('job_postings.company_id');
+            ->count();
     }
 
     private static function toApp(CarbonImmutable $moment): CarbonImmutable

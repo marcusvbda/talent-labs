@@ -540,6 +540,8 @@
     "preferences.location.remote_or_locations.description": "Remote jobs plus jobs in the places you list",
     "preferences.location.locations_only.title": "Only these locations",
     "preferences.location.locations_only.description": "Only jobs in the places you list",
+    "preferences.location.any.title": "All jobs",
+    "preferences.location.any.description": "Remote and on-site jobs, anywhere",
     "preferences.locations.label": "Locations",
     "preferences.locations.placeholder": "Add a city or country",
     "preferences.locations.required": "Add at least one location.",

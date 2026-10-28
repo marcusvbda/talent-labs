@@ -15,7 +15,8 @@ export type Seniority =
 export type RemoteMode =
     | 'remote_only'
     | 'remote_or_locations'
-    | 'locations_only';
+    | 'locations_only'
+    | 'any';
 export type ApplicationStatus =
     | 'queued'
     | 'sending'

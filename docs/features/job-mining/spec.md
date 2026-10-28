@@ -1,7 +1,7 @@
 # Job Mining
 
 > The body of this spec describes the **current behaviour of the code**
-> (filled by `/update-feature-spec` on 2026-10-10). Changes the owner wants go
+> (filled by `/update-feature-spec` on 2026-10-10, updated 2026-10-28). Changes the owner wants go
 > under `## Pending changes`.
 >
 > Scope (confirmed by the owner): the whole collection pipeline — sources,
@@ -168,7 +168,7 @@ Flow:
 - After a successful upsert, `JobPostingsUpdated` is broadcast once per source
   run on `job_postings` (never once per posting). Contact discovery
   (`DiscoverContactsForPosting`) is dispatched only for **new** postings whose
-  `role_family` is in `talent.collection.target_role_families`.
+  `role_family` is in `talent.collection.target_role_families` (see 2.8).
 - `ineligible_reason` (nullable string): a posting with a reason never
   reaches the client pool (`MatchingJobPostings::forUser()` requires it null).
 - `restrictions` (jsonb list of `{kind, value}`, default `[]`) is detected at
@@ -256,7 +256,11 @@ Flow:
       without a region is excluded;
     - an `onsite` or `hybrid` restriction makes the posting count as not
       remote: excluded under `remote_only`, otherwise it must match a
-      preference location (excluded with no locations);
+      preference location (excluded with no locations). The remote mode `any`
+      ("All jobs", UI "Todos") applies no remote/location filter, ignores the
+      stored locations and lets onsite / hybrid postings through; region and
+      work-authorization restrictions still apply, with no location naming a
+      region, so they exclude;
     - `timezone` is recorded but never excludes;
     - titles with manager, director, head of, VP, vice president, chief, CTO,
       CEO, intern, internship or trainee are excluded unless a preference
@@ -268,13 +272,29 @@ Flow:
     - these rules apply with and without a preference row (empty criteria
       only keep postings with no region, authorization, onsite or hybrid
       restriction). Seniority and `talent.matching.unknown_seniority_passes`
-      are unchanged.
+      are unchanged;
+    - exception: with the remote mode `any` and titles, seniorities, stack,
+      locations and exclude words all empty (`PreferenceCriteria::isUnfiltered()`),
+      none of the restriction, title-word or role-profile rules applies. The
+      pool is every posting the client can still send: verified company, done
+      profile in an active language, target role family, eligible, inside the
+      window, smtp-verified recipient, company not yet applied to.
+- **Client job list** (`JobPoolQuery::forUser()`): the match narrowed by the
+  Jobs screen filters, every matching posting once, newest first
+  (`first_seen_at`, then id). Several postings of the same company all show.
+  The Jobs summary, the preferences preview (`PreferencesPreviewPresenter`),
+  the per-language counts (`LanguageUnlockCounts`) and the dashboard "collected"
+  KPI count postings, not companies. The application stays unique per
+  `(user_id, company_id)`: the send selection lets the client pick one posting
+  per company, and once one is queued the company's other postings leave the
+  pool; the server rejects a second one as already applied.
 - **Email link line:** when the rendered `job_url` is empty, the template
   line holding `{{ job_url }}` is removed (a bare label such as "Job
   posting:" goes with it; an enclosing `( )` is dropped and the sentence
   kept). Applies to profile templates, reviewed drafts and previews.
 - **Default templates** (new profiles only; existing profiles unchanged):
-  subject `{{ job_title }} – {{ client_name }}` in EN and PT; body opens with
+  subject `Application: {{ job_title }} – {{ client_name }}` (EN) and
+  `Aplicação: {{ job_title }} – {{ client_name }}` (PT); body opens with
   "Hi {{ company }} team," / "Olá, equipe {{ company }},", then the cover
   letter, the job line, the CV note, links and a closing ask for a 15-minute
   chat. Mirrored in `resources/js/data/fixtures/catalog/profiles.ts`.
@@ -295,6 +315,65 @@ Flow:
   (`last_error` "Cancelled by the owner (quality audit)."), lists the skipped
   ones and broadcasts `SendingUpdated` once per affected user. `sent`
   applications are never changed. It runs only on ids the owner confirms.
+
+### 2.8 Company contact discovery
+
+- `DiscoverContactsForPosting` (queue `contacts`, `$tries = 1`, `$timeout = 75`)
+  finds or creates the `Company` of a new target posting
+  (`ResolveCompanyForPosting`: normalized name, legal suffixes such as inc,
+  llc, gmbh stripped) and links the posting. It runs `RunCompanyDiscovery` when
+  the company is new or its domain or contact status is `pending` (and not
+  cooling down); for a `verified` company it dispatches the AI profile
+  extraction of the postings that still need one. `RunCompanyDiscovery` holds a
+  per-company cache lock (`contacts:company:{id}`, 90 s), then resolves the
+  domain and discovers contacts.
+- **Domain** (`ResolveCompanyDomain`): candidates are the registrable domains
+  of the 3 latest `company_website` values, then `<slug>.com`. The first with
+  at least one non-null MX host wins; there is no A/AAAA fallback. With no
+  match it looks once more after 400 ms. A resolver failure
+  (`DnsLookup::mxHostsOrNull()` returns null) leaves `domain_status` `pending`
+  and sets `domain_checked_at` only when null; the company also stays pending
+  when a higher-priority candidate failed and a lower one resolved. Once
+  `domain_checked_at` is 7 days old (`RunCompanyDiscovery::PENDING_GIVE_UP_DAYS`)
+  the answer is final: `found` or `not_found`.
+- **Contacts** (`DiscoverCompanyContacts`): a `pending` domain only stamps
+  `contact_checked_at` when null; a domain that is not found sets contact and
+  outreach status `no_domain`. Otherwise one handshake-only SMTP session
+  (`SmtpProbe`: EHLO, falling back to HELO, MAIL FROM, RCPT TO, QUIT; never
+  DATA; 5 s socket timeout, 45 s session deadline) against the primary MX
+  host asks about a random `nonexistent-xxxxxxxx@domain` and the aliases
+  careers, jobs, hr, talent, recruiting, people. The EHLO name and sender come
+  from `talent.contacts.smtp_helo` / `smtp_mail_from` (env
+  `CONTACTS_SMTP_HELO`, `CONTACTS_SMTP_MAIL_FROM`; empty means `localhost` and
+  a null sender).
+- **Verdict** on the random address: accepted (2xx) = catch-all; a 5xx = not
+  catch-all, where enhanced status 5.1.x and 5.4.1 (Exchange's "Recipient
+  address rejected: Access denied") and a bare 5xx mean unknown mailbox.
+  **Inconclusive** when there was no connection or session, no reply, a
+  reply that is neither 2xx nor 5xx (4xx), an enhanced status 5.7.x, or text
+  matching `spamhaus|blocked|blacklist|blocklist|policy|reputation|dnsbl|not
+  allowed`.
+- **Inconclusive probe:** nothing is stored and `contact_status` /
+  `outreach_status` stay `pending`. The first one stamps `contact_checked_at`
+  (the clock); a pending company is not probed again for 6 hours
+  (`PENDING_COOLDOWN_HOURS`), then every later new posting of that company
+  probes it again; 7 days after the first inconclusive probe it closes as
+  contact `not_found`, outreach `not_verifiable`.
+- **Conclusive probe:** each accepted alias is stored in `contacts`
+  (`smtp_verified` when the domain is not catch-all, `catch_all` when it is;
+  `mx_only` is no longer produced but stays in the enum), `is_catch_all` is
+  set, `contact_status` is `found` / `not_found` and `outreach_status` is
+  `verified` (at least one `smtp_verified`) or `not_verifiable`.
+- `RetryCompanyDiscovery` (admin retry) deletes the company's contacts, resets
+  every status, `domain`, `is_catch_all` and both `*_checked_at` to empty and
+  queues `DiscoverContactsForCompany`.
+- `php artisan contacts:recheck {--scope=all} {--limit=} {--force}`: dry run
+  unless `--force`. Scope `domains` = `domain_status` `not_found`; `contacts` =
+  domain found, outreach `not_verifiable`, `is_catch_all` not true, and contact
+  `not_found` or `is_catch_all` null; `all` = both. It skips companies with any
+  application and companies whose last check is under 30 minutes old. With
+  `--force` it applies `RetryCompanyDiscovery` in chunks of 200, up to
+  `--limit`. `--scope` and `--limit` are validated.
 
 ## 3. Attachments and references
 

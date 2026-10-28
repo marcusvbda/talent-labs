@@ -540,6 +540,8 @@
     "preferences.location.remote_or_locations.description": "Vagas remotas e vagas nos locais que você listar",
     "preferences.location.locations_only.title": "Somente estes locais",
     "preferences.location.locations_only.description": "Apenas vagas nos locais que você listar",
+    "preferences.location.any.title": "Todos",
+    "preferences.location.any.description": "Vagas remotas e presenciais, em qualquer lugar",
     "preferences.locations.label": "Locais",
     "preferences.locations.placeholder": "Adicione uma cidade ou país",
     "preferences.locations.required": "Adicione pelo menos um local.",

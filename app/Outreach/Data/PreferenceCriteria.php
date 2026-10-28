@@ -34,6 +34,19 @@ final readonly class PreferenceCriteria
         return new self([], [], [], [], RemoteMode::RemoteOrLocations, []);
     }
 
+    /**
+     * "All jobs" with nothing else set: the client asked for every sendable posting, so no fit rule applies.
+     */
+    public function isUnfiltered(): bool
+    {
+        return $this->remoteMode === RemoteMode::Any
+            && $this->titles === []
+            && $this->seniorities === []
+            && $this->stack === []
+            && $this->locations === []
+            && $this->excludeWords === [];
+    }
+
     public static function fromPreference(JobPreference $preference): self
     {
         return new self(

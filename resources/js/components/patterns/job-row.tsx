@@ -56,7 +56,7 @@ export function JobRow({
         <>
             <CompanyLogo name={company} />
             <span className="flex min-w-0 flex-1 flex-col gap-1 md:flex-row md:items-center md:gap-row-gap">
-                <span className="block min-w-0 md:flex-1">
+                <span className="block min-w-0 md:min-w-[40%] md:flex-1">
                     <span className="block truncate text-row-title-sm text-ink md:text-row-title">
                         {title}
                     </span>
@@ -64,7 +64,7 @@ export function JobRow({
                         {meta}
                     </span>
                 </span>
-                <span className="flex flex-wrap items-center gap-1.5 md:justify-end">
+                <span className="flex flex-wrap items-center gap-1.5 md:max-w-[60%] md:justify-end">
                     {stack.map((item) => (
                         <Chip
                             key={item}

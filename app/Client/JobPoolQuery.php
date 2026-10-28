@@ -8,8 +8,6 @@ use App\Models\User;
 use App\Outreach\Queries\MatchingJobPostings;
 use App\Outreach\Support\StackNormalizer;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Support\Facades\DB;
 
 final class JobPoolQuery
 {
@@ -17,30 +15,14 @@ final class JobPoolQuery
 
     /**
      * The client's job pool ({@see MatchingJobPostings}) narrowed by the Jobs screen filters,
-     * keeping only the newest posting per company, newest first.
+     * every matching posting once (several postings of one company all show), newest first.
      *
      * @param  array{q?: string|null, language?: string|null, seniority?: array<array-key, mixed>|null, remote?: string|null, today?: bool|null, stack?: array<array-key, mixed>|null}  $filters
      * @return Builder<JobPosting>
      */
     public static function forUser(User $user, array $filters = []): Builder
     {
-        // "No other pool posting for this company is newer", evaluated against the same filtered pool.
-        $candidates = self::filtered($user, $filters)
-            ->select(['job_postings.id', 'job_postings.company_id', 'job_postings.first_seen_at']);
-
         return self::filtered($user, $filters)
-            ->whereNotExists(function (QueryBuilder $newer) use ($candidates): void {
-                $newer->select(DB::raw(1))
-                    ->fromSub($candidates, 'newer')
-                    ->whereColumn('newer.company_id', 'job_postings.company_id')
-                    ->where(function (QueryBuilder $order): void {
-                        $order->whereColumn('newer.first_seen_at', '>', 'job_postings.first_seen_at')
-                            ->orWhere(function (QueryBuilder $tie): void {
-                                $tie->whereColumn('newer.first_seen_at', '=', 'job_postings.first_seen_at')
-                                    ->whereColumn('newer.id', '>', 'job_postings.id');
-                            });
-                    });
-            })
             ->orderByDesc('job_postings.first_seen_at')
             ->orderByDesc('job_postings.id');
     }

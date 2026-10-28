@@ -77,7 +77,7 @@ final class ApplicationAuditFlags
             )));
         }
 
-        $named = self::regionsNamedBy($locations);
+        $named = self::regionsNamedBy($remoteMode === RemoteMode::Any ? [] : $locations);
         $reasons = [];
 
         foreach ($restrictions as $restriction) {

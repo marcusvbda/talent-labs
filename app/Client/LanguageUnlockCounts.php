@@ -9,7 +9,7 @@ use App\Outreach\Queries\MatchingJobPostings;
 final class LanguageUnlockCounts
 {
     /**
-     * Pool jobs per language, ignoring the language rule. Counts one per company, like the Jobs list.
+     * Pool jobs per language, ignoring the language rule. Counts postings, like the Jobs list.
      * A null criteria means the user's saved preferences.
      *
      * @return array{en: int, pt: int}
@@ -21,7 +21,7 @@ final class LanguageUnlockCounts
             ->reorder()
             ->toBase()
             ->select('job_posting_profiles.language')
-            ->selectRaw('count(distinct job_postings.company_id) as aggregate')
+            ->selectRaw('count(*) as aggregate')
             ->whereIn('job_posting_profiles.language', ['en', 'pt'])
             ->groupBy('job_posting_profiles.language')
             ->pluck('aggregate', 'language')
