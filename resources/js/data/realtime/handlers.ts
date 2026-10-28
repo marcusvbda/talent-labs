@@ -15,7 +15,7 @@ import type {
 } from '@/types/contracts';
 
 const ACTIVITY_CAP = 5;
-const JOBS_DEBOUNCE_MS = 2000;
+const JOBS_THROTTLE_MS = 2000;
 const SETTLED: ApplicationStatus[] = [
     'sent',
     'failed',
@@ -179,15 +179,20 @@ export function notifyToast(
     toast[tone](message);
 }
 
-// Bursts of collection runs collapse into a single refetch.
+// Postings arrive one by one while a run is going, so this is a throttle (not a
+// debounce): at most one refetch per window, and a final one after the last event.
 export function jobsCollected(
     _payload: JobsChannelEvents['jobs.collected'],
     qc: QueryClient,
 ): void {
-    clearTimeout(jobsTimer);
+    if (jobsTimer !== undefined) {
+        return;
+    }
+
     jobsTimer = setTimeout(() => {
+        jobsTimer = undefined;
         void qc.invalidateQueries({ queryKey: keys.jobs.all() });
         void qc.invalidateQueries({ queryKey: keys.dashboards() });
         void qc.invalidateQueries({ queryKey: keys.preferences.previews() });
-    }, JOBS_DEBOUNCE_MS);
+    }, JOBS_THROTTLE_MS);
 }

@@ -35,7 +35,8 @@ Flow:
    and its company has a domain verified for sending; companies with no
    verdict yet are validated by their own job inside the same batch, and only
    then are their postings stored (see 2.4 and 2.8). The AI profile
-   extraction is queued for the postings that get stored.
+   extraction is queued for the postings that get stored, and each finished
+   profile announces its posting to clients in realtime (see 2.4).
 4. When the batch finishes (including those per-company jobs) the run is
    finalized (status, counters, notification, `JobsCollected` client event).
 
@@ -192,7 +193,17 @@ descriptionText, publishedAt, raw, companyWebsite, sourceContacts`.
   Postings stored before this rule are left as they are.
 - After the upsert, `JobPostingsUpdated` is broadcast once per source run on
   `job_postings`, and once more by each `StoreCompanyPostings` that stores
-  postings (never once per posting).
+  postings (never once per posting). The `StoreCompanyPostings` jobs of a
+  fetch are added to the run's batch only after its source run is saved, so
+  their `jobs_new` increments are not overwritten.
+- **Client realtime.** A stored posting reaches the client pool only when its
+  profile is `done`. So each time `ExtractJobPostingProfileJob` persists a
+  profile it dispatches `JobsCollected(collection_run_id, 1)` (public `jobs`
+  channel, `jobs.collected`; best-effort, a failed broadcast never fails the
+  job). The client handler is a throttle: the first event starts a 2 s timer,
+  further events inside it are absorbed, and when it fires the Jobs lists, the
+  dashboard and the preferences preview are refetched, so postings and the
+  dashboard cards update while a run is still going.
 - `ineligible_reason` (nullable string): a posting with a reason never
   reaches the client pool (`MatchingJobPostings::forUser()` requires it null).
 - `restrictions` (jsonb list of `{kind, value}`, default `[]`) is detected at
@@ -246,14 +257,14 @@ descriptionText, publishedAt, raw, companyWebsite, sourceContacts`.
 
 ### 2.6 Realtime channels (public, ids only)
 
-| Channel               | Event                       | Emitted by                                 |
-| --------------------- | --------------------------- | ------------------------------------------ |
-| `collection_runs`     | `CollectionRunUpdated`      | `CollectionRun` saved/deleted              |
-| `collection_run_{id}` | `CollectionRunUpdated`      | that run or any of its `SourceRun`s saved  |
-| `job_postings`        | `JobPostingsUpdated`        | `FetchJobsFromSource`, once per source run |
-| `sources`             | `SourceUpdated`             | `Source` saved/deleted                     |
-| `collection_schedule` | `CollectionScheduleUpdated` | `CollectionSchedule` saved/deleted         |
-| `jobs`                | `jobs.collected`            | `FinalizeCollectionRun` (client side)      |
+| Channel               | Event                       | Emitted by                                                                                                  |
+| --------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `collection_runs`     | `CollectionRunUpdated`      | `CollectionRun` saved/deleted                                                                               |
+| `collection_run_{id}` | `CollectionRunUpdated`      | that run or any of its `SourceRun`s saved                                                                   |
+| `job_postings`        | `JobPostingsUpdated`        | `FetchJobsFromSource` (once per source run), `StoreCompanyPostings` (once per stored company group)         |
+| `sources`             | `SourceUpdated`             | `Source` saved/deleted                                                                                      |
+| `collection_schedule` | `CollectionScheduleUpdated` | `CollectionSchedule` saved/deleted                                                                          |
+| `jobs`                | `jobs.collected`            | `FinalizeCollectionRun` (run total), `ExtractJobPostingProfileJob` (one per finished profile) (client side) |
 
 ### 2.7 Application quality
 
@@ -270,7 +281,10 @@ descriptionText, publishedAt, raw, companyWebsite, sourceContacts`.
   match would let through, and any restriction when the client has no
   preference row. With no rows it prints "No applications to audit." and
   writes nothing. Logic in `App\Reports\ApplicationAudit` and
-  `ApplicationAuditFlags`.
+  `ApplicationAuditFlags`. The job URL it checks is the first link in the
+  email body equal to the posting's `url` or `apply_url`, else the posting's
+  `url`: when the template dropped the link line (no usable URL), flag b's
+  reason and domain still show the source listing.
 - **Match** (`MatchingJobPostings::forUser()`, single source of truth for the
   pool and for queueing; `QueueApplication` re-checks through it):
     - a region / work-authorization restriction passes only when a preference
@@ -445,13 +459,15 @@ None.
   after the owner's explicit confirmation (already required by P11).
 - Stage 2 questions (P5–P11) were decided on 2026-10-10 and are implemented
   (section 2.7). The final aggregator domain list is the one in
-  `talent.outreach.aggregator_domains`; it was not confirmed against real
-  data because no Stage 1 report has been produced yet.
-- Stage 3 (P5–P6) gaps, resolved in `/plan-feature` on 2026-10-28 (see the
-  P5/P6 decisions under `## Pending changes`). Still open: postings already in
-  the database that were stored without validation are left as they are;
-  cleaning them up would be a destructive data operation and needs an explicit
-  owner request.
+  `talent.outreach.aggregator_domains`. The Stage 1 report was produced on
+  2026-10-28 (11 `sent` applications of user 2; flags b, c and e fired, all
+  model limitations) and its file was later removed from the working tree (it
+  is in git history, commit `c7ceb92`); whether the owner has accepted it is
+  not recorded, so P3/P4 stay under `## Pending changes`.
+- Stage 3 (P5–P6, decided on 2026-10-28) is implemented (sections 2.3, 2.4,
+  2.5, 2.8). Still open: postings already in the database that were stored
+  without validation are left as they are; cleaning them up would be a
+  destructive data operation and needs an explicit owner request.
 
 ## Pending changes
 
@@ -467,8 +483,8 @@ running the audit on real data.
   parser, normalization, match, eligibility, template) and whether it is a bug
   or a limitation of the model.
 - **P4.** Stop after Stage 1 and show the report to the owner. (The report was
-  produced on 2026-10-28 in `assets/application-audit-report.md`; these items
-  move into the body once the owner has seen it.)
+  produced on 2026-10-28; its file is no longer in the tree, see Open points.
+  These items move into the body once the owner confirms they are settled.)
 
 Decisions:
 

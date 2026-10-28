@@ -7,6 +7,8 @@ use App\Collection\Support\PostingTitle;
 use App\Enums\AiUsageStatus;
 use App\Enums\OutreachStatus;
 use App\Enums\ProfileStatus;
+use App\Events\Client\Concerns\DispatchesClientEvent;
+use App\Events\Client\JobsCollected;
 use App\Models\AiAgentResponseCache;
 use App\Models\AiUsageRecord;
 use App\Models\JobPosting;
@@ -22,6 +24,7 @@ use UnexpectedValueException;
 
 class ExtractJobPostingProfileJob implements ShouldBeUnique, ShouldQueue
 {
+    use DispatchesClientEvent;
     use Queueable;
 
     public int $tries = 3;
@@ -150,6 +153,9 @@ class ExtractJobPostingProfileJob implements ShouldBeUnique, ShouldQueue
                 'extracted_at' => now(),
             ],
         );
+
+        // The posting only reaches clients once its profile is done: tell them now, one at a time.
+        self::dispatchClientEvent(new JobsCollected((int) $posting->collection_run_id, 1));
     }
 
     private function recordUsage(AiUsageStatus $status, bool $cacheHit, ?Usage $usage, int $startedAt): void
