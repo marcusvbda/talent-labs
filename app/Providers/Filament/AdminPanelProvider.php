@@ -26,8 +26,8 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id("admin")
+            ->path(config("filament.admin_panel_path"))
             ->login()
             ->databaseNotifications()
             ->colors([
