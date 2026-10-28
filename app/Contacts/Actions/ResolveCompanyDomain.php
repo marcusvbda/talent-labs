@@ -16,15 +16,16 @@ class ResolveCompanyDomain
 
     /**
      * Try the website domain the source gave us, then "<slug>.com"; the first candidate
-     * with an MX host is marked found. A DNS failure leaves the company pending.
+     * with an MX host is marked found. A DNS failure leaves the company pending. Websites passed
+     * in (not stored yet) are tried before the stored ones.
+     *
+     * @param  list<string>  $websites
      */
-    public function handle(Company $company): void
+    public function handle(Company $company, array $websites = []): void
     {
         if ($company->domain_status !== DomainStatus::Pending) {
             return;
         }
-
-        $websites = [];
 
         $recent = $company->jobPostings()
             ->whereNotNull('company_website')
@@ -71,7 +72,7 @@ class ResolveCompanyDomain
 
     /**
      * Candidate domains in priority order: the registrable domains of the websites the source gave
-     * us (most recent first), then "<slug>.com".
+     * us (passed-in first, then stored most recent first), then "<slug>.com".
      *
      * @param  list<string>  $websites
      * @return list<string>

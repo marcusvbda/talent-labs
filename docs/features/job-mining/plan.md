@@ -48,9 +48,9 @@ Notes from the audit:
 | Phase | Title | Role | Depends on | Origin | Size | Status |
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | Stage 1 audit report on real data | laravel-backend | none | P3, P4, P1-D2 | S | DONE |
-| 2 | Company discovery from fetched websites | laravel-backend | none | P5 | S | PENDING |
+| 2 | Company discovery from fetched websites | laravel-backend | none | P5 | S | DONE |
 | 3 | Contact-first collection gate | laravel-backend | 2 | P5, P5-D1..D4 | M | PENDING |
-| 4 | Remove admin contact filters | filament-admin | none | P6, P6-D1 | S | PENDING |
+| 4 | Remove admin contact filters | filament-admin | none | P6, P6-D1 | S | DONE |
 | 5 | Verification and report | laravel-backend | 2, 3, 4 | all | S | PENDING |
 
 ## Owner decisions
@@ -196,7 +196,8 @@ database).
 
 ### Phase 2 — Company discovery from fetched websites
 
-Status: PENDING
+Status: DONE
+Evidence: pint passed, phpstan (1G) 0 errors on changed files, `php artisan test --compact` 33/33; code-reviewer APPROVED. `normalize()` is now `public static`; `isCoolingDown()` stays a public instance method (Phase 3 calls it on an injected instance).
 Role: laravel-backend · Depends on: none · Covers: P5 · Size: S
 Origin: P5 "During collection, before a posting is stored in the database,
 the company's contact is validated."
@@ -371,7 +372,8 @@ validation job added to the run batch).
 
 ### Phase 4 — Remove admin contact filters
 
-Status: PENDING
+Status: DONE
+Evidence: both filters and the default hiding removed from `JobPostingsTable`; pint passed, phpstan 0 errors, tests 33/33; code-reviewer APPROVED. Not exercised in a browser.
 Role: filament-admin · Depends on: none · Covers: P6, P6-D1 · Size: S
 Origin: P6 "Remove the filters by validated / not-validated contact, both in
 the admin and in the client app." · P6-D1 "The client app has no contact

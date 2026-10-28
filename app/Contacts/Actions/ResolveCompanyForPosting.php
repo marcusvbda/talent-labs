@@ -19,10 +19,7 @@ class ResolveCompanyForPosting
      */
     public function handle(JobPosting $posting): Company
     {
-        $company = Company::firstOrCreate(
-            ['normalized_name' => $this->normalize($posting->company_name)],
-            ['name' => $posting->company_name],
-        );
+        $company = $this->forName($posting->company_name);
 
         JobPosting::query()->whereKey($posting->id)->toBase()->update(['company_id' => $company->id]);
 
@@ -31,9 +28,20 @@ class ResolveCompanyForPosting
         return $company;
     }
 
-    public function normalize(string $companyName): string
+    /**
+     * Find or create the company with this name, matched by its normalized name.
+     */
+    public function forName(string $companyName): Company
     {
-        $fallback = trim(mb_strtolower($companyName));
+        return Company::firstOrCreate(
+            ['normalized_name' => self::normalize($companyName)],
+            ['name' => $companyName],
+        );
+    }
+
+    public static function normalize(string $name): string
+    {
+        $fallback = trim(mb_strtolower($name));
 
         $normalized = (string) preg_replace('/[^\p{L}\p{N}\s]/u', '', $fallback);
         $normalized = trim((string) preg_replace('/\s+/u', ' ', $normalized));

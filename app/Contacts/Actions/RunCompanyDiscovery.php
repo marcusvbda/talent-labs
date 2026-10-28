@@ -28,8 +28,10 @@ class RunCompanyDiscovery
 
     /**
      * Resolve the domain and discover contacts for a company, one worker at a time.
+     *
+     * @param  list<string>  $websites  websites not stored yet, tried before the stored ones
      */
-    public function handle(Company $company): void
+    public function handle(Company $company, array $websites = []): void
     {
         $lock = Cache::lock("contacts:company:{$company->id}", 90);
 
@@ -45,7 +47,7 @@ class RunCompanyDiscovery
                 return;
             }
 
-            $this->resolveDomain->handle($company);
+            $this->resolveDomain->handle($company, $websites);
             $this->discoverContacts->handle($company);
         } catch (Throwable $e) {
             Log::warning('Contact discovery failed', [

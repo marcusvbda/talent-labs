@@ -81,4 +81,21 @@ class Company extends Model
     {
         return $this->hasMany(JobPosting::class, 'company_id');
     }
+
+    /**
+     * Whether the company's domain is verified for sending.
+     */
+    public function isVerifiedForSending(): bool
+    {
+        return $this->outreach_status === OutreachStatus::Verified;
+    }
+
+    /**
+     * Whether sending to the company is ruled out: no domain, or a domain that cannot be verified.
+     */
+    public function isClosedForSending(): bool
+    {
+        return $this->outreach_status === OutreachStatus::NoDomain
+            || $this->outreach_status === OutreachStatus::NotVerifiable;
+    }
 }
