@@ -415,6 +415,27 @@ None.
   (section 2.7). The final aggregator domain list is the one in
   `talent.outreach.aggregator_domains`; it was not confirmed against real
   data because no Stage 1 report has been produced yet.
+- Stage 3 (P5–P6), gaps not stated by the owner yet:
+    - For how long is a company's remembered negative result kept before it
+      is probed again? (Decided: it is remembered, see P5.)
+    - What counts as "domain verified for sending": `outreach_status` =
+      `verified` only (at least one `smtp_verified` contact), so catch-all
+      domains and inconclusive probes are excluded?
+    - Inconclusive probes (current 6-hour cooldown and 7-day give-up, section
+      2.8): how should they behave when the posting is not stored yet?
+    - Does validation apply only to postings in
+      `talent.collection.target_role_families`, or to every posting? Postings
+      outside the target families are stored today.
+    - Postings already in the database that were stored without validation
+      (cleaning them up would be a destructive data operation, needs explicit
+      owner confirmation), and existing postings seen again by a run
+      (re-validate or not).
+    - The collection job limits (`FetchJobsFromSource` `$timeout = 120`, one SMTP
+      session up to 45 s per company) do not fit inline validation; the
+      queue/job structure is a decision for the plan.
+    - Which client-side filter is meant by "filter by validated contact"; the
+      spec body only lists the admin "Show not-verifiable" and "contact status"
+      filters.
 
 ## Pending changes
 
@@ -440,6 +461,29 @@ Decisions:
   when real data exists.)
 - **P-D3.** Stage 2 does not wait for the approval of the Stage 1 report. The
   Stage 1 report is still to be produced and shown to the owner.
+
+### Stage 3 — Validate the contact before storing the posting
+
+Context (owner): the feature is poorly optimized for production. Today every
+posting is collected and stored, then processed with AI, and only afterwards
+are the company's contacts mined. Many postings never get a confirmed
+contact, so they were processed with AI for nothing (wasted tokens) and they
+fill the database with junk: postings that are useless to the end client.
+
+- **P5.** Change the order of the flow. During collection, **before a posting
+  is stored in the database**, the company's contact is validated. Only if the
+  company has a domain verified for sending is the posting processed with AI
+  and stored, ready to be used. A posting whose company has no domain verified
+  for sending is not processed with AI and is not stored. The owner accepts
+  that discovery becomes slower in exchange for not spending AI tokens on
+  unusable postings and not filling the database with useless postings. When
+  a posting is dropped because its company is not verified, the company's
+  negative result is remembered so later runs do not probe it again (for how
+  long is still open).
+- **P6.** Remove the filters by validated / not-validated contact, both in the
+  admin and in the client app. Technically, a posting that is in the database
+  and available has already been validated and is ready for "application", so
+  the filter no longer has a purpose.
 
 ### Out of scope for now
 
