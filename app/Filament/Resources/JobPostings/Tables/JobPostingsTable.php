@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\JobPostings\Tables;
 
 use App\Enums\ContactStatus;
-use App\Enums\OutreachStatus;
 use App\Enums\RoleFamily;
 use App\Enums\SourceAdapter;
 use App\Models\CollectionRun;
@@ -12,7 +11,6 @@ use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Grouping\Group;
@@ -24,14 +22,7 @@ class JobPostingsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query, HasTable $livewire): Builder => $query
-                ->with(['collectionRun', 'source', 'company'])
-                ->when(
-                    ! ($livewire->getTableFilterState('show_not_verifiable')['isActive'] ?? false),
-                    fn (Builder $query): Builder => $query->where(fn (Builder $q) => $q
-                        ->whereNull('company_id')
-                        ->orWhereHas('company', fn (Builder $c) => $c->where('outreach_status', '!=', OutreachStatus::NotVerifiable)))
-                ))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['collectionRun', 'source', 'company']))
             ->defaultGroup(
                 Group::make('collection_run_id')
                     ->label('Run')
@@ -129,29 +120,6 @@ class JobPostingsTable
                         'collection_run_id',
                         CollectionRun::query()->startedToday()->pluck('id'),
                     )),
-
-                Filter::make('show_not_verifiable')
-                    ->label('Show not-verifiable')
-                    ->toggle(),
-
-                SelectFilter::make('contact_status')
-                    ->label('Contact status')
-                    ->options(ContactStatus::class)
-                    ->query(function (Builder $query, array $data): Builder {
-                        $value = $data['value'] ?? null;
-
-                        if (blank($value)) {
-                            return $query;
-                        }
-
-                        if ($value === ContactStatus::Pending->value) {
-                            return $query->where(fn (Builder $q) => $q
-                                ->whereNull('company_id')
-                                ->orWhereHas('company', fn (Builder $c) => $c->where('contact_status', $value)));
-                        }
-
-                        return $query->whereHas('company', fn (Builder $q) => $q->where('contact_status', $value));
-                    }),
             ])
             ->recordActions([
                 ViewAction::make(),
