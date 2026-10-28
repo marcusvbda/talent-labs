@@ -5,6 +5,7 @@ namespace App\Contacts\Actions;
 use App\Ai\Jobs\ExtractJobPostingProfileJob;
 use App\Contacts\Support\DnsLookup;
 use App\Contacts\Support\SmtpProbe;
+use App\Contacts\Support\SmtpProbeResult;
 use App\Enums\ContactConfidence;
 use App\Enums\ContactStatus;
 use App\Enums\DomainStatus;
@@ -19,6 +20,11 @@ class DiscoverCompanyContacts
      */
     public const array ALIASES = ['careers', 'jobs', 'hr', 'talent', 'recruiting', 'people'];
 
+    /**
+     * Reply text that marks a rejection as a block/policy decision about us, not about the mailbox.
+     */
+    private const string BLOCK_PATTERN = '/spamhaus|blocked|blacklist|blocklist|policy|reputation|dnsbl|not allowed/i';
+
     public function __construct(
         private DnsLookup $dns,
         private SmtpProbe $smtp,
@@ -31,6 +37,13 @@ class DiscoverCompanyContacts
     public function handle(Company $company): void
     {
         $domain = (string) $company->domain;
+
+        if ($company->domain_status === DomainStatus::Pending) {
+            // DNS lookup failed: no verdict yet, retried after the cooldown.
+            $this->markChecked($company);
+
+            return;
+        }
 
         if ($company->domain_status !== DomainStatus::Found || $domain === '') {
             $company->contact_status = ContactStatus::NoDomain;
@@ -57,14 +70,14 @@ class DiscoverCompanyContacts
 
         $result = $this->smtp->probe($host, [$probeAddress, ...array_values($aliasAddresses)]);
 
-        $probeCode = $result->codes[$probeAddress] ?? null;
+        $isCatchAll = $this->catchAllVerdict($result, $probeAddress);
 
-        $isCatchAll = match (true) {
-            ! $result->connected, ! $result->sessionOk, $probeCode === null => null,
-            $this->isAccepted($probeCode) => true,
-            $probeCode >= 500 && $probeCode < 600 => false,
-            default => null,
-        };
+        if ($isCatchAll === null) {
+            // Blocked, greylisted or no session: says nothing about the mailboxes, so no verdict yet.
+            $this->markInconclusive($company);
+
+            return;
+        }
 
         $stored = 0;
         $verified = false;
@@ -101,14 +114,77 @@ class DiscoverCompanyContacts
     }
 
     /**
-     * Confidence to store for an alias, or null when the alias must be skipped.
+     * True when the server accepts the random probe address (catch-all), false when it rejects it
+     * as an unknown user, null when the outcome is inconclusive (no session, 4xx, block/policy).
      */
-    private function confidenceFor(?bool $isCatchAll, ?int $code): ?ContactConfidence
+    private function catchAllVerdict(SmtpProbeResult $result, string $probeAddress): ?bool
     {
-        if ($isCatchAll === null) {
-            return ContactConfidence::MxOnly;
+        $code = $result->codes[$probeAddress] ?? null;
+
+        if (! $result->connected || ! $result->sessionOk || $code === null) {
+            return null;
         }
 
+        if ($this->isAccepted($code)) {
+            return true;
+        }
+
+        if ($code < 500 || $code >= 600) {
+            return null;
+        }
+
+        $text = (string) ($result->replies[$probeAddress] ?? '');
+
+        // Enhanced status first: 5.7.x is a policy decision about us, while 5.1.x and Exchange's 5.4.1
+        // ("Recipient address rejected: Access denied") are plain unknown-mailbox answers.
+        if (preg_match('/^5\.7\.\d+/', $text) === 1) {
+            return null;
+        }
+
+        if (preg_match('/^5\.(?:1\.\d+|4\.1)\b/', $text) === 1) {
+            return false;
+        }
+
+        return preg_match(self::BLOCK_PATTERN, $text) === 1 ? null : false;
+    }
+
+    /**
+     * Records the attempt without a verdict: statuses stay pending.
+     */
+    private function markChecked(Company $company): void
+    {
+        if ($company->contact_checked_at === null) {
+            $company->contact_checked_at = now();
+            $company->save();
+        }
+    }
+
+    /**
+     * Inconclusive probe. The first one starts the clock; once the company has stayed inconclusive for
+     * RunCompanyDiscovery::PENDING_GIVE_UP_DAYS it is closed as not verifiable (`contacts:recheck` can reopen it).
+     */
+    private function markInconclusive(Company $company): void
+    {
+        if ($company->contact_checked_at === null) {
+            $this->markChecked($company);
+
+            return;
+        }
+
+        if ($company->contact_checked_at->greaterThan(now()->subDays(RunCompanyDiscovery::PENDING_GIVE_UP_DAYS))) {
+            return;
+        }
+
+        $company->contact_status = ContactStatus::NotFound;
+        $company->outreach_status = OutreachStatus::NotVerifiable;
+        $company->save();
+    }
+
+    /**
+     * Confidence to store for an alias, or null when the alias must be skipped.
+     */
+    private function confidenceFor(bool $isCatchAll, ?int $code): ?ContactConfidence
+    {
         if (! $this->isAccepted($code)) {
             return null;
         }

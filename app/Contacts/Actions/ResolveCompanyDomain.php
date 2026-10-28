@@ -10,11 +10,13 @@ use Illuminate\Support\Str;
 
 class ResolveCompanyDomain
 {
+    private const int RETRY_PAUSE_MICROSECONDS = 400_000;
+
     public function __construct(private DnsLookup $dns) {}
 
     /**
      * Try the website domain the source gave us, then "<slug>.com"; the first candidate
-     * that resolves is marked found.
+     * with an MX host is marked found. A DNS failure leaves the company pending.
      */
     public function handle(Company $company): void
     {
@@ -36,14 +38,29 @@ class ResolveCompanyDomain
             }
         }
 
-        $found = null;
+        $candidates = $this->candidates($websites, $company->normalized_name);
 
-        foreach ($this->candidates($websites, $company->normalized_name) as $candidate) {
-            if ($this->resolves($candidate)) {
-                $found = $candidate;
+        [$found, $lookupFailed] = $this->firstResolving($candidates);
 
-                break;
+        if ($found === null && $candidates !== []) {
+            // A miss may be a resolver hiccup: look once more before concluding.
+            usleep(self::RETRY_PAUSE_MICROSECONDS);
+
+            [$found, $lookupFailed] = $this->firstResolving($candidates);
+        }
+
+        $gaveUp = $company->domain_checked_at !== null
+            && $company->domain_checked_at->lessThanOrEqualTo(now()->subDays(RunCompanyDiscovery::PENDING_GIVE_UP_DAYS));
+
+        if ($lookupFailed && ! $gaveUp) {
+            // The resolver failed instead of answering, for the whole list or for a higher-priority candidate
+            // than the one that resolved: stay pending and try again later.
+            if ($company->domain_checked_at === null) {
+                $company->domain_checked_at = now();
+                $company->save();
             }
+
+            return;
         }
 
         $company->domain = $found;
@@ -80,16 +97,37 @@ class ResolveCompanyDomain
         return $candidates;
     }
 
-    private function resolves(string $domain): bool
+    /**
+     * The first candidate that resolves, and whether any lookup failed along the way.
+     *
+     * @param  list<string>  $candidates
+     * @return array{0: string|null, 1: bool}
+     */
+    private function firstResolving(array $candidates): array
     {
-        if ($this->dns->mxHosts($domain) !== []) {
-            return true;
+        $lookupFailed = false;
+
+        foreach ($candidates as $candidate) {
+            $resolves = $this->resolves($candidate);
+
+            if ($resolves === true) {
+                return [$candidate, $lookupFailed];
+            }
+
+            $lookupFailed = $lookupFailed || $resolves === null;
         }
 
-        if ($this->dns->hasOnlyNullMx($domain)) {
-            return false;
-        }
+        return [null, $lookupFailed];
+    }
 
-        return $this->dns->hasAddress($domain);
+    /**
+     * A domain counts only when it can receive mail: at least one non-null MX host. Null when the
+     * DNS lookup itself failed.
+     */
+    private function resolves(string $domain): ?bool
+    {
+        $hosts = $this->dns->mxHostsOrNull($domain);
+
+        return $hosts === null ? null : $hosts !== [];
     }
 }

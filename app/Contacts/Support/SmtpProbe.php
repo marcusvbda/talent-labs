@@ -22,6 +22,11 @@ class SmtpProbe
     private float $deadline = 0.0;
 
     /**
+     * First line of the last reply read, without the code (null on timeout/EOF).
+     */
+    private ?string $lastReplyText = null;
+
+    /**
      * @param  list<string>  $recipients
      */
     public function probe(string $host, array $recipients): SmtpProbeResult
@@ -33,6 +38,9 @@ class SmtpProbe
 
         /** @var array<string, int|null> $codes */
         $codes = array_fill_keys($recipients, null);
+
+        /** @var array<string, string|null> $replies */
+        $replies = array_fill_keys($recipients, null);
 
         $this->deadline = microtime(true) + self::SESSION_DEADLINE_SECONDS;
 
@@ -96,13 +104,14 @@ class SmtpProbe
                 }
 
                 $codes[$recipient] = $this->command($socket, 'RCPT TO', "<{$recipient}>");
+                $replies[$recipient] = $this->lastReplyText;
             }
 
             $this->quit($socket);
 
-            return new SmtpProbeResult(true, $sessionOk, $failure, $codes);
+            return new SmtpProbeResult(true, $sessionOk, $failure, $codes, $replies);
         } catch (Throwable $e) {
-            return new SmtpProbeResult(true, $sessionOk, 'socket error: '.$e->getMessage(), $codes);
+            return new SmtpProbeResult(true, $sessionOk, 'socket error: '.$e->getMessage(), $codes, $replies);
         } finally {
             restore_error_handler();
             fclose($socket);
@@ -123,6 +132,8 @@ class SmtpProbe
         if (str_contains($argument, "\r") || str_contains($argument, "\n")) {
             throw new InvalidArgumentException('SMTP argument must not contain line breaks.');
         }
+
+        $this->lastReplyText = null;
 
         if ($this->deadlinePassed()) {
             return null;
@@ -154,11 +165,15 @@ class SmtpProbe
 
     /**
      * Reads a (possibly multi-line) reply and returns its code, or null on timeout/EOF.
+     * Keeps the first line's text in $lastReplyText.
      *
      * @param  resource  $socket
      */
     private function readReply($socket): ?int
     {
+        $this->lastReplyText = null;
+        $firstLine = true;
+
         while (! $this->deadlinePassed()) {
             $line = fgets($socket, 1024);
 
@@ -168,6 +183,11 @@ class SmtpProbe
 
             if (strlen($line) < 3 || ! ctype_digit(substr($line, 0, 3))) {
                 return null;
+            }
+
+            if ($firstLine) {
+                $this->lastReplyText = trim(substr($line, 4));
+                $firstLine = false;
             }
 
             if (($line[3] ?? ' ') === '-') {

@@ -24,6 +24,9 @@ class RetryCompanyDiscovery
             $company->outreach_status = OutreachStatus::Pending;
             $company->is_catch_all = null;
             $company->domain = null;
+            // Clear the attempt timestamps so the pending cooldown doesn't skip this retry.
+            $company->domain_checked_at = null;
+            $company->contact_checked_at = null;
 
             // save() emits CompanyUpdated, which also covers the deleted contacts.
             $company->save();

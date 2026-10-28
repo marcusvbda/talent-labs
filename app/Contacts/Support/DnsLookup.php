@@ -13,9 +13,26 @@ class DnsLookup
      */
     public function mxHosts(string $domain): array
     {
+        return $this->mxHostsOrNull($domain) ?? [];
+    }
+
+    /**
+     * Like mxHosts(), but null when the resolver failed (timeout, SERVFAIL) instead of answering.
+     * NXDOMAIN and "no MX" are answers and give an empty list.
+     *
+     * @return list<string>|null
+     */
+    public function mxHostsOrNull(string $domain): ?array
+    {
+        $records = $this->mxRecords($domain);
+
+        if ($records === null) {
+            return null;
+        }
+
         $hosts = [];
 
-        foreach ($this->mxRecords($domain) as $record) {
+        foreach ($records as $record) {
             if ($record['host'] !== '') {
                 $hosts[] = $record['host'];
             }
@@ -29,7 +46,7 @@ class DnsLookup
      */
     public function hasOnlyNullMx(string $domain): bool
     {
-        $records = $this->mxRecords($domain);
+        $records = $this->mxRecords($domain) ?? [];
 
         if ($records === []) {
             return false;
@@ -50,15 +67,21 @@ class DnsLookup
     }
 
     /**
-     * Raw MX records sorted by priority; null MX entries keep an empty host.
+     * Raw MX records sorted by priority; null MX entries keep an empty host. Null when the lookup failed.
      *
-     * @return list<array{host: string, pri: int}>
+     * @return list<array{host: string, pri: int}>|null
      */
-    private function mxRecords(string $domain): array
+    private function mxRecords(string $domain): ?array
     {
+        $answer = $this->lookup($domain, DNS_MX);
+
+        if ($answer === null) {
+            return null;
+        }
+
         $records = [];
 
-        foreach ($this->query($domain, DNS_MX) as $record) {
+        foreach ($answer as $record) {
             $target = is_string($record['target'] ?? null) ? $record['target'] : '';
 
             $records[] = [
@@ -77,6 +100,17 @@ class DnsLookup
      */
     private function query(string $domain, int $type): array
     {
+        return $this->lookup($domain, $type) ?? [];
+    }
+
+    /**
+     * dns_get_record() answers NXDOMAIN / no data with an empty array and only returns false
+     * (with a warning) when the resolver itself failed; that failure is reported as null.
+     *
+     * @return list<array<string, mixed>>|null
+     */
+    private function lookup(string $domain, int $type): ?array
+    {
         if (trim($domain) === '') {
             return [];
         }
@@ -86,11 +120,11 @@ class DnsLookup
         try {
             $records = dns_get_record($domain, $type);
         } catch (Throwable) {
-            return [];
+            return null;
         } finally {
             restore_error_handler();
         }
 
-        return is_array($records) ? $records : [];
+        return is_array($records) ? $records : null;
     }
 }

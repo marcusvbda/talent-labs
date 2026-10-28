@@ -46,7 +46,9 @@ class DiscoverContactsForPosting implements ShouldQueue
                 || $company->domain_status === DomainStatus::Pending
                 || $company->contact_status === ContactStatus::Pending
             ) {
-                $runDiscovery->handle($company);
+                if (! $runDiscovery->isCoolingDown($company)) {
+                    $runDiscovery->handle($company);
+                }
             } elseif (
                 $company->outreach_status === OutreachStatus::Verified
                 && JobPosting::query()->whereKey($posting->id)->needingProfile()->exists()
