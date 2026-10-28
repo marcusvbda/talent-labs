@@ -114,7 +114,7 @@ final class ApplicationTemplateRenderer
 
         $rendered = preg_replace_callback(
             '/\{\{\s*(.*?)\s*\}\}/',
-            fn(array $match): string => in_array(trim($match[1]), self::ALLOWED_VARIABLES, true)
+            fn (array $match): string => in_array(trim($match[1]), self::ALLOWED_VARIABLES, true)
                 ? (string) ($variables[trim($match[1])] ?? '')
                 : $match[0],
             $template,

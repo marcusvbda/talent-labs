@@ -75,17 +75,17 @@ Don't change code.
 
 End with a short summary:
 
--   how many divergences per category (wrong, obsolete, missing, unverifiable);
--   an objective list of what changed in the spec (`section: before -> after`);
--   unverifiable items and what's needed to verify them;
--   if nothing diverged, say so and don't edit the file.
+- how many divergences per category (wrong, obsolete, missing, unverifiable);
+- an objective list of what changed in the spec (`section: before -> after`);
+- unverifiable items and what's needed to verify them;
+- if nothing diverged, say so and don't edit the file.
 
 ## Rules
 
--   Never run git writes (`CLAUDE.md`). Leave the change in the working tree.
--   Don't read `.env` files.
--   Only edit `docs/features/$ARGUMENTS/spec.md` (never `plan.md`). If you spot a
-    bug in the code, report it to the owner; don't fix it and don't record it as
-    "expected behaviour" without flagging that it looks like a bug.
--   If the code contradicts an invariant of the spec, treat it as a spec
-    divergence **and** point out to the owner that the invariant was broken.
+- Never run git writes (`CLAUDE.md`). Leave the change in the working tree.
+- Don't read `.env` files.
+- Only edit `docs/features/$ARGUMENTS/spec.md` (never `plan.md`). If you spot a
+  bug in the code, report it to the owner; don't fix it and don't record it as
+  "expected behaviour" without flagging that it looks like a bug.
+- If the code contradicts an invariant of the spec, treat it as a spec
+  divergence **and** point out to the owner that the invariant was broken.

@@ -1,7 +1,6 @@
 import { Clock, Eye, Radio, Send } from 'lucide-react';
 import { ActivityRow } from '@/components/patterns/activity-row';
 import { CompanyLogo } from '@/components/patterns/company-logo';
-import { CountdownBar } from '@/components/patterns/countdown-bar';
 import { DarkCard } from '@/components/patterns/dark-card';
 import { DataCard } from '@/components/patterns/data-card';
 import { HeroCard } from '@/components/patterns/hero-card';
@@ -72,8 +71,7 @@ const HeroStats = () => {
 const LiveSending = () => {
     const { t } = useT();
     const format = useFormat();
-    const { job, stageIndex, subStep, queue, countdown, now, cycle } =
-        useDemoLoopState();
+    const { job, stageIndex, queue, now, cycle } = useDemoLoopState();
     const steps = DEMO_STAGES.map((stage) => ({
         key: stage,
         label: t(`sending.stage.${stage}`),

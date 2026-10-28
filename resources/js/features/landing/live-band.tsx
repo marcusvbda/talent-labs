@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { CompanyLogo } from '@/components/patterns/company-logo';
-import { CountdownBar } from '@/components/patterns/countdown-bar';
 import { LiveStepper } from '@/components/patterns/live-stepper';
 import { Card } from '@/components/ui/card';
 import { Chip } from '@/components/ui/chip';
@@ -52,16 +51,7 @@ const DarkTile = ({ label, value }: { label: string; value: number }) => {
 
 const LiveDemo = () => {
     const { t } = useT();
-    const {
-        job,
-        stageIndex,
-        subStep,
-        queue,
-        sentToday,
-        countdown,
-        now,
-        cycle,
-    } = useDemoLoopState();
+    const { job, stageIndex, queue, sentToday, cycle } = useDemoLoopState();
     const steps = DEMO_STAGES.map((stage) => ({
         key: stage,
         label: t(`sending.stage.${stage}`),

@@ -17,17 +17,17 @@ code and do not create a plan (that comes later, via `/plan-feature $ARGUMENTS`)
 
 The spec describes the feature's behaviour. There are two cases:
 
--   **New feature** (nothing implemented): everything the owner defines goes
-    into "Requirements". It is the target of `/plan-feature`.
--   **Existing feature** (already in the code): the spec body describes the
-    **current state** (filled from the code by `/update-feature-spec`), and what
-    the owner wants to **change** goes **only** into the `## Pending changes`
-    section. That way the spec never mixes "what the code does today" with "what
-    it is going to do". `/plan-feature` uses that section as its main target.
-    When every plan phase that came from it is done, `/exec-phase` folds those
-    changes into the body as implemented behaviour and removes them from the
-    section (`/update-feature-spec` remains available to reconcile the spec with
-    the code afterwards).
+- **New feature** (nothing implemented): everything the owner defines goes
+  into "Requirements". It is the target of `/plan-feature`.
+- **Existing feature** (already in the code): the spec body describes the
+  **current state** (filled from the code by `/update-feature-spec`), and what
+  the owner wants to **change** goes **only** into the `## Pending changes`
+  section. That way the spec never mixes "what the code does today" with "what
+  it is going to do". `/plan-feature` uses that section as its main target.
+  When every plan phase that came from it is done, `/exec-phase` folds those
+  changes into the body as implemented behaviour and removes them from the
+  section (`/update-feature-spec` remains available to reconcile the spec with
+  the code afterwards).
 
 ## Steps
 
@@ -145,10 +145,10 @@ Then:
 
 ## Rules
 
--   Only create/edit files inside `docs/features/$ARGUMENTS/`.
--   Never run git writes (`CLAUDE.md`).
--   Don't read `.env` files.
--   Don't read or analyse the code at this stage unless the owner asks; the spec
-    describes what the feature must be, and the comparison with the code belongs
-    to `/plan-feature`.
--   Read only this feature's folder, never the whole `docs/features/`.
+- Only create/edit files inside `docs/features/$ARGUMENTS/`.
+- Never run git writes (`CLAUDE.md`).
+- Don't read `.env` files.
+- Don't read or analyse the code at this stage unless the owner asks; the spec
+  describes what the feature must be, and the comparison with the code belongs
+  to `/plan-feature`.
+- Read only this feature's folder, never the whole `docs/features/`.

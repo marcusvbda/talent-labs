@@ -86,23 +86,23 @@ report.
 
 After the last requested phase (or a block), stop. Report:
 
--   phases done and blocked, with evidence;
--   requirements now satisfied, as far as the executed phases go;
--   non-blocking review findings left open;
--   what the owner should check manually now;
--   the commits made (hash + subject per phase) and whether each was pushed;
--   the next dependency-ready phase and the exact command to run it;
--   if the last phase of the plan ran: that the pending changes covered by the
-    plan were moved into the spec body, that `plan.md` can now be deleted by
-    the owner, and that `/update-feature-spec <feature>` is only needed to
-    reconcile the spec with the code.
+- phases done and blocked, with evidence;
+- requirements now satisfied, as far as the executed phases go;
+- non-blocking review findings left open;
+- what the owner should check manually now;
+- the commits made (hash + subject per phase) and whether each was pushed;
+- the next dependency-ready phase and the exact command to run it;
+- if the last phase of the plan ran: that the pending changes covered by the
+  plan were moved into the spec body, that `plan.md` can now be deleted by
+  the owner, and that `/update-feature-spec <feature>` is only needed to
+  reconcile the spec with the code.
 
 ## Commit rules
 
--   This command is the owner's explicit request to commit and push, and it
-    covers only the phases listed in `$ARGUMENTS`.
--   Only the orchestrator commits. Subagents never run git writes.
--   Plain `git push` of the current branch only. Never `--force` /
-    `--force-with-lease`, never branch, switch, amend, reset, stash or touch
-    other refs.
--   Never commit `.env` files or secrets.
+- This command is the owner's explicit request to commit and push, and it
+  covers only the phases listed in `$ARGUMENTS`.
+- Only the orchestrator commits. Subagents never run git writes.
+- Plain `git push` of the current branch only. Never `--force` /
+  `--force-with-lease`, never branch, switch, amend, reset, stash or touch
+  other refs.
+- Never commit `.env` files or secrets.

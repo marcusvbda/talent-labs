@@ -154,7 +154,7 @@ Blocks: Phase N… · Options: A (recommended) …, B … · Why: … · Answer:
 
 ## Global constraints (every phase)
 
--   <rules from the spec and CLAUDE.md the executor must never break>
+- <rules from the spec and CLAUDE.md the executor must never break>
 
 ## Requirement coverage
 
@@ -175,7 +175,7 @@ Origin: <P ids + text | spec x code gap>
 
 **Contract.**
 
--   <exact details>
+- <exact details>
 
 **Steps.**
 
@@ -183,8 +183,8 @@ Origin: <P ids + text | spec x code gap>
 
 **Done when.**
 
--   <observable result>
--   <command> passes
+- <observable result>
+- <command> passes
 
 **Not in this phase.** <things that belong to later phases>
 ```
@@ -194,10 +194,10 @@ related layers. Anything bigger has to be split.
 
 ## Rules
 
--   Don't change code. Only create/update `docs/features/<feature>/plan.md`; in
-    `spec.md`, only record the owner's decisions (step 5).
--   Never run git writes.
--   Don't read `.env` files (use key names from `.env.example` or config).
--   Read only this feature's folder, never the whole `docs/features/`.
--   If the code breaks an invariant of the spec, treat it as **Divergent** and
-    point it out to the owner.
+- Don't change code. Only create/update `docs/features/<feature>/plan.md`; in
+  `spec.md`, only record the owner's decisions (step 5).
+- Never run git writes.
+- Don't read `.env` files (use key names from `.env.example` or config).
+- Read only this feature's folder, never the whole `docs/features/`.
+- If the code breaks an invariant of the spec, treat it as **Divergent** and
+  point it out to the owner.
