@@ -3,7 +3,7 @@
 - **Data:** local database, 11 `sent` applications of user 2 (ids 1-11, origin
   `manual`), sent 2026-10-28 16:42-16:45 (16:42:44 to 16:44:53), after the
   Stage 2 fixes. No `queued` applications and no other statuses exist (`select
-  status, count(*) from applications group by status` returned `sent` = 11). No
+status, count(*) from applications group by status` returned `sent` = 11). No
   posting was deleted.
 - **Command:** `php artisan reports:application-audit --status=sent,queued`
   (read-only). Output:
@@ -21,15 +21,15 @@
 
 ## Summary
 
-| Flag                                       | Count | %      | Ids                |
-| ------------------------------------------ | ----- | ------ | ------------------ |
-| a · Multiple roles                         | 0     | 0.0%   | -                  |
-| b · Aggregator/thread or missing job URL   | 9     | 81.8%  | 3-11               |
-| c · Location/authorization restriction     | 1     | 9.1%   | 2                  |
-| d · Out-of-profile role/seniority          | 0     | 0.0%   | -                  |
-| e · Generic recipient                      | 11    | 100.0% | 1-11               |
-| 2+ flags                                   | 10    | 90.9%  | 2-11               |
-| No flag                                    | 0     | 0.0%   | -                  |
+| Flag                                     | Count | %      | Ids  |
+| ---------------------------------------- | ----- | ------ | ---- |
+| a · Multiple roles                       | 0     | 0.0%   | -    |
+| b · Aggregator/thread or missing job URL | 9     | 81.8%  | 3-11 |
+| c · Location/authorization restriction   | 1     | 9.1%   | 2    |
+| d · Out-of-profile role/seniority        | 0     | 0.0%   | -    |
+| e · Generic recipient                    | 11    | 100.0% | 1-11 |
+| 2+ flags                                 | 10    | 90.9%  | 2-11 |
+| No flag                                  | 0     | 0.0%   | -    |
 
 Sources: hacker_news 2 (ids 1, 2), we_work_remotely 1 (id 3), himalayas 1
 (id 4), jobicy 4 (ids 5, 6, 8, 9), remote_ok 3 (ids 7, 10, 11).
@@ -41,7 +41,7 @@ Sources: hacker_news 2 (ids 1, 2), we_work_remotely 1 (id 3), himalayas 1
   Quality & Delivery". It splits on " & ", but "Delivery" is not a role word,
   so it reads correctly as one role. Its HN header
   (`Propel Labs | Staff Full-Stack Engineer, Quality & Delivery | Remote (North
-  America hours) | Full-time | ...`) has only one role segment.
+America hours) | Full-time | ...`) has only one role segment.
 - **Origin:** source parser. `HackerNewsAdapter` (`splitRoles()`,
   `hasAmbiguousRoles()`) turns a clearly delimited multi-role comment into
   `{id}#{n}` children and marks the parent not eligible. It marks an ambiguous
@@ -82,12 +82,12 @@ Sources: hacker_news 2 (ids 1, 2), we_work_remotely 1 (id 3), himalayas 1
     - `RemoteOkAdapter` falls back to `url` when `apply_url` is missing.
     - `HimalayasAdapter` stores an `applicationLink` that is itself a
       `himalayas.app/...?utm_source=api` page.
-  `JobPosting::applicationUrl()` (`app/Models/JobPosting.php`) then returns
-  null because every candidate is in `talent.outreach.aggregator_domains`
-  (`config/talent.php`). The template drops the link line
-  (`app/Outreach/Support/ApplicationTemplateRenderer.php`). For id 3 the WWR
-  payload mentions the company's own `https://toggl.com/jobs/` in the
-  description, but the parser does not extract it.
+      `JobPosting::applicationUrl()` (`app/Models/JobPosting.php`) then returns
+      null because every candidate is in `talent.outreach.aggregator_domains`
+      (`config/talent.php`). The template drops the link line
+      (`app/Outreach/Support/ApplicationTemplateRenderer.php`). For id 3 the WWR
+      payload mentions the company's own `https://toggl.com/jobs/` in the
+      description, but the parser does not extract it.
 - **Verdict:** model limitation. These sources do not expose the company's own
   job page or ATS link. The Stage 2 behaviour (never send an aggregator link,
   drop the line) works as designed.
@@ -126,8 +126,8 @@ Sources: hacker_news 2 (ids 1, 2), we_work_remotely 1 (id 3), himalayas 1
       restriction.
     - id 1's "Remote (North America hours)" is not recorded as a timezone,
       because the pattern needs a zone token such as EST or PST.
-  These are possible false negatives of the normalization step. With
-  unfiltered preferences they would not have changed the match for user 2.
+      These are possible false negatives of the normalization step. With
+      unfiltered preferences they would not have changed the match for user 2.
 
 ## d · Out-of-profile role/seniority: 0 (0.0%)
 

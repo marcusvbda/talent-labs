@@ -11,15 +11,15 @@ the spec body is an invariant.
 
 Implemented: 2 · Partial: 1 · Divergent: 0 · Missing: 4 · Unverifiable: 0
 
-| Requirement | State | Evidence |
-| ----------- | ----- | -------- |
-| P3/P4 — audit report on real data, origin per flag, stop and show the owner | Missing | `reports:application-audit` exists (`app/Reports/ApplicationAudit.php`) but never ran on real data; P1-D2: run it on the local database (11 `sent` applications, 2026-10-28) |
-| P5 — AI runs only for postings of verified companies | Implemented | `app/Ai/Jobs/ExtractJobPostingProfileJob.php` returns early unless `company.outreach_status = verified`; `DiscoverCompanyContacts` and `DiscoverContactsForPosting` only dispatch it for verified companies |
-| P5 — contact validated **before** the posting is stored; unverified postings not stored | Missing | `app/Jobs/FetchJobsFromSource.php` upserts every fetched posting, then dispatches `DiscoverContactsForPosting` for new target-family postings |
-| P5 / P5-D1 — negative company result remembered | Partial | `companies.outreach_status` `no_domain` / `not_verifiable` is already final until `contacts:recheck` / admin retry; collection does not use it to skip postings |
-| P5-D3 — non-target role families not stored | Missing | `FetchJobsFromSource` stores them and only skips their discovery |
-| P6 — remove contact filters in the admin | Missing | `app/Filament/Resources/JobPostings/Tables/JobPostingsTable.php`: "Show not-verifiable" toggle + its default hiding in `modifyQueryUsing`, "Contact status" select filter |
-| P6 / P6-D1 — remove contact filters in the client app | Implemented | No such filter: `app/Http/Requests/Client/JobFiltersRequest.php` (q, language, seniority, remote, today, stack), `resources/js/features/jobs/job-filters.tsx` |
+| Requirement                                                                             | State       | Evidence                                                                                                                                                                                                    |
+| --------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P3/P4 — audit report on real data, origin per flag, stop and show the owner             | Missing     | `reports:application-audit` exists (`app/Reports/ApplicationAudit.php`) but never ran on real data; P1-D2: run it on the local database (11 `sent` applications, 2026-10-28)                                |
+| P5 — AI runs only for postings of verified companies                                    | Implemented | `app/Ai/Jobs/ExtractJobPostingProfileJob.php` returns early unless `company.outreach_status = verified`; `DiscoverCompanyContacts` and `DiscoverContactsForPosting` only dispatch it for verified companies |
+| P5 — contact validated **before** the posting is stored; unverified postings not stored | Missing     | `app/Jobs/FetchJobsFromSource.php` upserts every fetched posting, then dispatches `DiscoverContactsForPosting` for new target-family postings                                                               |
+| P5 / P5-D1 — negative company result remembered                                         | Partial     | `companies.outreach_status` `no_domain` / `not_verifiable` is already final until `contacts:recheck` / admin retry; collection does not use it to skip postings                                             |
+| P5-D3 — non-target role families not stored                                             | Missing     | `FetchJobsFromSource` stores them and only skips their discovery                                                                                                                                            |
+| P6 — remove contact filters in the admin                                                | Missing     | `app/Filament/Resources/JobPostings/Tables/JobPostingsTable.php`: "Show not-verifiable" toggle + its default hiding in `modifyQueryUsing`, "Contact status" select filter                                   |
+| P6 / P6-D1 — remove contact filters in the client app                                   | Implemented | No such filter: `app/Http/Requests/Client/JobFiltersRequest.php` (q, language, seniority, remote, today, stack), `resources/js/features/jobs/job-filters.tsx`                                               |
 
 Notes from the audit:
 
@@ -45,13 +45,13 @@ Notes from the audit:
 
 ## Status board
 
-| Phase | Title | Role | Depends on | Origin | Size | Status |
-| ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
-| 1 | Stage 1 audit report on real data | laravel-backend | none | P3, P4, P1-D2 | S | DONE |
-| 2 | Company discovery from fetched websites | laravel-backend | none | P5 | S | DONE |
-| 3 | Contact-first collection gate | laravel-backend | 2 | P5, P5-D1..D4 | M | DONE |
-| 4 | Remove admin contact filters | filament-admin | none | P6, P6-D1 | S | DONE |
-| 5 | Verification and report | laravel-backend | 2, 3, 4 | all | S | PENDING |
+| Phase | Title                                   | Role            | Depends on | Origin        | Size | Status  |
+| ----- | --------------------------------------- | --------------- | ---------- | ------------- | ---- | ------- |
+| 1     | Stage 1 audit report on real data       | laravel-backend | none       | P3, P4, P1-D2 | S    | DONE    |
+| 2     | Company discovery from fetched websites | laravel-backend | none       | P5            | S    | DONE    |
+| 3     | Contact-first collection gate           | laravel-backend | 2          | P5, P5-D1..D4 | M    | DONE    |
+| 4     | Remove admin contact filters            | filament-admin  | none       | P6, P6-D1     | S    | DONE    |
+| 5     | Verification and report                 | laravel-backend | 2, 3, 4    | all           | S    | PENDING |
 
 ## Owner decisions
 
@@ -109,7 +109,7 @@ when every posting is decided (recommended), B after the run on `contacts`
 - Jobs on the database queue must keep `$timeout` < 90 (`retry_after`).
 - Assumptions used by the plan (owner may overrule):
     - **A1.** "Domain verified for sending" = `companies.outreach_status =
-      verified`.
+verified`.
     - **A2.** A posting already in `job_postings` that a run sees again is
       refreshed as today (mutable columns, `last_seen_*`), without
       re-validation and without the role-family drop. Only **new** postings go
@@ -122,16 +122,16 @@ when every posting is decided (recommended), B after the run on `contacts`
 
 ## Requirement coverage
 
-| Requirement | Phases |
-| ----------- | ------ |
-| P3, P4 | 1 |
-| P5 (validate before storing, AI only after storing a verified posting) | 2, 3 |
-| P5-D1 (negative result remembered) | 3 |
-| P5-D2 (inconclusive → drop, retry later) | 3 |
-| P5-D3 (non-target families not stored) | 3 |
-| P5-D4 (validation inside the run) | 3 |
-| P6, P6-D1 | 4 |
-| Spec invariants (2.3, 2.4, 2.6, 2.8) | 3, 5 |
+| Requirement                                                            | Phases |
+| ---------------------------------------------------------------------- | ------ |
+| P3, P4                                                                 | 1      |
+| P5 (validate before storing, AI only after storing a verified posting) | 2, 3   |
+| P5-D1 (negative result remembered)                                     | 3      |
+| P5-D2 (inconclusive → drop, retry later)                               | 3      |
+| P5-D3 (non-target families not stored)                                 | 3      |
+| P5-D4 (validation inside the run)                                      | 3      |
+| P6, P6-D1                                                              | 4      |
+| Spec invariants (2.3, 2.4, 2.6, 2.8)                                   | 3, 5   |
 
 ## Phases
 
@@ -157,7 +157,7 @@ database).
 **Contract.**
 
 - Command (read-only): `php artisan reports:application-audit
-  --status=sent,queued` (flags a multi-role title/subject, b aggregator or
+--status=sent,queued` (flags a multi-role title/subject, b aggregator or
   missing job URL, c restriction incompatible with preferences, d
   role/seniority outside the profile, e generic recipient). It writes
   `storage/app/private/reports/application-audit-{Ymd-His}.csv` / `.md`
@@ -179,7 +179,7 @@ database).
 **Steps.**
 
 1. Confirm the local database still has the applications (`select status,
-   count(*) from applications group by status`); if it changed, report the
+count(*) from applications group by status`); if it changed, report the
    new numbers in the header.
 2. Run the command, read the generated `.md`/`.csv`.
 3. Write the report file; link it from spec section 3 only through
@@ -215,7 +215,7 @@ postings → both accept the raw values; old call sites behave exactly as today.
 - `app/Contacts/Actions/ResolveCompanyForPosting.php`: add
   `public function forName(string $companyName): Company` doing the current
   `Company::firstOrCreate(['normalized_name' => $this->normalize($companyName)],
-  ['name' => $companyName])`. `handle(JobPosting $posting)` calls
+['name' => $companyName])`. `handle(JobPosting $posting)` calls
   `forName($posting->company_name)` then links the posting as today.
 - `app/Contacts/Actions/ResolveCompanyDomain.php`:
   `public function handle(Company $company, array $websites = []): void`
@@ -232,7 +232,7 @@ postings → both accept the raw values; old call sites behave exactly as today.
       `$this->outreach_status === OutreachStatus::Verified` (A1);
     - `public function isClosedForSending(): bool` → `outreach_status` is
       `OutreachStatus::NoDomain` or `OutreachStatus::NotVerifiable` (P5-D1).
-    With PHPDoc in the model's style.
+      With PHPDoc in the model's style.
 
 **Steps.**
 
@@ -273,11 +273,11 @@ validation job added to the run batch).
 
 - New `app/Actions/Collection/UpsertJobPostings.php`:
   `public function handle(array $rows): void` (`@param list<array<string,
-  mixed>> $rows`). Moves from `FetchJobsFromSource` the `MUTABLE_COLUMNS`
+mixed>> $rows`). Moves from `FetchJobsFromSource` the `MUTABLE_COLUMNS`
   constant and the upsert call:
   `JobPosting::upsert($rows, ['source_id', 'external_id'], [...MUTABLE_COLUMNS,
-  'source_contacts' => DB::raw('coalesce(excluded.source_contacts,
-  job_postings.source_contacts)')])`, in chunks of 200. `company_id` is **not**
+'source_contacts' => DB::raw('coalesce(excluded.source_contacts,
+job_postings.source_contacts)')])`, in chunks of 200. `company_id` is **not**
   a mutable column (only set on insert).
 - `app/Jobs/FetchJobsFromSource.php` (`$tries = 1`, `$timeout = 120`
   unchanged). In `handle()`, after fetching `$items` keyed by external id:
@@ -295,12 +295,12 @@ validation job added to the run batch).
         - `isVerifiedForSending()` → set `company_id` on the rows, upsert,
           then `ExtractJobPostingProfileJob::dispatch($id)` for each stored new
           id (`JobPosting::query()->where('source_id', …)->whereIn('external_id',
-          …)->pluck('id')`);
+…)->pluck('id')`);
         - `isClosedForSending()` → drop (P5-D1);
         - pending and `RunCompanyDiscovery::isCoolingDown($company)` → drop
           (P5-D2);
         - otherwise → `new StoreCompanyPostings($sourceRun->id, $company->id,
-          $rows, $websites)` where `$websites` = distinct non-null
+$rows, $websites)` where `$websites` = distinct non-null
           `companyWebsite` of the group; add it with
           `$this->batch()->add([$job])` (P5-D4); if `$this->batch()` is null,
           `dispatch($job)->onQueue('collection')`.
@@ -311,7 +311,7 @@ validation job added to the run batch).
 - New `app/Jobs/StoreCompanyPostings.php` (`Batchable`, `Queueable`,
   `$tries = 1`, `$timeout = 75`). Constructor
   `(public int $sourceRunId, public int $companyId, public array $rows, public
-  array $websites)` — plain arrays only (`$rows` already JSON-encoded where the
+array $websites)` — plain arrays only (`$rows` already JSON-encoded where the
   upsert needs it). Middleware:
   `[(new WithoutOverlapping((string) $this->companyId))->releaseAfter(15)->expireAfter(120)]`
   so two groups of the same company don't probe in parallel (assumption; if
@@ -327,11 +327,11 @@ validation job added to the run batch).
        `SourceRun::query()->lockForUpdate()->find(...)`, add the count to
        `jobs_new` and `save()` (fires the existing `collection_run_{id}`
        realtime hook), then `RealtimeEvent::dispatch('job_postings',
-       'JobPostingsUpdated', ['source_run_id' => $this->sourceRunId])` once
+'JobPostingsUpdated', ['source_run_id' => $this->sourceRunId])` once
        (catch `BroadcastException` → `report()`).
     4. Otherwise drop (nothing stored).
     5. Any `Throwable` → `Log::warning('StoreCompanyPostings failed', [...ids,
-       'exception' => $e])`, never rethrown.
+'exception' => $e])`, never rethrown.
 - `FinalizeCollectionRun` is unchanged: the batch `finally` already runs after
   added jobs, and it aggregates `jobs_new` from source runs.
 - `DiscoverContactsForPosting` stays (used by `contacts:backfill`); collection
@@ -390,7 +390,7 @@ default hiding and neither filter.
 
 - File: `app/Filament/Resources/JobPostings/Tables/JobPostingsTable.php`.
 - `modifyQueryUsing` keeps only `->with(['collectionRun', 'source',
-  'company'])` (drop the `->when(! show_not_verifiable …)` clause and the
+'company'])` (drop the `->when(! show_not_verifiable …)` clause and the
   then-unused `HasTable` parameter/import).
 - Remove `Filter::make('show_not_verifiable')` and
   `SelectFilter::make('contact_status')`.
@@ -416,7 +416,9 @@ default hiding and neither filter.
 
 ### Phase 5 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: no `->poll(`, `wire:poll` or `pollingInterval` in `app`/`resources`; no Spanish keys; no git writes in code. Changed files pass pint, phpstan (1G, 0 errors, whole `app`), `yarn run types:check`, and `php artisan test --compact` (33/33). The full `composer ci:check` is **not green because of files outside this plan**: pint fails on `app/Outreach/Support/ApplicationTemplateRenderer.php` and `tests/TestCase.php`; `yarn run check` fails on `.claude/commands/*.md`, `docs/features/README.md`, `lang/en.json`, `lang/pt.json`, `resources/js/data/fixtures/catalog/profiles.ts` (all untouched here; the test file may not be edited). Requirement walk: P5 gate `app/Jobs/FetchJobsFromSource.php` (target families l.70, verified l.118, closed/cooling l.128, deferred job l.137, batch add l.178); `app/Jobs/StoreCompanyPostings.php` (probe l.80, upsert l.113, AI jobs l.122, one realtime event l.139); AI only for verified companies (`ExtractJobPostingProfileJob` early return); P5-D1 `Company::isClosedForSending()`; P6/P6-D1 `JobPostingsTable` has no contact filters and the client app never had one. P5/P6 and decisions folded into spec sections 1, 2.3, 2.4, 2.5, 2.8; Stage 1 (P3, P4) stays pending until the owner reads `assets/application-audit-report.md`.
+
 Role: laravel-backend · Depends on: 2, 3, 4 · Covers: all · Size: S
 Origin: spec x code gap (plan close-out)
 

@@ -30,10 +30,14 @@ Flow:
    scheduler (`collection:tick`, every minute).
 2. One `FetchJobsFromSource` job per active source runs on the `collection`
    queue as a bus batch.
-3. Each job calls the source's adapter, upserts postings, classifies the role
-   family, updates counters and broadcasts realtime events.
-4. When the batch finishes the run is finalized (status, counters,
-   notification, `JobsCollected` client event).
+3. Each job calls the source's adapter and refreshes the postings it already
+   knows. A **new** posting is stored only if its role family is a target one
+   and its company has a domain verified for sending; companies with no
+   verdict yet are validated by their own job inside the same batch, and only
+   then are their postings stored (see 2.4 and 2.8). The AI profile
+   extraction is queued for the postings that get stored.
+4. When the batch finishes (including those per-company jobs) the run is
+   finalized (status, counters, notification, `JobsCollected` client event).
 
 ## 2. Requirements
 
@@ -61,8 +65,8 @@ Flow:
 
 - Contract `App\Collection\Contracts\JobSourceAdapter::fetch(Source): iterable<JobPostingData>`.
 - `JobPostingData` (readonly): `externalId, title, companyName, location,
-  isRemote, department, employmentType, url, applyUrl, descriptionHtml,
-  descriptionText, publishedAt, raw, companyWebsite, sourceContacts`.
+isRemote, department, employmentType, url, applyUrl, descriptionHtml,
+descriptionText, publishedAt, raw, companyWebsite, sourceContacts`.
 - `SourceAdapter` enum (13): `greenhouse`, `lever`, `ashby` (company ATS,
   require `identifier`) and `remotive`, `remote_ok`, `arbeitnow`, `jobicy`,
   `himalayas`, `we_work_remotely`, `working_nomads`, `hacker_news`,
@@ -72,22 +76,22 @@ Flow:
   hiring", …; ATS adapters use their own label) and the adapter class.
 - Supported `settings` keys per adapter:
 
-    | Adapter                       | Keys                                                                                  |
-    | ----------------------------- | ------------------------------------------------------------------------------------- |
-    | greenhouse / lever / ashby    | `locations` (comma list, keep postings whose location contains any term; empty = all), `website` |
-    | remotive                      | `category`, `search`, `limit`                                                         |
-    | remote_ok                     | `tags` (comma list, max 10, one request per tag; empty = whole feed)                  |
-    | arbeitnow                     | `pages` (1–5, default 1), `remote` (`"true"` = remote only)                           |
-    | jobicy                        | `industries` (comma list, max 10), `count`, `geo`, `tag`                              |
-    | himalayas                     | `queries`, `pages` (1–5), `country`, `worldwide`, `seniority`                         |
-    | we_work_remotely              | `categories` (feed slugs; default category when empty)                                |
-    | working_nomads                | `categories` (matched against the category name)                                      |
-    | hacker_news                   | none                                                                                  |
-    | adzuna                        | `country` (default `br`), `queries`, `pages` (1–3); needs `ADZUNA_APP_ID` / `ADZUNA_APP_KEY` (`config/services.php`) |
-    | y_combinator                  | `roles` (`/jobs/role` slugs; default `software-engineer, product-manager, support`)   |
+    | Adapter                    | Keys                                                                                                                 |
+    | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+    | greenhouse / lever / ashby | `locations` (comma list, keep postings whose location contains any term; empty = all), `website`                     |
+    | remotive                   | `category`, `search`, `limit`                                                                                        |
+    | remote_ok                  | `tags` (comma list, max 10, one request per tag; empty = whole feed)                                                 |
+    | arbeitnow                  | `pages` (1–5, default 1), `remote` (`"true"` = remote only)                                                          |
+    | jobicy                     | `industries` (comma list, max 10), `count`, `geo`, `tag`                                                             |
+    | himalayas                  | `queries`, `pages` (1–5), `country`, `worldwide`, `seniority`                                                        |
+    | we_work_remotely           | `categories` (feed slugs; default category when empty)                                                               |
+    | working_nomads             | `categories` (matched against the category name)                                                                     |
+    | hacker_news                | none                                                                                                                 |
+    | adzuna                     | `country` (default `br`), `queries`, `pages` (1–3); needs `ADZUNA_APP_ID` / `ADZUNA_APP_KEY` (`config/services.php`) |
+    | y_combinator               | `roles` (`/jobs/role` slugs; default `software-engineer, product-manager, support`)                                  |
 
 - Shared HTTP (`InteractsWithJobBoardApi`): `Http::timeout(20)->retry(2, 500)
-  ->acceptJson()->withUserAgent('talent-labs/0.1 (local)')`, throws on
+->acceptJson()->withUserAgent('talent-labs/0.1 (local)')`, throws on
   non-2xx. Multi-request adapters are capped at 10 requests per run, pause
   250 ms between requests, and stop on HTTP 429 keeping what was collected; a
   429 before anything was collected fails the source run.
@@ -95,12 +99,12 @@ Flow:
   item. `companyName` comes from the payload.
 - `JobPostingData` also carries a trailing `ineligibleReason` (nullable).
   `hacker_news` posts one role per posting: when a comment has 2+ role-like
-  header segments, title parts separated by ` · `, ` • ` or `;`, or 2+ title-
+  header segments, title parts separated by `·`, `•` or `;`, or 2+ title-
   shaped role lines in the body, the adapter yields one posting per role
   (`external_id` = `{id}#{n}`, n 1-based, same `raw`, description and
   contacts) plus the original comment with `ineligibleReason` "Split into one
-  posting per role.". When the title only looks multi-role (` and `, ` & `,
-  ` / `, `, ` between role nouns) the single posting is marked "Multiple roles
+  posting per role.". When the title only looks multi-role (`and`, `&`,
+  `/`, `, ` between role nouns) the single posting is marked "Multiple roles
   in one post; could not split reliably.". Otherwise it is one normal posting.
 
 ### 2.3 Collection runs
@@ -120,11 +124,20 @@ Flow:
 - `FetchJobsFromSource` (`$tries = 1`, `$timeout = 120`): skips if the source
   run is missing or the batch was cancelled; marks the source run `running`;
   fetches; on success sets `completed`, `jobs_fetched` (distinct external ids),
-  `jobs_new`, `finished_at`, and updates `sources.last_run_at` /
+  `jobs_new` (new postings stored right away; `StoreCompanyPostings` adds the
+  ones it stores later), `finished_at`, and updates `sources.last_run_at` /
   `last_run_status`. Any exception is caught: source run → `failed` with
   `error_message` truncated to 1000 chars, source `last_run_status = failed`,
   a warning is logged, never rethrown. `failed()` covers timeouts/killed
   workers the same way.
+- `StoreCompanyPostings` (`$tries = 6`, `$timeout = 75`, fail on timeout,
+  batched, overlap-protected per company): added to the run's batch by
+  `FetchJobsFromSource` for a company with no verdict. It runs
+  `RunCompanyDiscovery` with the fetched websites when the company is still
+  pending and not cooling down; if the company is then verified it upserts
+  the postings, queues their AI profile extraction, adds the count to the
+  source run's `jobs_new` and broadcasts `JobPostingsUpdated` once. Otherwise
+  the postings are dropped. Any exception is logged, never rethrown.
 - `FinalizeCollectionRun` (idempotent): aggregates counters from source runs;
   status = `completed` if no source failed, `failed` if none succeeded,
   otherwise `partial`; sets `finished_at`; dispatches the `JobsCollected`
@@ -165,10 +178,21 @@ Flow:
   (`tags`, `jobIndustry`, `category`, `category_name` in `raw`) as a fallback
   only when the title has a generic engineering noun. Exclusion keywords
   (sales, marketing, recruiting, designer, …) win and yield null.
-- After a successful upsert, `JobPostingsUpdated` is broadcast once per source
-  run on `job_postings` (never once per posting). Contact discovery
-  (`DiscoverContactsForPosting`) is dispatched only for **new** postings whose
-  `role_family` is in `talent.collection.target_role_families` (see 2.8).
+- **Contact-first storage.** Postings already stored for the source are
+  refreshed as above (no re-validation). A **new** posting (written by
+  `UpsertJobPostings`) is stored only when its `role_family` is in
+  `talent.collection.target_role_families` (null and other families are not
+  stored) and its company (`ResolveCompanyForPosting::forName`, grouped by
+  normalized name) has `outreach_status` `verified`; the posting then gets its
+  `company_id` and an `ExtractJobPostingProfileJob`. A company `no_domain` or
+  `not_verifiable` is final: its new postings are dropped without probing. A
+  `pending` company inside the 6-hour cooldown drops them too; otherwise they
+  go to a `StoreCompanyPostings` job (see 2.3). Dropped postings are not kept
+  anywhere and are simply new again on a later run that sees them.
+  Postings stored before this rule are left as they are.
+- After the upsert, `JobPostingsUpdated` is broadcast once per source run on
+  `job_postings`, and once more by each `StoreCompanyPostings` that stores
+  postings (never once per posting).
 - `ineligible_reason` (nullable string): a posting with a reason never
   reaches the client pool (`MatchingJobPostings::forUser()` requires it null).
 - `restrictions` (jsonb list of `{kind, value}`, default `[]`) is detected at
@@ -213,9 +237,8 @@ Flow:
   by run (newest first), sorted by `published_at` desc; columns title,
   company, remote, contact status, role, location, adapter, published at;
   filters: run (last 50), source, adapter, role family (incl. "Other"),
-  "Today's runs only", "Show not-verifiable" (off by default: hides postings
-  whose company outreach status is not verifiable) and contact status; row
-  actions View and "Open posting". View page shows all fields, "Not eligible"
+  "Today's runs only" (no contact filters; every stored posting is listed);
+  row actions View and "Open posting". View page shows all fields, "Not eligible"
   (the `ineligible_reason`, hidden when null), "Restrictions" (badges
   `kind: value`, hidden when empty), source contacts (labelled "not used as
   application recipients") and the description.
@@ -223,19 +246,19 @@ Flow:
 
 ### 2.6 Realtime channels (public, ids only)
 
-| Channel               | Event                       | Emitted by                                     |
-| --------------------- | --------------------------- | ---------------------------------------------- |
-| `collection_runs`     | `CollectionRunUpdated`      | `CollectionRun` saved/deleted                  |
-| `collection_run_{id}` | `CollectionRunUpdated`      | that run or any of its `SourceRun`s saved      |
-| `job_postings`        | `JobPostingsUpdated`        | `FetchJobsFromSource`, once per source run     |
-| `sources`             | `SourceUpdated`             | `Source` saved/deleted                         |
-| `collection_schedule` | `CollectionScheduleUpdated` | `CollectionSchedule` saved/deleted             |
-| `jobs`                | `jobs.collected`            | `FinalizeCollectionRun` (client side)          |
+| Channel               | Event                       | Emitted by                                 |
+| --------------------- | --------------------------- | ------------------------------------------ |
+| `collection_runs`     | `CollectionRunUpdated`      | `CollectionRun` saved/deleted              |
+| `collection_run_{id}` | `CollectionRunUpdated`      | that run or any of its `SourceRun`s saved  |
+| `job_postings`        | `JobPostingsUpdated`        | `FetchJobsFromSource`, once per source run |
+| `sources`             | `SourceUpdated`             | `Source` saved/deleted                     |
+| `collection_schedule` | `CollectionScheduleUpdated` | `CollectionSchedule` saved/deleted         |
+| `jobs`                | `jobs.collected`            | `FinalizeCollectionRun` (client side)      |
 
 ### 2.7 Application quality
 
 - **Audit** (`php artisan reports:application-audit {--status=sent,queued}
-  {--user=} {--json}`, read-only): audits applications and writes
+{--user=} {--json}`, read-only): audits applications and writes
   `storage/app/private/reports/application-audit-{Ymd-His}.csv` and `.md`
   (never committed), printing the summary (`--json` prints JSON). Heuristic
   flags per application: a multi-role title/subject, b aggregator or missing
@@ -308,7 +331,7 @@ Flow:
   terminal widget and the client app. A cancelled application keeps blocking
   that company for the user (unique `(user_id, company_id)`).
 - **Cancel flagged queued applications** (`php artisan
-  applications:cancel-flagged {--ids=} {--force}`): without `--ids` it is a
+applications:cancel-flagged {--ids=} {--force}`): without `--ids` it is a
   dry run listing queued applications with 1+ audit flag and their ids.
   `--ids=1,2,3` requires `--force` ("Pass --force to cancel."); it then
   cancels, in a transaction with row locks, only the ids still `queued`
@@ -318,8 +341,17 @@ Flow:
 
 ### 2.8 Company contact discovery
 
+- Collection validates the company before storing a posting (see 2.4):
+  `FetchJobsFromSource` resolves the company with
+  `ResolveCompanyForPosting::forName` and `StoreCompanyPostings` runs
+  `RunCompanyDiscovery`, passing the fetched `company_website` values to
+  `ResolveCompanyDomain`, which tries them before the stored ones. A company
+  is "verified for sending" when `outreach_status` is `verified`
+  (`Company::isVerifiedForSending()`), "closed" when `no_domain` or
+  `not_verifiable` (`isClosedForSending()`).
 - `DiscoverContactsForPosting` (queue `contacts`, `$tries = 1`, `$timeout = 75`)
-  finds or creates the `Company` of a new target posting
+  is no longer dispatched by collection (used by `contacts:backfill`). It
+  finds or creates the `Company` of a stored target posting
   (`ResolveCompanyForPosting`: normalized name, legal suffixes such as inc,
   llc, gmbh stripped) and links the posting. It runs `RunCompanyDiscovery` when
   the company is new or its domain or contact status is `pending` (and not
@@ -352,7 +384,7 @@ Flow:
   **Inconclusive** when there was no connection or session, no reply, a
   reply that is neither 2xx nor 5xx (4xx), an enhanced status 5.7.x, or text
   matching `spamhaus|blocked|blacklist|blocklist|policy|reputation|dnsbl|not
-  allowed`.
+allowed`.
 - **Inconclusive probe:** nothing is stored and `contact_status` /
   `outreach_status` stay `pending`. The first one stamps `contact_checked_at`
   (the clock); a pending company is not probed again for 6 hours
@@ -415,27 +447,11 @@ None.
   (section 2.7). The final aggregator domain list is the one in
   `talent.outreach.aggregator_domains`; it was not confirmed against real
   data because no Stage 1 report has been produced yet.
-- Stage 3 (P5–P6), gaps not stated by the owner yet:
-    - For how long is a company's remembered negative result kept before it
-      is probed again? (Decided: it is remembered, see P5.)
-    - What counts as "domain verified for sending": `outreach_status` =
-      `verified` only (at least one `smtp_verified` contact), so catch-all
-      domains and inconclusive probes are excluded?
-    - Inconclusive probes (current 6-hour cooldown and 7-day give-up, section
-      2.8): how should they behave when the posting is not stored yet?
-    - Does validation apply only to postings in
-      `talent.collection.target_role_families`, or to every posting? Postings
-      outside the target families are stored today.
-    - Postings already in the database that were stored without validation
-      (cleaning them up would be a destructive data operation, needs explicit
-      owner confirmation), and existing postings seen again by a run
-      (re-validate or not).
-    - The collection job limits (`FetchJobsFromSource` `$timeout = 120`, one SMTP
-      session up to 45 s per company) do not fit inline validation; the
-      queue/job structure is a decision for the plan.
-    - Which client-side filter is meant by "filter by validated contact"; the
-      spec body only lists the admin "Show not-verifiable" and "contact status"
-      filters.
+- Stage 3 (P5–P6) gaps, resolved in `/plan-feature` on 2026-10-28 (see the
+  P5/P6 decisions under `## Pending changes`). Still open: postings already in
+  the database that were stored without validation are left as they are;
+  cleaning them up would be a destructive data operation and needs an explicit
+  owner request.
 
 ## Pending changes
 
@@ -450,7 +466,9 @@ running the audit on real data.
 - **P3.** For each flag, state where it originates in the pipeline (source
   parser, normalization, match, eligibility, template) and whether it is a bug
   or a limitation of the model.
-- **P4.** Stop after Stage 1 and show the report to the owner.
+- **P4.** Stop after Stage 1 and show the report to the owner. (The report was
+  produced on 2026-10-28 in `assets/application-audit-report.md`; these items
+  move into the body once the owner has seen it.)
 
 Decisions:
 
@@ -461,29 +479,11 @@ Decisions:
   when real data exists.)
 - **P-D3.** Stage 2 does not wait for the approval of the Stage 1 report. The
   Stage 1 report is still to be produced and shown to the owner.
-
-### Stage 3 — Validate the contact before storing the posting
-
-Context (owner): the feature is poorly optimized for production. Today every
-posting is collected and stored, then processed with AI, and only afterwards
-are the company's contacts mined. Many postings never get a confirmed
-contact, so they were processed with AI for nothing (wasted tokens) and they
-fill the database with junk: postings that are useless to the end client.
-
-- **P5.** Change the order of the flow. During collection, **before a posting
-  is stored in the database**, the company's contact is validated. Only if the
-  company has a domain verified for sending is the posting processed with AI
-  and stored, ready to be used. A posting whose company has no domain verified
-  for sending is not processed with AI and is not stored. The owner accepts
-  that discovery becomes slower in exchange for not spending AI tokens on
-  unusable postings and not filling the database with useless postings. When
-  a posting is dropped because its company is not verified, the company's
-  negative result is remembered so later runs do not probe it again (for how
-  long is still open).
-- **P6.** Remove the filters by validated / not-validated contact, both in the
-  admin and in the client app. Technically, a posting that is in the database
-  and available has already been validated and is ready for "application", so
-  the filter no longer has a purpose.
+- **P1-D2.** (2026-10-28, replaces the dump in P1-D1) The audit runs on the
+  local database as it is: 11 `sent` applications of user 2, sent on
+  2026-10-28 after the Stage 2 fixes. The report therefore measures whether
+  the Stage 2 fixes hold, not the original poor applications, and states that
+  the sample is small.
 
 ### Out of scope for now
 
