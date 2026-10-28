@@ -2,20 +2,23 @@
 
 namespace App\Jobs;
 
+use App\Actions\Collection\UpsertJobPostings;
+use App\Ai\Jobs\ExtractJobPostingProfileJob;
 use App\Collection\Data\JobPostingData;
 use App\Collection\Data\SourceContactData;
 use App\Collection\Support\PostingRestrictions;
 use App\Collection\Support\PostingTitle;
 use App\Collection\Support\RoleClassifier;
-use App\Contacts\Jobs\DiscoverContactsForPosting;
+use App\Contacts\Actions\ResolveCompanyForPosting;
+use App\Contacts\Actions\RunCompanyDiscovery;
 use App\Enums\SourceRunStatus;
 use App\Models\JobPosting;
 use App\Models\SourceRun;
+use Carbon\CarbonInterface;
 use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Marcusvbda\FilamentRealtimeDriver\RealtimeEvent;
@@ -36,17 +39,6 @@ class FetchJobsFromSource implements ShouldQueue
      * `employment_type`): one oversized value would make the whole upsert chunk fail.
      */
     private const MAX_STRING = 255;
-
-    /**
-     * Columns refreshed when a posting already exists. Never `collection_run_id`,
-     * `first_seen_at` or `created_at`: those belong to the run that first found it.
-     * `source_contacts` is merged separately in the upsert so a run without contacts keeps them.
-     */
-    private const MUTABLE_COLUMNS = [
-        'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'role_family',
-        'ineligible_reason', 'restrictions', 'url', 'apply_url', 'company_website', 'description_html', 'description_text', 'published_at', 'raw',
-        'last_seen_run_id', 'last_seen_at', 'updated_at',
-    ];
 
     public function __construct(public int $sourceRunId) {}
 
@@ -73,9 +65,12 @@ class FetchJobsFromSource implements ShouldQueue
                 $items[$item->externalId] = $item;
             }
 
-            $jobsNew = 0;
-            $newExternalIds = [];
             $classifier = app(RoleClassifier::class);
+            $upsert = app(UpsertJobPostings::class);
+            $targetFamilies = config('talent.collection.target_role_families');
+
+            /** @var array<string, list<array{item: JobPostingData, row: array<string, mixed>}>> $newByCompany */
+            $newByCompany = [];
 
             foreach (array_chunk($items, self::CHUNK_SIZE, true) as $chunk) {
                 $existing = JobPosting::query()
@@ -84,48 +79,62 @@ class FetchJobsFromSource implements ShouldQueue
                     ->pluck('title', 'external_id')
                     ->all();
 
-                $chunkNewIds = array_diff(array_map('strval', array_keys($chunk)), array_map('strval', array_keys($existing)));
-                $jobsNew += count($chunkNewIds);
-                array_push($newExternalIds, ...$chunkNewIds);
-
                 $now = now();
+                $existingRows = [];
 
-                $rows = array_map(fn (JobPostingData $item): array => [
-                    'source_id' => $source->id,
-                    'collection_run_id' => $sourceRun->collection_run_id,
-                    'last_seen_run_id' => $sourceRun->collection_run_id,
-                    'external_id' => $item->externalId,
-                    'title' => mb_substr($this->title($item, $existing), 0, self::MAX_STRING),
-                    'company_name' => mb_substr($item->companyName, 0, self::MAX_STRING),
-                    'location' => $this->fit($item->location),
-                    'is_remote' => $item->isRemote,
-                    'department' => $this->fit($item->department),
-                    'employment_type' => $this->fit($item->employmentType),
-                    'role_family' => $classifier->classify($item->title, $this->tags($item))?->value,
-                    'ineligible_reason' => $this->fit($item->ineligibleReason),
-                    'restrictions' => json_encode(PostingRestrictions::detect($item->title, $item->location, $item->descriptionText)),
-                    'url' => $item->url,
-                    'apply_url' => $item->applyUrl,
-                    'company_website' => $item->companyWebsite,
-                    'source_contacts' => $item->sourceContacts === []
-                        ? null
-                        : json_encode(array_map(fn (SourceContactData $c): array => $c->toArray(), $item->sourceContacts)),
-                    'description_html' => $item->descriptionHtml,
-                    'description_text' => $item->descriptionText,
-                    'published_at' => $item->publishedAt?->setTimezone(config('app.timezone')),
-                    // Query-builder upserts skip Eloquent casts.
-                    'raw' => json_encode($item->raw),
-                    'first_seen_at' => $now,
-                    'last_seen_at' => $now,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ], array_values($chunk));
+                foreach ($chunk as $item) {
+                    $row = $this->row($item, $existing, $sourceRun, $classifier, $now);
 
-                JobPosting::upsert($rows, ['source_id', 'external_id'], [
-                    ...self::MUTABLE_COLUMNS,
-                    // A run that brings no contacts must not wipe the ones already stored.
-                    'source_contacts' => DB::raw('coalesce(excluded.source_contacts, job_postings.source_contacts)'),
-                ]);
+                    if (array_key_exists($item->externalId, $existing)) {
+                        $existingRows[] = $row;
+
+                        continue;
+                    }
+
+                    // New postings outside the target role families are never stored.
+                    if ($row['role_family'] === null || ! in_array($row['role_family'], $targetFamilies, true)) {
+                        continue;
+                    }
+
+                    // Grouped by the (truncated) stored name, the one the company is resolved from.
+                    $newByCompany[ResolveCompanyForPosting::normalize($row['company_name'])][] = ['item' => $item, 'row' => $row];
+                }
+
+                // Known postings are refreshed as before, whatever their company's state.
+                $upsert->handle($existingRows);
+            }
+
+            $jobsNew = 0;
+            $storedExternalIds = [];
+            $deferred = [];
+            $resolveCompany = app(ResolveCompanyForPosting::class);
+            $discovery = app(RunCompanyDiscovery::class);
+
+            // A new posting is stored only once its company is verified for sending.
+            foreach ($newByCompany as $group) {
+                $company = $resolveCompany->forName($group[0]['row']['company_name']);
+                $rows = array_column($group, 'row');
+
+                if ($company->isVerifiedForSending()) {
+                    $rows = array_map(fn (array $row): array => [...$row, 'company_id' => $company->id], $rows);
+                    $upsert->handle($rows);
+
+                    $jobsNew += count($rows);
+                    array_push($storedExternalIds, ...array_column($rows, 'external_id'));
+
+                    continue;
+                }
+
+                if ($company->isClosedForSending() || $discovery->isCoolingDown($company)) {
+                    continue;
+                }
+
+                $websites = array_values(array_unique(array_filter(
+                    array_map(fn (array $entry): ?string => $entry['item']->companyWebsite, $group),
+                    fn (?string $website): bool => $website !== null && $website !== '',
+                )));
+
+                $deferred[] = new StoreCompanyPostings($sourceRun->id, $company->id, $rows, $websites);
             }
 
             $sourceRun->status = SourceRunStatus::Completed;
@@ -150,19 +159,73 @@ class FetchJobsFromSource implements ShouldQueue
             report($e);
         }
 
-        // Only target-family postings trigger contact discovery; "other" and unclassified ones are stored but skipped.
         try {
-            foreach (array_chunk($newExternalIds, self::CHUNK_SIZE) as $chunk) {
+            foreach (array_chunk($storedExternalIds, self::CHUNK_SIZE) as $chunk) {
                 JobPosting::query()
                     ->where('source_id', $source->id)
-                    ->whereIn('external_id', $chunk)
-                    ->whereIn('role_family', config('talent.collection.target_role_families'))
+                    ->whereIn('external_id', array_map('strval', $chunk))
                     ->pluck('id')
-                    ->each(fn (int $id) => DiscoverContactsForPosting::dispatch($id));
+                    ->each(fn (int $id) => ExtractJobPostingProfileJob::dispatch($id));
             }
         } catch (Throwable $e) {
             report($e);
         }
+
+        // Queued only after the source run is saved, so their jobs_new increments are never overwritten.
+        // Added to the run's batch, its finally callback waits for them.
+        try {
+            foreach ($deferred as $job) {
+                $batch = $this->batch();
+
+                if ($batch !== null) {
+                    $batch->add([$job]);
+                } else {
+                    dispatch($job)->onQueue('collection');
+                }
+            }
+        } catch (Throwable $e) {
+            report($e);
+        }
+    }
+
+    /**
+     * The posting in column form, shared by the refresh of known postings and the storage of new ones.
+     *
+     * @param  array<string, string>  $existing  title by external id
+     * @return array<string, mixed>
+     */
+    private function row(JobPostingData $item, array $existing, SourceRun $sourceRun, RoleClassifier $classifier, CarbonInterface $now): array
+    {
+        return [
+            'source_id' => $sourceRun->source_id,
+            'collection_run_id' => $sourceRun->collection_run_id,
+            'last_seen_run_id' => $sourceRun->collection_run_id,
+            'external_id' => $item->externalId,
+            'title' => mb_substr($this->title($item, $existing), 0, self::MAX_STRING),
+            'company_name' => mb_substr($item->companyName, 0, self::MAX_STRING),
+            'location' => $this->fit($item->location),
+            'is_remote' => $item->isRemote,
+            'department' => $this->fit($item->department),
+            'employment_type' => $this->fit($item->employmentType),
+            'role_family' => $classifier->classify($item->title, $this->tags($item))?->value,
+            'ineligible_reason' => $this->fit($item->ineligibleReason),
+            'restrictions' => json_encode(PostingRestrictions::detect($item->title, $item->location, $item->descriptionText)),
+            'url' => $item->url,
+            'apply_url' => $item->applyUrl,
+            'company_website' => $item->companyWebsite,
+            'source_contacts' => $item->sourceContacts === []
+                ? null
+                : json_encode(array_map(fn (SourceContactData $c): array => $c->toArray(), $item->sourceContacts)),
+            'description_html' => $item->descriptionHtml,
+            'description_text' => $item->descriptionText,
+            'published_at' => $item->publishedAt?->setTimezone(config('app.timezone')),
+            // Query-builder upserts skip Eloquent casts.
+            'raw' => json_encode($item->raw),
+            'first_seen_at' => $now,
+            'last_seen_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
     }
 
     /**

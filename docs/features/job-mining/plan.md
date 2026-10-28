@@ -49,7 +49,7 @@ Notes from the audit:
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | Stage 1 audit report on real data | laravel-backend | none | P3, P4, P1-D2 | S | DONE |
 | 2 | Company discovery from fetched websites | laravel-backend | none | P5 | S | DONE |
-| 3 | Contact-first collection gate | laravel-backend | 2 | P5, P5-D1..D4 | M | PENDING |
+| 3 | Contact-first collection gate | laravel-backend | 2 | P5, P5-D1..D4 | M | DONE |
 | 4 | Remove admin contact filters | filament-admin | none | P6, P6-D1 | S | DONE |
 | 5 | Verification and report | laravel-backend | 2, 3, 4 | all | S | PENDING |
 
@@ -251,7 +251,8 @@ postings → both accept the raw values; old call sites behave exactly as today.
 
 ### Phase 3 — Contact-first collection gate
 
-Status: PENDING
+Status: DONE
+Evidence: phpstan (1G) 0 errors on `app`, `php artisan test --compact` 33/33, pint clean on the changed files; code-reviewer APPROVED. `collection:run` smoke (step 6) not run — left to the owner (see Phase 5 checklist). Deviations from the contract: deferred `StoreCompanyPostings` jobs are added to the batch after the source run is saved (avoids a `jobs_new` overwrite race); grouping uses the 255-char truncated company name; `StoreCompanyPostings` has `$tries = 6` (a `WithoutOverlapping` release consumes an attempt on the database queue) and `$failOnTimeout = true`.
 Role: laravel-backend · Depends on: 2 · Covers: P5, P5-D1, P5-D2, P5-D3,
 P5-D4 · Size: M
 Origin: P5 "Only if the company has a domain verified for sending is the
