@@ -30,7 +30,7 @@ stack order on the job card and in the detail.
 | 2     | Contract, fixtures and "N% match" chip on Jobs rows       | inertia-frontend | 1          | R1, R4             | M    | DONE    |
 | 3     | Match breakdown in the job detail sheet                   | inertia-frontend | 2          | R2, R4             | S    | DONE    |
 | 4     | "Best match" sort control on the Jobs list                | inertia-frontend | 2          | R3, R6             | S    | DONE    |
-| 5     | Verification and report                                   | qa-tester        | 1–4        | all                | S    | PENDING |
+| 5     | Verification and report                                   | qa-tester        | 1–4        | all                | S    | DONE    |
 
 ## Owner decisions
 
@@ -417,7 +417,8 @@ filter bar sets `sort`. The URL carries `sort=match`, and the default
 
 ### Phase 5 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn check` + `tsc` pass and `php artisan test --compact` 33/33 passed. `composer ci:check` still stops at `lint:check` (pint: `app/Providers/Filament/AdminPanelProvider.php`, `config/filament.php`) and `composer types:check` reports 1 error (`database/seeders/SourceSeeder.php:43`); all three files are untouched by this feature, the failures predate it (noted in Phase 1) and were left alone as out of scope. Greps clean: the only `refetchInterval` hit is the "forbidden" comment in `resources/js/data/query-client.ts`; the 32 `jobs.match.*`/`jobs.sort.*` keys exist in `lang/en.json` and `lang/pt.json` only (no Spanish); no change to `MatchingJobPostings.php`, `QueueRandomApplications.php`, migrations or `composer.json`/`package.json` across phases 1–4. Walkthrough on the local DB inside a rolled-back transaction (prefs: stack react/typescript/vue, seniority senior/mid, title "frontend engineer", remote_only): posting 1 SQL score 83 = hand score (50·2/3 + 25 + 15 + 10 = 83.33), breakdown (stack partial 2/3 missing vue, seniority met, location remote, title met) agrees; pool total identical under `sort=match` and `newest`; empty preferences give score 0 and `match: null`. R8 (live refresh via `jobs.collected` and preference-save invalidation) is verified in code only, not in a browser.
 Role: qa-tester · Depends on: 1–4 · Covers: all · Size: S
 Origin: spec x code gap
 
