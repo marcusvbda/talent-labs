@@ -2,12 +2,14 @@
 
 namespace App\Http\Resources\Client;
 
+use App\Client\MatchScore;
 use App\Client\StackHighlight;
 use App\Collection\Support\PostingDay;
 use App\Enums\PlanKey;
 use App\Models\Company;
 use App\Models\JobPosting;
 use App\Models\User;
+use App\Outreach\Data\PreferenceCriteria;
 use App\Outreach\Support\ClientSafeText;
 use App\Outreach\Support\StackNormalizer;
 use App\Plans\PlanCatalog;
@@ -19,6 +21,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * raw payloads or contact data; the captured job link (`jobUrl`) is exposed to paid plans only
  * (free users get `null`). `stack` lists up to 6 tags with the user's preferred technologies first;
  * `stackMatches` holds the displayed tags that match those preferences (empty without preferences).
+ * `match` is the score and breakdown when the posting was loaded through JobPoolQuery and the user
+ * has at least one scored preference; null otherwise.
  *
  * @property JobPosting $resource
  */
@@ -41,6 +45,9 @@ class JobCardResource extends JsonResource
             ? StackNormalizer::normalize($user->jobPreference->stack ?? [])
             : [];
         $highlight = StackHighlight::forCard($profile->stack ?? [], $preferred);
+        $criteria = $user instanceof User && $user->jobPreference !== null
+            ? PreferenceCriteria::fromPreference($user->jobPreference)
+            : PreferenceCriteria::empty();
 
         return [
             'id' => $posting->id,
@@ -60,6 +67,7 @@ class JobCardResource extends JsonResource
             'firstSeenAt' => $posting->first_seen_at->toIso8601String(),
             'collectedToday' => PostingDay::isToday($posting->collectionRun?->started_at),
             'jobUrl' => $paid ? ApplicationItemResource::safeUrl($posting->applicationUrl()) : null,
+            'match' => MatchScore::explain($posting, $criteria),
         ];
     }
 

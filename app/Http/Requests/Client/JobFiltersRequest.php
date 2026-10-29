@@ -29,6 +29,7 @@ class JobFiltersRequest extends FormRequest
             'today' => ['nullable', 'boolean'],
             'stack' => ['nullable', 'array'],
             'stack.*' => ['string', 'max:40'],
+            'sort' => ['nullable', Rule::in(['newest', 'match'])],
             'cursor' => ['nullable', 'string'],
         ];
     }
@@ -36,7 +37,7 @@ class JobFiltersRequest extends FormRequest
     /**
      * The validated list filters, normalised for {@see JobsPayload::build()}.
      *
-     * @return array{q: string, language: string, seniority: array<mixed>, remote: string, today: bool, stack: array<mixed>}
+     * @return array{q: string, language: string, seniority: array<mixed>, remote: string, today: bool, stack: array<mixed>, sort: string}
      */
     public function filters(): array
     {
@@ -47,6 +48,7 @@ class JobFiltersRequest extends FormRequest
             'remote' => $this->string('remote')->toString(),
             'today' => $this->boolean('today'),
             'stack' => $this->array('stack'),
+            'sort' => $this->string('sort')->toString(),
         ];
     }
 

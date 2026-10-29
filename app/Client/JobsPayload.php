@@ -15,7 +15,7 @@ class JobsPayload
     private const PER_PAGE = 20;
 
     /**
-     * @param  array{q: string, language: string, seniority: array<mixed>, remote: string, today: bool, stack: array<mixed>}  $filters
+     * @param  array{q: string, language: string, seniority: array<mixed>, remote: string, today: bool, stack: array<mixed>, sort: string}  $filters
      * @param  string|null  $cursor  Encoded cursor; null means the first page.
      * @return array{data: array<mixed>, meta: array{nextCursor: string|null, total: int}, summary: array{total: int, collectedToday: int, lockedByLanguage: array<mixed>}}
      */

@@ -5,6 +5,7 @@ namespace App\Client;
 use App\Collection\Support\PostingDay;
 use App\Models\JobPosting;
 use App\Models\User;
+use App\Outreach\Data\PreferenceCriteria;
 use App\Outreach\Queries\MatchingJobPostings;
 use App\Outreach\Support\StackNormalizer;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,20 +16,33 @@ final class JobPoolQuery
 
     /**
      * The client's job pool ({@see MatchingJobPostings}) narrowed by the Jobs screen filters,
-     * every matching posting once (several postings of one company all show), newest first.
+     * every matching posting once (several postings of one company all show), each with its
+     * {@see MatchScore} (`match_score`, `match_location_hit`). Newest first by default; best match
+     * first (ties newest first) with `sort=match`. The pool is a derived table aliased `job_postings`.
      *
-     * @param  array{q?: string|null, language?: string|null, seniority?: array<array-key, mixed>|null, remote?: string|null, today?: bool|null, stack?: array<array-key, mixed>|null}  $filters
+     * @param  array{q?: string|null, language?: string|null, seniority?: array<array-key, mixed>|null, remote?: string|null, today?: bool|null, stack?: array<array-key, mixed>|null, sort?: string|null}  $filters
      * @return Builder<JobPosting>
      */
     public static function forUser(User $user, array $filters = []): Builder
     {
-        return self::filtered($user, $filters)
+        $criteria = $user->jobPreference !== null
+            ? PreferenceCriteria::fromPreference($user->jobPreference)
+            : PreferenceCriteria::empty();
+
+        $pool = MatchScore::addSelects(self::filtered($user, $filters), $criteria);
+        $query = JobPosting::query()->fromSub($pool, 'job_postings');
+
+        if (($filters['sort'] ?? null) === 'match') {
+            $query->orderByDesc('job_postings.match_score');
+        }
+
+        return $query
             ->orderByDesc('job_postings.first_seen_at')
             ->orderByDesc('job_postings.id');
     }
 
     /**
-     * @param  array{q?: string|null, language?: string|null, seniority?: array<array-key, mixed>|null, remote?: string|null, today?: bool|null, stack?: array<array-key, mixed>|null}  $filters
+     * @param  array{q?: string|null, language?: string|null, seniority?: array<array-key, mixed>|null, remote?: string|null, today?: bool|null, stack?: array<array-key, mixed>|null, sort?: string|null}  $filters
      * @return Builder<JobPosting>
      */
     private static function filtered(User $user, array $filters): Builder
