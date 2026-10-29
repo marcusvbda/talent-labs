@@ -9,6 +9,7 @@ import { useJob } from '@/data/hooks/use-job';
 import { useT } from '@/i18n/i18n-provider';
 import { useFormat } from '@/lib/format';
 import type { JobCard } from '@/types/contracts';
+import { MatchBreakdown } from './match-breakdown';
 
 const Fact = ({ label, value }: { label: string; value: string | null }) =>
     value ? (
@@ -52,6 +53,7 @@ const DetailBody = ({
                     <p className="text-body text-muted">{place}</p>
                 </div>
             </div>
+            {job.match && <MatchBreakdown match={job.match} />}
             <dl className="grid grid-cols-2 gap-4">
                 <Fact
                     label={t('jobs.detail.seniority')}

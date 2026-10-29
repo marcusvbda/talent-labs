@@ -28,7 +28,7 @@ stack order on the job card and in the detail.
 | ----- | --------------------------------------------------------- | ---------------- | ---------- | ------------------ | ---- | ------- |
 | 1     | Match score, explanation and `sort=match` in the job pool | laravel-backend  | none       | R1, R2, R3, R5, R7 | M    | DONE    |
 | 2     | Contract, fixtures and "N% match" chip on Jobs rows       | inertia-frontend | 1          | R1, R4             | M    | DONE    |
-| 3     | Match breakdown in the job detail sheet                   | inertia-frontend | 2          | R2, R4             | S    | PENDING |
+| 3     | Match breakdown in the job detail sheet                   | inertia-frontend | 2          | R2, R4             | S    | DONE    |
 | 4     | "Best match" sort control on the Jobs list                | inertia-frontend | 2          | R3, R6             | S    | PENDING |
 | 5     | Verification and report                                   | qa-tester        | 1–4        | all                | S    | PENDING |
 
@@ -311,7 +311,8 @@ this phase, both carry it. The chip is shown on the Jobs list only (A1).
 
 ### Phase 3 — Match breakdown in the job detail sheet
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn run check` and `yarn types:check` pass; `php artisan test --compact` 33/33 passed; code-reviewer APPROVED. All 12 `jobs.match.*` keys exist in EN and PT; `MatchBreakdown` renders from the card's `match` before the facts grid, absent when `match` is null.
 Role: inertia-frontend · Depends on: 2 · Covers: R2, R4 · Size: S
 Origin: spec x code gap (Requirements R2, R4)
 
