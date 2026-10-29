@@ -1,4 +1,4 @@
-import { devEmitter, registerSimulation } from '@/data/realtime/dev-emitter';
+import { devEmitter } from '@/data/realtime/dev-emitter';
 import { getDevState, subscribeDevState } from '@/data/fixtures/dev-state';
 import { fixtureJobUrl } from '@/data/fixtures/catalog/applications';
 import { SEND_STEPS, STEP_DELAY_MS } from '@/data/fixtures/send-steps';
@@ -19,7 +19,6 @@ const SOON_MS = 2000;
 let timer: ReturnType<typeof setTimeout> | null = null;
 let wanted = false; // start() was called and the queue has not drained yet
 let failingApplicationId: number | null = null;
-let collectionRunId = 100;
 let limitNotified = false;
 
 const halted = (): boolean =>
@@ -86,18 +85,6 @@ function respaceIfOverdue(soon: boolean): void {
             scheduledFor: new Date(slot).toISOString(),
         });
     });
-}
-
-function queueOneMatch(): boolean {
-    for (const job of fixtureState.matches()) {
-        if (fixtureState.queue([job.id], 'manual').queued.length > 0) {
-            return true;
-        }
-    }
-
-    console.info('[fixtures] no matching job to queue');
-
-    return false;
 }
 
 function begin(item: ApplicationItem): void {
@@ -359,54 +346,6 @@ const unsubscribe = useFixtures
           lastGmail = gmail;
       })
     : () => {};
-
-if (useFixtures) {
-    registerSimulation('send', () => {
-        queueOneMatch();
-        start({ soon: true });
-    });
-
-    registerSimulation('failure', () => {
-        if (fixtureState.queuedItems().length === 0) {
-            queueOneMatch();
-        }
-
-        fixtureState.set((s) => ({ ...s, failNextSend: true }));
-        start({ soon: true });
-    });
-
-    registerSimulation('newJobs', () => {
-        const used = new Set(
-            fixtureState.get().applications.map((row) => row.jobId),
-        );
-        // Prefer jobs nobody applied to; history covers most of the pool.
-        const fresh = fixtureState
-            .get()
-            .jobs.filter((job) => !job.collectedToday)
-            .sort((a, b) => Number(used.has(a.id)) - Number(used.has(b.id)))
-            .slice(0, 3);
-        const ids = new Set(fresh.map((job) => job.id));
-
-        fixtureState.set((s) => ({
-            ...s,
-            jobs: s.jobs.map((job) =>
-                ids.has(job.id)
-                    ? {
-                          ...job,
-                          collectedToday: true,
-                          firstSeenAt: new Date().toISOString(),
-                      }
-                    : job,
-            ),
-        }));
-
-        collectionRunId += 1;
-        devEmitter.emit('jobs.collected', {
-            collectionRunId,
-            newJobs: fresh.length,
-        });
-    });
-}
 
 if (import.meta.hot) {
     import.meta.hot.dispose(() => {

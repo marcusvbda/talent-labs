@@ -79,9 +79,9 @@ const SPACING = { minSeconds: 45, maxSeconds: 120 };
 const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 
 const PLAN_CONFIG: Record<PlanKey, { dailyLimit: number; mode: SendMode }> = {
-    free: { dailyLimit: 25, mode: 'random' },
+    free: { dailyLimit: 10, mode: 'random' },
     starter: { dailyLimit: 50, mode: 'select' },
-    pro: { dailyLimit: 150, mode: 'review' },
+    pro: { dailyLimit: 100, mode: 'review' },
 };
 const PLAN_NAMES: Record<PlanKey, string> = {
     free: 'Free',
@@ -106,8 +106,8 @@ type FixtureData = {
     currentSubStep: SubStep | null;
     failNextSend: boolean;
     waitStartedAt: string | null; // when the current wait for the queue head began
-    // NOTE: the window is only a LABEL. The simulated engine still sends when
-    // the owner presses "Simulate send" outside of it (e.g. at night).
+    // NOTE: the window is only a LABEL. The simulated engine does not enforce
+    // it.
     window: {
         start: string;
         end: string;

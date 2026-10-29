@@ -94,9 +94,9 @@ return [
     'plans' => [
         'default' => env('PLAN_DEFAULT', 'free'),
         'catalog' => [
-            'free' => ['name' => 'Free', 'mode' => 'random', 'daily_limit' => (int) env('PLAN_FREE_DAILY_LIMIT', 25)],
+            'free' => ['name' => 'Free', 'mode' => 'random', 'daily_limit' => (int) env('PLAN_FREE_DAILY_LIMIT', 10)],
             'starter' => ['name' => 'Starter', 'mode' => 'select', 'daily_limit' => (int) env('PLAN_STARTER_DAILY_LIMIT', 50)],
-            'pro' => ['name' => 'Pro', 'mode' => 'review', 'daily_limit' => (int) env('PLAN_PRO_DAILY_LIMIT', 150)],
+            'pro' => ['name' => 'Pro', 'mode' => 'review', 'daily_limit' => (int) env('PLAN_PRO_DAILY_LIMIT', 100)],
         ],
         // Displayed prices, in minor units per region. 0 = free in that region (no Checkout).
         'prices' => [
@@ -106,12 +106,12 @@ return [
                 'row' => (int) env('PRICE_FREE_USD', 500),
             ],
             'starter' => [
-                'br' => (int) env('PRICE_STARTER_BRL', 5000),
+                'br' => (int) env('PRICE_STARTER_BRL', 3000),
                 'eu' => (int) env('PRICE_STARTER_EUR', 900),
                 'row' => (int) env('PRICE_STARTER_USD', 1000),
             ],
             'pro' => [
-                'br' => (int) env('PRICE_PRO_BRL', 10000),
+                'br' => (int) env('PRICE_PRO_BRL', 6000),
                 'eu' => (int) env('PRICE_PRO_EUR', 1900),
                 'row' => (int) env('PRICE_PRO_USD', 2000),
             ],

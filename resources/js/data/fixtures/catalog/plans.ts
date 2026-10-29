@@ -10,7 +10,7 @@ export const PLAN_REGIONS: { key: RegionKey; currency: string }[] = [
 
 // Prices are integer minor units (cents) per region.
 const PRICES: Record<RegionKey, Record<PlanKey, number>> = {
-    br: { free: 2500, starter: 5000, pro: 10000 },
+    br: { free: 2500, starter: 3000, pro: 6000 },
     eu: { free: 500, starter: 900, pro: 1900 },
     row: { free: 500, starter: 1000, pro: 2000 },
 };
@@ -20,7 +20,7 @@ const BASE: Omit<PlanOffer, 'price' | 'currency'>[] = [
         key: 'free',
         name: 'Free',
         mode: 'random',
-        dailyLimit: 25,
+        dailyLimit: 10,
         interval: 'month',
         highlighted: false,
     },
@@ -36,7 +36,7 @@ const BASE: Omit<PlanOffer, 'price' | 'currency'>[] = [
         key: 'pro',
         name: 'Pro',
         mode: 'review',
-        dailyLimit: 150,
+        dailyLimit: 100,
         interval: 'month',
         highlighted: false,
     },

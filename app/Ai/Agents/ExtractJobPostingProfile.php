@@ -8,13 +8,14 @@ use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Attributes\Model;
 use Laravel\Ai\Attributes\Provider;
 use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\HasProviderOptions;
 use Laravel\Ai\Contracts\HasStructuredOutput;
 use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Promptable;
 
 #[Provider(Lab::OpenAI)]
-#[Model('gpt-4o-mini')]
-class ExtractJobPostingProfile implements Agent, HasStructuredOutput
+#[Model('gpt-5-nano')]
+class ExtractJobPostingProfile implements Agent, HasProviderOptions, HasStructuredOutput
 {
     use BuildsCompactAgentContext;
     use Promptable;
@@ -23,7 +24,7 @@ class ExtractJobPostingProfile implements Agent, HasStructuredOutput
 
     public const MAX_DESCRIPTION_CHARS = 4000;
 
-    public const MODEL = 'gpt-4o-mini';
+    public const MODEL = 'gpt-5-nano';
 
     public const CACHE_KEY = 'posting_profile_extraction';
 
@@ -54,6 +55,18 @@ class ExtractJobPostingProfile implements Agent, HasStructuredOutput
             'tags' => $this->tags(),
             'description' => mb_substr($description, 0, self::MAX_DESCRIPTION_CHARS),
         ]);
+    }
+
+    /**
+     * Reasoning models bill reasoning tokens as output: the default effort
+     * made extraction ~5x more expensive and ~11s slower per posting
+     * (~$0.88 vs ~$0.09 per 1000 postings), with no gain for this task.
+     *
+     * @return array<string, mixed>
+     */
+    public function providerOptions(Lab|string $provider): array
+    {
+        return ['reasoning' => ['effort' => 'minimal']];
     }
 
     /**

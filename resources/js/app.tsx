@@ -20,10 +20,6 @@ const ReactQueryDevtools = import.meta.env.DEV
       )
     : null;
 
-const DevToolbar = import.meta.env.DEV
-    ? lazy(() => import('@/components/patterns/dev-toolbar'))
-    : null;
-
 bootFixtures();
 
 let brand = '';
@@ -48,11 +44,6 @@ void createInertiaApp({
                 <I18nProvider initialPage={page}>
                     {app}
                     <Toaster />
-                    {DevToolbar && (
-                        <Suspense fallback={null}>
-                            <DevToolbar />
-                        </Suspense>
-                    )}
                 </I18nProvider>
                 {ReactQueryDevtools && (
                     <Suspense fallback={null}>
