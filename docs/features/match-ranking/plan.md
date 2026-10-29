@@ -8,29 +8,29 @@ Phase status is updated in place in this file.
 
 Implemented: 0 · Partial: 0 · Divergent: 0 · Missing: 7 · Unverifiable: 0
 
-| Requirement | State | Evidence |
-| --- | --- | --- |
-| R1 Score per pool posting | Missing | `app/Outreach/Queries/MatchingJobPostings.php` is pass/fail only. `app/Client/StackHighlight.php` (`stackMatches`) highlights tags and scores nothing. |
-| R2 Readable explanation | Missing | `app/Http/Resources/Client/JobCardResource.php` and `JobDetailResource.php` have no breakdown. |
-| R3 Order by match | Missing | `app/Client/JobPoolQuery.php` always orders `first_seen_at desc, id desc`. `JobFiltersRequest` has no `sort`. |
-| R4 "N% match" on row + breakdown in detail | Missing | `resources/js/components/patterns/job-row.tsx`, `resources/js/features/jobs/job-detail-sheet.tsx` |
-| R5 Gate unchanged | Implemented (invariant) | The gate lives in `MatchingJobPostings::forUser`, and this plan never edits it. |
-| R6 Jobs list only, newest default, opt-in "Best match" | Missing | `resources/js/features/jobs/job-filters.tsx`, `resources/js/lib/use-query-filters.ts` |
-| R7 Weights | Missing | — |
-| R8 Settled by code | Implemented | Profile `done` is required by the gate. `jobs.collected` → `jobsCollected()` in `resources/js/data/realtime/handlers.ts` and the preference save in `use-preferences.ts` both invalidate `keys.jobs.all()`. The `plan.jobs` middleware limits the Jobs list to `canChooseJobs()` plans. |
+| Requirement                                            | State                   | Evidence                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1 Score per pool posting                              | Missing                 | `app/Outreach/Queries/MatchingJobPostings.php` is pass/fail only. `app/Client/StackHighlight.php` (`stackMatches`) highlights tags and scores nothing.                                                                                                                                  |
+| R2 Readable explanation                                | Missing                 | `app/Http/Resources/Client/JobCardResource.php` and `JobDetailResource.php` have no breakdown.                                                                                                                                                                                          |
+| R3 Order by match                                      | Missing                 | `app/Client/JobPoolQuery.php` always orders `first_seen_at desc, id desc`. `JobFiltersRequest` has no `sort`.                                                                                                                                                                           |
+| R4 "N% match" on row + breakdown in detail             | Missing                 | `resources/js/components/patterns/job-row.tsx`, `resources/js/features/jobs/job-detail-sheet.tsx`                                                                                                                                                                                       |
+| R5 Gate unchanged                                      | Implemented (invariant) | The gate lives in `MatchingJobPostings::forUser`, and this plan never edits it.                                                                                                                                                                                                         |
+| R6 Jobs list only, newest default, opt-in "Best match" | Missing                 | `resources/js/features/jobs/job-filters.tsx`, `resources/js/lib/use-query-filters.ts`                                                                                                                                                                                                   |
+| R7 Weights                                             | Missing                 | —                                                                                                                                                                                                                                                                                       |
+| R8 Settled by code                                     | Implemented             | Profile `done` is required by the gate. `jobs.collected` → `jobsCollected()` in `resources/js/data/realtime/handlers.ts` and the preference save in `use-preferences.ts` both invalidate `keys.jobs.all()`. The `plan.jobs` middleware limits the Jobs list to `canChooseJobs()` plans. |
 
 Code not backed by the spec (keep it): `stackMatches` and the matching-tags-first
 stack order on the job card and in the detail.
 
 ## Status board
 
-| Phase | Title | Role | Depends on | Origin | Size | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Match score, explanation and `sort=match` in the job pool | laravel-backend | none | R1, R2, R3, R5, R7 | M | DONE |
-| 2 | Contract, fixtures and "N% match" chip on Jobs rows | inertia-frontend | 1 | R1, R4 | M | PENDING |
-| 3 | Match breakdown in the job detail sheet | inertia-frontend | 2 | R2, R4 | S | PENDING |
-| 4 | "Best match" sort control on the Jobs list | inertia-frontend | 2 | R3, R6 | S | PENDING |
-| 5 | Verification and report | qa-tester | 1–4 | all | S | PENDING |
+| Phase | Title                                                     | Role             | Depends on | Origin             | Size | Status  |
+| ----- | --------------------------------------------------------- | ---------------- | ---------- | ------------------ | ---- | ------- |
+| 1     | Match score, explanation and `sort=match` in the job pool | laravel-backend  | none       | R1, R2, R3, R5, R7 | M    | DONE    |
+| 2     | Contract, fixtures and "N% match" chip on Jobs rows       | inertia-frontend | 1          | R1, R4             | M    | DONE    |
+| 3     | Match breakdown in the job detail sheet                   | inertia-frontend | 2          | R2, R4             | S    | PENDING |
+| 4     | "Best match" sort control on the Jobs list                | inertia-frontend | 2          | R3, R6             | S    | PENDING |
+| 5     | Verification and report                                   | qa-tester        | 1–4        | all                | S    | PENDING |
 
 ## Owner decisions
 
@@ -83,16 +83,16 @@ empty criteria left out and the rest re-normalised. Recorded as spec R7.
 
 ## Requirement coverage
 
-| Requirement | Phases |
-| --- | --- |
-| R1 | 1, 2 |
-| R2 | 1, 3 |
-| R3 | 1, 4 |
-| R4 | 2, 3 |
-| R5 | 1 (invariant), 5 |
-| R6 | 4 |
-| R7 | 1 |
-| R8 | 5 (verified, no code) |
+| Requirement | Phases                |
+| ----------- | --------------------- |
+| R1          | 1, 2                  |
+| R2          | 1, 3                  |
+| R3          | 1, 4                  |
+| R4          | 2, 3                  |
+| R5          | 1 (invariant), 5      |
+| R6          | 4                     |
+| R7          | 1                     |
+| R8          | 5 (verified, no code) |
 
 ## Phases
 
@@ -179,8 +179,8 @@ that adds `match_score` and `match_location_hit`. It orders by
 - `app/Client/JobPoolQuery.php`:
     - `forUser(User $user, array $filters = [])`: add `sort?: string|null` to
       the filters array shape. Build `$criteria = $user->jobPreference !== null
-      ? PreferenceCriteria::fromPreference($user->jobPreference) :
-      PreferenceCriteria::empty()`. Then
+? PreferenceCriteria::fromPreference($user->jobPreference) :
+PreferenceCriteria::empty()`. Then
       `$pool = MatchScore::addSelects(self::filtered($user, $filters), $criteria);`
       and `$query = JobPosting::query()->fromSub($pool, 'job_postings');`.
       If `($filters['sort'] ?? null) === 'match'`, call
@@ -191,8 +191,8 @@ that adds `match_score` and `match_location_hit`. It orders by
         - `JobsController::show` (`->where('job_postings.id', $id)`)
         - `DashboardPresenter` (`->with()->limit()->get()`, `->reorder()->count()`)
         - `JobsPayload` (`cursorPaginate`, `reorder()->count()`)
-      Cursor pagination works because `match_score` is a real column of the
-      derived table and is never null.
+          Cursor pagination works because `match_score` is a real column of the
+          derived table and is never null.
     - Update the docblock: newest first by default, best match first with `sort=match`.
 - `app/Http/Requests/Client/JobFiltersRequest.php`: add the rule
   `'sort' => ['nullable', Rule::in(['newest', 'match'])]`. Add
@@ -242,7 +242,8 @@ that adds `match_score` and `match_location_hit`. It orders by
 
 ### Phase 2 — Contract, fixtures and "N% match" chip on Jobs rows
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn run check` and `yarn types:check` pass; `php artisan test --compact` 33/33 passed; code-reviewer found one divergence (fixture ignored remote mode `any` for the location criterion), fixed and re-checked. Fixture mode carries `match` via `toJobCard`; `/jobs` rows show the chip, the dashboard card and other JobRow users don't pass the prop.
 Role: inertia-frontend · Depends on: 1 · Covers: R1, R4 · Size: M
 Origin: spec x code gap (Requirements R1, R4)
 
@@ -257,15 +258,20 @@ this phase, both carry it. The chip is shown on the Jobs list only (A1).
 - `resources/js/types/contracts.ts`:
     ```ts
     export type MatchCriterion =
-        | { key: 'stack'; result: 'met' | 'partial' | 'missed'; matched: string[]; missing: string[] }
+        | {
+              key: 'stack';
+              result: 'met' | 'partial' | 'missed';
+              matched: string[];
+              missing: string[];
+          }
         | { key: 'seniority'; result: 'met' | 'not_stated' | 'missed' }
         | { key: 'location'; result: 'remote' | 'location' | 'missed' }
         | { key: 'title'; result: 'met' | 'missed' };
     export type JobMatch = { score: number; criteria: MatchCriterion[] }; // 0–100; criteria in weight order, only preferences that are set
     ```
-  Add `match: JobMatch | null;` to `JobCard`, with the comment "null without
-  scored preferences". Add `sort?: 'newest' | 'match';` to `JobFilters` (used
-  in Phase 4; adding it now keeps the contract in one place).
+    Add `match: JobMatch | null;` to `JobCard`, with the comment "null without
+    scored preferences". Add `sort?: 'newest' | 'match';` to `JobFilters` (used
+    in Phase 4; adding it now keeps the contract in one place).
 - `resources/js/data/fixtures/handlers/cards.ts` → `toJobCard` adds
   `match: fixtureMatch(job, fixtureState.get().preferences)`. It is a local
   function that mirrors Phase 1 approximately:
@@ -325,7 +331,7 @@ reasons. After this phase, it shows a "Why it matches" block when
         - `Check` for `met`, `remote` and `location`
         - `CircleDashed` for `partial` and `not_stated`
         - `X` for `missed`
-      Icons are `aria-hidden`, and the text carries the meaning.
+          Icons are `aria-hidden`, and the text carries the meaning.
     - Text per criterion:
         - stack: `plural('jobs.match.stack', total, { matched: matched.length, total })`,
           where `total = matched.length + missing.length`. When

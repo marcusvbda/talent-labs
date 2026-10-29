@@ -24,6 +24,7 @@ export function JobRow({
     selectable = true,
     onOpen,
     jobUrl,
+    matchScore = null,
 }: {
     selected: boolean;
     onSelectedChange: (selected: boolean) => void;
@@ -41,6 +42,8 @@ export function JobRow({
     onOpen?: () => void;
     /** Captured job page; rendered as a link button when present (paid plans only). */
     jobUrl?: string | null;
+    /** Match percentage; shown as a chip when set. */
+    matchScore?: number | null;
 }) {
     const { t } = useT();
     const checkbox = (
@@ -65,6 +68,11 @@ export function JobRow({
                     </span>
                 </span>
                 <span className="flex flex-wrap items-center gap-1.5 md:max-w-[60%] md:justify-end">
+                    {matchScore !== null && (
+                        <Chip variant="plan">
+                            {t('jobs.match.score', { score: matchScore })}
+                        </Chip>
+                    )}
                     {stack.map((item) => (
                         <Chip
                             key={item}

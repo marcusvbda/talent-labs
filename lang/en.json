@@ -614,6 +614,7 @@
     "jobs.title": "Jobs",
     "jobs.summary.one": ":total job matches your preferences · :today collected today",
     "jobs.summary.other": ":total jobs match your preferences · :today collected today",
+    "jobs.match.score": ":score% match",
     "jobs.edit_preferences": "Edit preferences",
     "jobs.list.title": "Matching jobs",
     "jobs.remote": "Remote",

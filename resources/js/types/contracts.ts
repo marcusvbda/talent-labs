@@ -102,6 +102,7 @@ export type JobCard = {
     firstSeenAt: ISODateTime;
     collectedToday: boolean;
     jobUrl: string | null; // captured job page; non-null only on paid plans
+    match: JobMatch | null; // null without scored preferences
 };
 export type JobDetail = JobCard & {
     locations: string[];
@@ -110,6 +111,18 @@ export type JobDetail = JobCard & {
     publishedAt: ISODateTime | null;
     sourceLabel: string; // e.g. "RemoteOK" — text only, never a link
 };
+export type MatchCriterion =
+    | {
+          key: 'stack';
+          result: 'met' | 'partial' | 'missed';
+          matched: string[];
+          missing: string[];
+      }
+    | { key: 'seniority'; result: 'met' | 'not_stated' | 'missed' }
+    | { key: 'location'; result: 'remote' | 'location' | 'missed' }
+    | { key: 'title'; result: 'met' | 'missed' };
+export type JobMatch = { score: number; criteria: MatchCriterion[] }; // 0-100; criteria in weight order, only preferences that are set
+
 export type JobFilters = {
     q?: string;
     language?: JobLanguage | 'all';
@@ -117,6 +130,7 @@ export type JobFilters = {
     remote?: 'any' | 'remote' | 'not_remote';
     today?: boolean;
     stack?: string[];
+    sort?: 'newest' | 'match';
     cursor?: string | null;
 };
 export type Paginated<T> = {

@@ -614,6 +614,7 @@
     "jobs.title": "Vagas",
     "jobs.summary.one": ":total vaga corresponde às suas preferências · :today coletadas hoje",
     "jobs.summary.other": ":total vagas correspondem às suas preferências · :today coletadas hoje",
+    "jobs.match.score": ":score% compatível",
     "jobs.edit_preferences": "Editar preferências",
     "jobs.list.title": "Vagas compatíveis",
     "jobs.remote": "Remoto",

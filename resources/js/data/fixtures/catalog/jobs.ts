@@ -77,6 +77,7 @@ const job = (
         seniority,
         stack,
         stackMatches: [], // computed against preferences in findJob
+        match: null, // computed against preferences in toJobCard
         summary,
         ...seen,
         locations: company.isRemote

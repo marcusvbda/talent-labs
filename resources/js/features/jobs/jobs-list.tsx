@@ -41,6 +41,7 @@ export function JobsList({
                     selectable={selectable}
                     onOpen={() => onOpen(job)}
                     jobUrl={job.jobUrl}
+                    matchScore={job.match?.score ?? null}
                 />
             ))}
             {hasMore && (
