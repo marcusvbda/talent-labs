@@ -20,6 +20,7 @@ const SENIORITIES: Seniority[] = [
     'unknown',
 ];
 const REMOTE_OPTIONS = ['any', 'remote', 'not_remote'] as const;
+const SORT_OPTIONS = ['newest', 'match'] as const;
 
 // The filters share one row, so their labels are screen-reader only.
 const Labeled = ({
@@ -151,6 +152,19 @@ export function JobFilterBar({
                         value={filters.stack ?? []}
                         onChange={(stack) => onChange({ stack })}
                         placeholder={t('jobs.filters.stack')}
+                    />
+                )}
+            </Labeled>
+            <Labeled label={t('jobs.sort.label')} className="w-full md:w-48">
+                {(id) => (
+                    <Select
+                        id={id}
+                        value={filters.sort ?? 'newest'}
+                        onChange={(sort) => onChange({ sort })}
+                        options={SORT_OPTIONS.map((value) => ({
+                            value,
+                            label: t(`jobs.sort.${value}`),
+                        }))}
                     />
                 )}
             </Labeled>

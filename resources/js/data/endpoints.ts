@@ -94,6 +94,7 @@ export const endpoints = {
                 remote: omitDefault(filters.remote, 'any'),
                 today: filters.today || undefined,
                 stack: filters.stack,
+                sort: omitDefault(filters.sort, 'newest'),
                 cursor: filters.cursor,
             }),
             method: base.method,

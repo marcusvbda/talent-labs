@@ -29,7 +29,7 @@ stack order on the job card and in the detail.
 | 1     | Match score, explanation and `sort=match` in the job pool | laravel-backend  | none       | R1, R2, R3, R5, R7 | M    | DONE    |
 | 2     | Contract, fixtures and "N% match" chip on Jobs rows       | inertia-frontend | 1          | R1, R4             | M    | DONE    |
 | 3     | Match breakdown in the job detail sheet                   | inertia-frontend | 2          | R2, R4             | S    | DONE    |
-| 4     | "Best match" sort control on the Jobs list                | inertia-frontend | 2          | R3, R6             | S    | PENDING |
+| 4     | "Best match" sort control on the Jobs list                | inertia-frontend | 2          | R3, R6             | S    | DONE    |
 | 5     | Verification and report                                   | qa-tester        | 1–4        | all                | S    | PENDING |
 
 ## Owner decisions
@@ -373,7 +373,8 @@ reasons. After this phase, it shows a "Why it matches" block when
 
 ### Phase 4 — "Best match" sort control on the Jobs list
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn run check` and `yarn types:check` pass; `php artisan test --compact` 33/33 passed; code-reviewer APPROVED (no blocking findings). The `sort` select is last in the filter bar, `parse`/`serialize` keep `sort=match` in the URL (default omitted), `endpoints.jobs` forwards `sort` to `/internal/jobs` (it whitelists params), the fixture `listJobs` orders by match score then newest before slicing, and EN/PT `jobs.sort.*` copy exists. Not exercised in a browser.
 Role: inertia-frontend · Depends on: 2 · Covers: R3, R6 · Size: S
 Origin: spec x code gap (Requirements R3, R6)
 

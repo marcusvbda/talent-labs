@@ -33,6 +33,7 @@ const parse = (search: string): JobFilters => {
         remote: remote && REMOTE.includes(remote) ? remote : 'any',
         today: params.get('today') === '1',
         stack: params.getAll('stack[]').filter(Boolean),
+        sort: params.get('sort') === 'match' ? 'match' : 'newest',
     };
 };
 
@@ -59,6 +60,10 @@ const serialize = (filters: JobFilters): string => {
     }
 
     filters.stack?.forEach((value) => params.append('stack[]', value));
+
+    if (filters.sort === 'match') {
+        params.set('sort', 'match');
+    }
 
     return params.toString();
 };

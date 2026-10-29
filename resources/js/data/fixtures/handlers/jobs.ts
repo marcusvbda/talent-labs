@@ -112,12 +112,21 @@ export function listJobs(
         return true;
     });
 
+    const ordered =
+        filters.sort === 'match'
+            ? [...filtered].sort(
+                  (a, b) =>
+                      (toJobCard(b).match?.score ?? 0) -
+                          (toJobCard(a).match?.score ?? 0) || newestFirst(a, b),
+              )
+            : filtered;
+
     const parsed = cursor === null ? 0 : Number.parseInt(cursor, 10);
     const offset = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
     const end = offset + JOBS_PAGE_SIZE;
 
     return {
-        data: filtered.slice(offset, end).map(toJobCard),
+        data: ordered.slice(offset, end).map(toJobCard),
         meta: {
             nextCursor: end < filtered.length ? String(end) : null,
             total: filtered.length,
