@@ -8,12 +8,12 @@ export function RandomSendModal({
     open,
     onClose,
     count,
-    gmail,
+    fromAddress,
 }: {
     open: boolean;
     onClose: () => void;
     count: number;
-    gmail: string;
+    fromAddress: string;
 }) {
     const { t, plural } = useT();
     const queue = useQueueRandom();
@@ -69,7 +69,7 @@ export function RandomSendModal({
         >
             <div className="flex flex-col gap-5">
                 <p className="text-body text-muted">
-                    {t('send.random.body', { gmail })}
+                    {t('send.random.body', { gmail: fromAddress })}
                 </p>
                 {error && (
                     <p role="alert" className="text-label-sm text-danger-text">

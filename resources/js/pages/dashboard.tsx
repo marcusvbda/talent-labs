@@ -349,7 +349,9 @@ export default function Dashboard() {
                                 }
                             }
                             mode={status.data?.plan.mode ?? 'select'}
-                            accountEmail={status.data?.gmail.accountEmail ?? ''}
+                            accountEmail={
+                                status.data?.sendingAccount.accountEmail ?? ''
+                            }
                             remaining={status.data?.quota.remaining ?? 0}
                         />
                     </LockOverlay>

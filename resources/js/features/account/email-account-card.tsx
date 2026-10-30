@@ -21,12 +21,15 @@ export const EmailAccountCard = ({
 }) => {
     const { t } = useT();
     const connectEmail = useConnectEmail();
-    const disconnectEmail = useDisconnectEmail(account.providerKey ?? '');
+    const disconnectEmail = useDisconnectEmail(account.providerKey);
     const [confirming, setConfirming] = useState(false);
 
     const redirect = { query: { return: 'account' } };
     const connectHref = connect('gmail', redirect).url;
-    const reconnectHref = reconnect(account.providerKey ?? '', redirect).url;
+    const reconnectHref =
+        account.providerKey === null
+            ? null
+            : reconnect(account.providerKey, redirect).url;
 
     const onDisconnect = () =>
         disconnectEmail.mutate(undefined, {
@@ -84,7 +87,10 @@ export const EmailAccountCard = ({
                     {account.state === 'reauthorization_required' && (
                         <Button
                             loading={connectEmail.isPending}
-                            onClick={() => connectEmail.mutate(reconnectHref)}
+                            onClick={() =>
+                                reconnectHref !== null &&
+                                connectEmail.mutate(reconnectHref)
+                            }
                         >
                             {t('account.gmail.reconnect')}
                         </Button>

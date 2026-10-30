@@ -23,20 +23,20 @@ final class AccountStatusPresenter
     {
         $plan = $this->plans->for($user);
 
-        $gmail = $user->sendingIntegration;
-        $gmailState = match ($gmail?->status) {
+        $account = $user->sendingIntegration;
+        $accountState = match ($account?->status) {
             ConnectedIntegrationStatus::Connected => 'connected',
             ConnectedIntegrationStatus::ReauthorizationRequired => 'reauthorization_required',
             ConnectedIntegrationStatus::Disconnected, null => 'disconnected',
         };
-        $gmailEmail = $gmail !== null && $gmailState === 'connected' ? $gmail->account_email : null;
+        $accountEmail = $account !== null && $accountState === 'connected' ? $account->account_email : null;
 
         $preference = $user->jobPreference()->first();
         $languages = ApplicationProfile::activeCompleteLanguagesFor($user);
 
         $steps = [
             ['key' => 'basics', 'done' => $user->country !== null && $user->timezone !== null],
-            ['key' => 'gmail', 'done' => $gmailState === 'connected'],
+            ['key' => 'email', 'done' => $accountState === 'connected'],
             ['key' => 'profile', 'done' => $languages !== []],
             ['key' => 'preferences', 'done' => $preference?->saved_at !== null],
         ];
@@ -49,14 +49,10 @@ final class AccountStatusPresenter
                 'dailyLimit' => $plan->dailyLimit,
             ],
             'quota' => $this->quota($user),
-            'gmail' => [
-                'state' => $gmailState,
-                'accountEmail' => $gmailEmail,
-            ],
             'sendingAccount' => [
-                'state' => $gmailState,
-                'accountEmail' => $gmailEmail,
-                'providerKey' => $gmail?->plugin_key,
+                'state' => $accountState,
+                'accountEmail' => $accountEmail,
+                'providerKey' => $account?->plugin_key,
             ],
             'sending' => [
                 'paused' => $user->isSendingPaused(),

@@ -11,11 +11,11 @@ import type { JobCard } from '@/types/contracts';
 
 const ConfirmBody = ({
     selected,
-    gmail,
+    fromAddress,
     error,
 }: {
     selected: JobCard[];
-    gmail: string;
+    fromAddress: string;
     error: string | null;
 }) => {
     const { t } = useT();
@@ -46,7 +46,7 @@ const ConfirmBody = ({
             </ul>
             <p className="text-body text-muted">
                 {t('send.confirm.body', {
-                    gmail,
+                    gmail: fromAddress,
                     min: minSeconds,
                     max: maxSeconds,
                     time: format.date(finish, { timeStyle: 'short' }),
@@ -65,13 +65,13 @@ export function ConfirmSendModal({
     open,
     onClose,
     selected,
-    gmail,
+    fromAddress,
     onQueued,
 }: {
     open: boolean;
     onClose: () => void;
     selected: JobCard[];
-    gmail: string;
+    fromAddress: string;
     onQueued: () => void;
 }) {
     const { t, plural } = useT();
@@ -136,7 +136,11 @@ export function ConfirmSendModal({
                 </>
             }
         >
-            <ConfirmBody selected={selected} gmail={gmail} error={error} />
+            <ConfirmBody
+                selected={selected}
+                fromAddress={fromAddress}
+                error={error}
+            />
         </Modal>
     );
 }

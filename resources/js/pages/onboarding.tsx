@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Stepper } from '@/components/ui/stepper';
 import { toast } from '@/components/ui/toast';
 import { useAccountStatus } from '@/data/hooks/use-account-status';
+import { STEP_LABEL_KEYS } from '@/features/onboarding/step-label-keys';
 import { StepBasics } from '@/features/onboarding/step-basics';
 import { StepEmailAccount } from '@/features/onboarding/step-email-account';
 import { StepPreferences } from '@/features/onboarding/step-preferences';
@@ -57,14 +58,14 @@ const Wizard = ({ status }: { status: AccountStatus }) => {
                 ariaLabel={t('onboarding.steps_label')}
                 steps={steps.map((step) => ({
                     key: step.key,
-                    label: t(`onboarding.steps.${step.key}`),
+                    label: t(STEP_LABEL_KEYS[step.key]),
                     done: step.done,
                 }))}
                 currentIndex={index}
                 onStepChange={setIndex}
             />
             {key === 'basics' && <StepBasics onDone={next} />}
-            {key === 'gmail' && (
+            {key === 'email' && (
                 <StepEmailAccount
                     account={status.sendingAccount}
                     onBack={back}

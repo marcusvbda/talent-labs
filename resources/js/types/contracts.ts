@@ -63,10 +63,6 @@ export type Quota = {
 export type AccountStatus = {
     plan: { key: PlanKey; name: string; mode: SendMode; dailyLimit: number };
     quota: Quota;
-    gmail: {
-        state: 'connected' | 'reauthorization_required' | 'disconnected';
-        accountEmail: string | null;
-    };
     sendingAccount: {
         state: 'connected' | 'reauthorization_required' | 'disconnected';
         accountEmail: string | null;
@@ -83,7 +79,7 @@ export type AccountStatus = {
     onboarding: {
         complete: boolean;
         steps: {
-            key: 'basics' | 'gmail' | 'profile' | 'preferences';
+            key: 'basics' | 'email' | 'profile' | 'preferences';
             done: boolean;
         }[];
     };

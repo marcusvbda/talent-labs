@@ -157,7 +157,7 @@ export default function Jobs() {
                 open={confirming}
                 onClose={() => setConfirming(false)}
                 selected={selection.selected}
-                gmail={account?.gmail.accountEmail ?? ''}
+                fromAddress={account?.sendingAccount.accountEmail ?? ''}
                 onQueued={() => {
                     selection.clear();
                     setConfirming(false);

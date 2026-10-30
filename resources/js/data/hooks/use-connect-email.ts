@@ -29,9 +29,13 @@ export function useConnectEmail() {
  * Disconnects the email account. Against the real API it calls the OAuth disconnect
  * route; with fixtures it flips the dev-state account to disconnected.
  */
-export function useDisconnectEmail(providerKey: string) {
+export function useDisconnectEmail(providerKey: string | null) {
     const queryClient = useQueryClient();
     const real = async () => {
+        if (providerKey === null) {
+            throw new Error('No email account is connected.');
+        }
+
         const e = disconnect(providerKey);
 
         await apiFetch<void>(e.url, { method: e.method });

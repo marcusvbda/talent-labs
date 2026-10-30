@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/i18n/i18n-provider';
 import { onboarding } from '@/routes';
+import { STEP_LABEL_KEYS } from '@/features/onboarding/step-label-keys';
 import type { AccountStatus } from '@/types/contracts';
 
 export function SetupCard({
@@ -38,7 +39,7 @@ export function SetupCard({
                                 className="size-5 shrink-0 text-ink/50"
                             />
                         )}
-                        <span>{t(`onboarding.steps.${step.key}`)}</span>
+                        <span>{t(STEP_LABEL_KEYS[step.key])}</span>
                     </li>
                 ))}
             </ul>

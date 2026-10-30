@@ -296,7 +296,7 @@ const accountStatus = (): AccountStatus => {
     const config = planConfig(dev.plan);
     const data = store.get();
     const reauth = gmailNeedsReauth();
-    const gmailState =
+    const accountState =
         dev.gmail === 'needs_reconnection'
             ? 'reauthorization_required'
             : dev.gmail;
@@ -304,7 +304,7 @@ const accountStatus = (): AccountStatus => {
     const forced = dev.onboardingComplete;
     const flags = {
         basics: forced || data.onboarding.basicsDone,
-        gmail: forced || dev.gmail === 'connected',
+        email: forced || dev.gmail === 'connected',
         profile: forced || activeLanguages().length > 0,
         preferences: forced || data.onboarding.preferencesSaved,
     };
@@ -318,12 +318,8 @@ const accountStatus = (): AccountStatus => {
             dailyLimit: config.dailyLimit,
         },
         quota: quota(),
-        gmail: {
-            state: gmailState,
-            accountEmail: dev.gmail === 'disconnected' ? null : ACCOUNT_EMAIL,
-        },
         sendingAccount: {
-            state: gmailState,
+            state: accountState,
             accountEmail: dev.gmail === 'disconnected' ? null : ACCOUNT_EMAIL,
             providerKey: dev.gmail === 'disconnected' ? null : 'gmail',
         },
@@ -335,7 +331,7 @@ const accountStatus = (): AccountStatus => {
             complete: done,
             steps: [
                 { key: 'basics', done: flags.basics },
-                { key: 'gmail', done: flags.gmail },
+                { key: 'email', done: flags.email },
                 { key: 'profile', done: flags.profile },
                 { key: 'preferences', done: flags.preferences },
             ],

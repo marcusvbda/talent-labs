@@ -199,13 +199,13 @@ export function NewMatchesCard({
                 open={randomOpen}
                 onClose={() => setRandomOpen(false)}
                 count={randomCount}
-                gmail={accountEmail}
+                fromAddress={accountEmail}
             />
             <ConfirmSendModal
                 open={confirming}
                 onClose={() => setConfirming(false)}
                 selected={selection.selected}
-                gmail={accountEmail}
+                fromAddress={accountEmail}
                 onQueued={() => {
                     selection.clear();
                     setConfirming(false);
