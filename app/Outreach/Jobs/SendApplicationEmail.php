@@ -2,6 +2,7 @@
 
 namespace App\Outreach\Jobs;
 
+use App\Contracts\OAuthIntegrationPlugin;
 use App\Enums\ApplicationStatus;
 use App\Enums\ConnectedIntegrationStatus;
 use App\Enums\ContactConfidence;
@@ -32,6 +33,7 @@ use App\Outreach\Support\EmailTransportResolver;
 use App\Outreach\Support\OutreachConfig;
 use App\Outreach\Support\SendScheduler;
 use App\Plans\PlanCatalog;
+use App\Services\ConnectedIntegrationRegistry;
 use App\Services\ConnectedIntegrationTokenManager;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -314,6 +316,11 @@ class SendApplicationEmail implements ShouldQueue
                     return 'Email account is not connected.';
                 }
 
+                // Only an OAuth account has a token to refresh; a credential account needs its stored credentials.
+                if (! app(ConnectedIntegrationRegistry::class)->get($integration->plugin_key) instanceof OAuthIntegrationPlugin) {
+                    return blank($integration->credentials) ? 'Email account is not connected.' : null;
+                }
+
                 try {
                     $tokens->accessToken($user, $integration->plugin_key);
                 } catch (ConnectedIntegrationReauthorizationRequired) {
@@ -427,7 +434,7 @@ class SendApplicationEmail implements ShouldQueue
         $messageId = Str::uuid().'@'.Str::after($from, '@');
 
         $email = (new Email)
-            ->from(new Address($from, $user->name))
+            ->from(new Address($from, $integration->plugin_key === 'smtp' ? (string) $integration->account_name : $user->name))
             ->to($recipient)
             ->subject($interceptTo === null
                 ? $application->subject

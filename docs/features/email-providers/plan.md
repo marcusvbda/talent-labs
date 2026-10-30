@@ -44,7 +44,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 8     | Remove the `gmail` contract key                      | inertia-frontend | 7          | P4                    | M    | DONE    |
 | 9     | Provider list from the registry                      | inertia-frontend | 8          | P6                    | M    | DONE    |
 | 10    | Credential plugin contract and storage               | laravel-backend  | 2          | P7, P11               | M    | DONE    |
-| 11    | `SmtpMessageSender`                                  | laravel-backend  | 4, 10      | P2, P5, P14           | M    | PENDING |
+| 11    | `SmtpMessageSender`                                  | laravel-backend  | 4, 10      | P2, P5, P14           | M    | DONE    |
 | 12    | SMTP connect endpoint and test                       | laravel-backend  | 3, 11      | P8, P9, P10, P12, P13 | M    | PENDING |
 | 13    | SMTP form and registration                           | inertia-frontend | 9, 12      | P6, P8, P15           | M    | PENDING |
 | 14    | `GraphMessageSender` and CV size check               | laravel-backend  | 4          | P5, P17               | M    | PENDING |
@@ -513,7 +513,8 @@ Origin: P7 "SMTP is a credential integration, not OAuth" · P11 "Credentials in 
 
 ### Phase 11 — `SmtpMessageSender`
 
-Status: PENDING
+Status: DONE
+Evidence: pint, `composer types:check` and `SendingDatabaseGuards` (7) pass; reviewer APPROVED. Tinker without network: private/unresolvable hosts raise `EmailDeliveryDeferred`, empty credentials raise `EmailAuthorizationRejected`, classifiers map 535/530 to authorization, 452 "Too many" to limit, 451 to deferred, 550 to recipient, a plain `TransportException` to unconfirmed; logs carry only user_id, plugin_key, code, class. Deviations from the contract: the limit regex uses whole words and ignores 5.2.x mailbox statuses (so "generated" or "mailbox over quota" is a recipient rejection, not a provider limit), and the factory sets `setPingThreshold(PHP_INT_MAX)` so Symfony never restarts the connection inside `send()`. Not verified (no real mailbox): one delivered message with the expected `Message-ID`, and a wrong password against a live server. SMTP sends throw in the job pre-check until Phase 13 registers `SmtpPlugin`. Open (non-blocking): a temporary 454 auth failure maps to `EmailAuthorizationRejected` (forces reconnect) per the contract.
 Role: laravel-backend · Depends on: 4, 10 · Covers: P2, P5, P14 · Size: M
 Origin: P14 "`SmtpMessageSender`: Symfony Mailer `EsmtpTransport` built per send" · P5 · P2
 
