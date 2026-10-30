@@ -48,7 +48,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 4 | Stripe routes gated by billing availability | laravel-backend | none | P3 | S | DONE |
 | 5 | Remove privileged fields from `User` fillable | laravel-backend | none | P5 | M | DONE |
 | 6 | `PublicNetworkGuard` | laravel-backend | none | P7, P9 | S | DONE |
-| 7 | `SmtpProbe` uses the guard | laravel-backend | 6 | P8 | S | PENDING |
+| 7 | `SmtpProbe` uses the guard | laravel-backend | 6 | P8 | S | DONE |
 | 8 | Reverb origins and rate limit | laravel-backend | 1 | P10 | S | PENDING |
 | 9 | Security headers | laravel-backend | 2 | P11 | S | PENDING |
 | 10 | CSP report-only and report endpoint | laravel-backend | 9 | P12, P24 | M | PENDING |
@@ -364,7 +364,8 @@ class PublicNetworkGuard
 
 ### Phase 7 — The SMTP probe never connects to a non-public MX
 
-Status: PENDING
+Status: DONE
+Evidence: tinker `probe('127.0.0.1', ['a@example.com'])` returns `connected=false`, `failure='host is not public or did not resolve'` without opening a socket; no `new SmtpProbe` anywhere; `composer test` passes (pint, PHPStan, 33 tests). Orchestrator-checked diff against the contract, no separate `code-reviewer` pass (one small edit).
 Role: laravel-backend · Depends on: 6 · Covers: P8 · Size: S
 Origin: P8 "`SmtpProbe` uses P7 before connecting; a non-public MX makes the probe inconclusive"
 

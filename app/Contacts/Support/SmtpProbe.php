@@ -2,6 +2,7 @@
 
 namespace App\Contacts\Support;
 
+use App\Support\PublicNetworkGuard;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
@@ -26,6 +27,8 @@ class SmtpProbe
      */
     private ?string $lastReplyText = null;
 
+    public function __construct(private PublicNetworkGuard $guard) {}
+
     /**
      * @param  list<string>  $recipients
      */
@@ -42,6 +45,14 @@ class SmtpProbe
         /** @var array<string, string|null> $replies */
         $replies = array_fill_keys($recipients, null);
 
+        $addresses = $this->guard->publicAddresses($host);
+
+        if ($addresses === []) {
+            return new SmtpProbeResult(false, false, 'host is not public or did not resolve', $codes);
+        }
+
+        $address = str_contains($addresses[0], ':') ? "[{$addresses[0]}]" : $addresses[0];
+
         $this->deadline = microtime(true) + self::SESSION_DEADLINE_SECONDS;
 
         set_error_handler(static fn (): bool => true);
@@ -49,7 +60,7 @@ class SmtpProbe
         $socket = null;
 
         try {
-            $socket = stream_socket_client("tcp://{$host}:25", $errno, $errstr, $timeout);
+            $socket = stream_socket_client("tcp://{$address}:25", $errno, $errstr, $timeout);
         } catch (Throwable $e) {
             $errstr = $e->getMessage();
         } finally {
