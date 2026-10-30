@@ -181,6 +181,12 @@ return [
     'registration' => [
         // `invite` (default) or `open`. Any other value counts as invite, so a typo fails closed.
         'mode' => env('REGISTRATION_MODE', 'invite'),
+
+        // Cloudflare Turnstile captcha for open registration.
+        'turnstile' => [
+            'site_key' => env('TURNSTILE_SITE_KEY'),
+            'secret_key' => env('TURNSTILE_SECRET_KEY'),
+        ],
     ],
 
     // Public contact address shown on the landing page. Empty/unset = hidden.

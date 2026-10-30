@@ -28,9 +28,12 @@ class RegisterController extends Controller
             return redirect()->route('register.closed');
         }
 
+        $siteKey = config('talent.registration.turnstile.site_key');
+
         return Inertia::render('auth/register', [
             'invite' => $usable ? ['email' => $invitation->email] : null,
             'open' => $open,
+            'turnstileSiteKey' => $open && is_string($siteKey) && $siteKey !== '' ? $siteKey : null,
         ]);
     }
 

@@ -46,7 +46,7 @@ incomplete until then.
 | 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | DONE    |
 | 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | DONE    |
 | 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | DONE    |
-| 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | PENDING |
+| 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | DONE    |
 | 13    | Turnstile enforcement           | laravel-backend  | 12                | P15      | S    | PENDING |
 | 14    | IP limit and disposable domains | laravel-backend  | 11                | P15      | M    | PENDING |
 | 15    | Final verification and report   | laravel-backend  | 6, 10, 11, 13, 14 | all      | S    | PENDING |
@@ -629,7 +629,8 @@ Origin: P16 "No account enumeration in open mode: an email that already exists g
 
 ### Phase 12 — The form shows Turnstile and the CSP allows it
 
-Status: PENDING
+Status: DONE
+Evidence: `composer test` (pint, PHPStan, 33/33), `yarn run check` (`vp check`) and `yarn types:check` pass. `code-reviewer`: APPROVED. A throwaway PHPUnit class (outside the repo, deleted) confirmed: invite-mode CSP is character-for-character what it was (no Cloudflare, no `frame-src`); open mode adds `https://challenges.cloudflare.com` to `script-src` and `connect-src` plus `frame-src`; `turnstileSiteKey` is the key only in open mode with a non-empty key, else null. `register.tsx` loads `api.js?render=explicit` once, renders into a container inside the `Form` (token in the `captcha` field), shows `errors.captcha`, and resets the widget in `onError`. Not run in a browser or against Cloudflare (use Cloudflare's documented test keys locally; they are not in `.env.example`). Notes: no CSP nonce plumbing, because the Cloudflare host is allowlisted in `script-src` (no `strict-dynamic`); `onError` only fires on validation errors, so a 419/500 would not reset the token (as the contract words it).
 Role: inertia-frontend · Depends on: 9 · Covers: P15 (captcha, client) · Size: M
 Origin: P15 "captcha on the form (Cloudflare Turnstile, verified server-side over HTTP; adding a package needs the owner's approval)". No package is added.
 

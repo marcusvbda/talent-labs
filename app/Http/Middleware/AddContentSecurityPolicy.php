@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Registration\RegistrationMode;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
@@ -13,6 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 class AddContentSecurityPolicy
 {
     private const HEADER = 'Content-Security-Policy-Report-Only';
+
+    private const TURNSTILE = 'https://challenges.cloudflare.com';
 
     /**
      * @param  Closure(Request): (Response)  $next
@@ -28,21 +31,25 @@ class AddContentSecurityPolicy
 
         $response = $next($request);
 
-        $connect = trim("'self' ".$this->websocketSource());
+        // Open registration renders the Turnstile captcha (script, iframe and its API calls).
+        $turnstile = RegistrationMode::isOpen() ? ' '.self::TURNSTILE : '';
 
-        $response->headers->set(self::HEADER, implode('; ', [
+        $connect = trim("'self' ".$this->websocketSource()).$turnstile;
+
+        $response->headers->set(self::HEADER, implode('; ', array_filter([
             "default-src 'self'",
-            "script-src 'self' 'nonce-{$nonce}'",
+            "script-src 'self' 'nonce-{$nonce}'{$turnstile}",
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data:",
             "font-src 'self'",
             "connect-src {$connect}",
+            $turnstile !== '' ? 'frame-src'.$turnstile : null,
             "form-action 'self'",
             "base-uri 'self'",
             "object-src 'none'",
             "frame-ancestors 'none'",
             'report-uri /csp-report',
-        ]));
+        ])));
 
         return $response;
     }

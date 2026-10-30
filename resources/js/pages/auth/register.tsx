@@ -1,5 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import type { RefObject } from 'react';
 import { store } from '@/actions/App/Http/Controllers/Auth/RegisterController';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -15,15 +16,100 @@ const browserTimezone = () => {
     }
 };
 
+declare global {
+    interface Window {
+        turnstile?: {
+            render: (
+                container: HTMLElement,
+                options: {
+                    sitekey: string;
+                    'response-field-name': string;
+                    language: string;
+                },
+            ) => string;
+            reset: (widgetId?: string) => void;
+            remove: (widgetId?: string) => void;
+        };
+    }
+}
+
+const TURNSTILE_SRC =
+    'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+
+const TurnstileWidget = ({
+    siteKey,
+    language,
+    widgetIdRef,
+}: {
+    siteKey: string;
+    language: string;
+    widgetIdRef: RefObject<string | null>;
+}) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        let renderedId: string | null = null;
+
+        const render = () => {
+            const container = containerRef.current;
+
+            if (cancelled || !container || !window.turnstile) {
+                return;
+            }
+
+            renderedId = window.turnstile.render(container, {
+                sitekey: siteKey,
+                'response-field-name': 'captcha',
+                language,
+            });
+            widgetIdRef.current = renderedId;
+        };
+
+        let script = document.querySelector<HTMLScriptElement>(
+            `script[src="${TURNSTILE_SRC}"]`,
+        );
+
+        if (!script) {
+            script = document.createElement('script');
+            script.src = TURNSTILE_SRC;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+
+        if (window.turnstile) {
+            render();
+        } else {
+            script.addEventListener('load', render);
+        }
+
+        return () => {
+            cancelled = true;
+            script.removeEventListener('load', render);
+
+            if (renderedId !== null) {
+                window.turnstile?.remove(renderedId);
+                widgetIdRef.current = null;
+            }
+        };
+    }, [siteKey, language, widgetIdRef]);
+
+    return <div ref={containerRef} />;
+};
+
 export default function Register({
     invite,
     open,
+    turnstileSiteKey,
 }: {
     invite: { email: string | null } | null;
     open: boolean;
+    turnstileSiteKey: string | null;
 }) {
     const inviteEmail = invite?.email ?? null;
-    const { t } = useT();
+    const { t, locale } = useT();
+    const turnstileWidgetId = useRef<string | null>(null);
     const inviteToken = useMemo(
         () => new URLSearchParams(window.location.search).get('invite') ?? '',
         [],
@@ -47,6 +133,11 @@ export default function Register({
                 {...store()}
                 resetOnSuccess={['password', 'password_confirmation']}
                 className="flex flex-col gap-5"
+                onError={() => {
+                    if (turnstileWidgetId.current !== null) {
+                        window.turnstile?.reset(turnstileWidgetId.current);
+                    }
+                }}
             >
                 {({ errors, processing }) => (
                     <>
@@ -131,6 +222,23 @@ export default function Register({
                             >
                                 {errors.invite}
                             </p>
+                        )}
+                        {turnstileSiteKey !== null && (
+                            <>
+                                <TurnstileWidget
+                                    siteKey={turnstileSiteKey}
+                                    language={locale === 'pt' ? 'pt-BR' : 'en'}
+                                    widgetIdRef={turnstileWidgetId}
+                                />
+                                {errors.captcha && (
+                                    <p
+                                        role="alert"
+                                        className="text-chip text-danger-text"
+                                    >
+                                        {errors.captcha}
+                                    </p>
+                                )}
+                            </>
                         )}
                         <Button
                             type="submit"
