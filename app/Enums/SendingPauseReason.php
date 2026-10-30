@@ -10,6 +10,7 @@ enum SendingPauseReason: string implements HasColor, HasLabel
     case Manual = 'manual';
     case ReauthorizationRequired = 'reauthorization_required';
     case RepeatedFailures = 'repeated_failures';
+    case ProviderLimit = 'provider_limit';
 
     public function getLabel(): string
     {
@@ -17,6 +18,7 @@ enum SendingPauseReason: string implements HasColor, HasLabel
             self::Manual => 'Paused manually',
             self::ReauthorizationRequired => 'Gmail reauthorization',
             self::RepeatedFailures => 'Repeated failures',
+            self::ProviderLimit => 'Provider sending limit',
         };
     }
 
@@ -26,6 +28,7 @@ enum SendingPauseReason: string implements HasColor, HasLabel
             self::Manual => 'gray',
             self::ReauthorizationRequired => 'warning',
             self::RepeatedFailures => 'danger',
+            self::ProviderLimit => 'warning',
         };
     }
 }

@@ -55,7 +55,7 @@ final class AccountStatusPresenter
             ],
             'sending' => [
                 'paused' => $user->isSendingPaused(),
-                'autoPausedReason' => in_array($user->sending_pause_reason, [SendingPauseReason::ReauthorizationRequired, SendingPauseReason::RepeatedFailures], true)
+                'autoPausedReason' => in_array($user->sending_pause_reason, [SendingPauseReason::ReauthorizationRequired, SendingPauseReason::RepeatedFailures, SendingPauseReason::ProviderLimit], true)
                     ? $user->sending_pause_reason->value
                     : null,
             ],

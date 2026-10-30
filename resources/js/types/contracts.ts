@@ -72,6 +72,7 @@ export type AccountStatus = {
         autoPausedReason:
             | 'reauthorization_required'
             | 'repeated_failures'
+            | 'provider_limit'
             | null;
     };
     onboarding: {
@@ -320,6 +321,7 @@ export type NotificationType =
     | 'daily_limit_reached'
     | 'jobs_collected'
     | 'sending_auto_paused'
+    | 'sending_provider_limit'
     | 'payment_failed';
 export type NotificationItem = {
     id: string;

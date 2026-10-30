@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Notifications\Client\ApplicationFailed;
 use App\Notifications\Client\ClientNotification;
 use App\Notifications\Client\SendingAutoPaused;
+use App\Notifications\Client\SendingProviderLimitReached;
 use App\Outreach\Actions\CanSendApplications;
 use App\Outreach\Contracts\EmailTransport;
 use App\Outreach\Data\OutboundEmail;
@@ -163,8 +164,19 @@ class SendApplicationEmail implements ShouldQueue
             $this->afterTerminal($application);
 
             return;
-        } catch (EmailProviderLimitReached|EmailDeliveryDeferred $exception) {
-            // Provider limits share the deferred retry for now; Phase 5 splits them out.
+        } catch (EmailProviderLimitReached $exception) {
+            // Nothing was sent: park the row (queued, no slot) and pause until the next day's window.
+            $application->forceFill([
+                'status' => ApplicationStatus::Queued,
+                'scheduled_for' => null,
+                'last_error' => self::errorMessage($exception),
+            ])->save();
+            $recorder->reset($application);
+            $this->pauseForProviderLimit($application->user, $scheduler);
+            SendingUpdated::broadcastFor($application->user_id);
+
+            return;
+        } catch (EmailDeliveryDeferred $exception) {
             if ($this->attempts() >= $this->tries) {
                 $this->finish($application, ApplicationStatus::Failed, $exception);
                 $recorder->record($application, SendStage::Failed, SendSubStep::Delivering);
@@ -609,6 +621,28 @@ class SendApplicationEmail implements ShouldQueue
         if (app(SendScheduler::class)->pause($user, $reason)) {
             ClientNotification::send($user, new SendingAutoPaused($reason->value));
         }
+    }
+
+    /**
+     * Pauses on a provider limit; a new pause notifies the user and schedules
+     * the auto-resume at the start of the next day's window.
+     */
+    private function pauseForProviderLimit(User $user, SendScheduler $scheduler): void
+    {
+        if (! $scheduler->pause($user, SendingPauseReason::ProviderLimit)) {
+            return;
+        }
+
+        ClientNotification::send($user, new SendingProviderLimitReached);
+
+        $pausedAt = $user->sending_paused_at;
+
+        if ($pausedAt === null) {
+            return;
+        }
+
+        $resumeAt = $scheduler->nextWindowStart($user, CarbonImmutable::now()->addDay()->startOfDay());
+        ResumeSendingAfterProviderLimit::dispatch($user->id, $pausedAt->getTimestamp())->delay($resumeAt);
     }
 
     /**

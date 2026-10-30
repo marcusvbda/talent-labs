@@ -155,6 +155,7 @@ export function notificationCreated(
 const TOAST_TONES: Partial<Record<NotificationType, 'error' | 'info'>> = {
     gmail_reauthorization_required: 'error',
     sending_auto_paused: 'error',
+    sending_provider_limit: 'error',
     payment_failed: 'error',
     daily_limit_reached: 'info',
 };

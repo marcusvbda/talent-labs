@@ -8,48 +8,48 @@ Phase status is updated in place in this file.
 
 Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 
-| Requirement | State | Evidence |
-| ----------- | ----- | -------- |
-| P1 `EmailTransport` and resolver | Missing | `app/Outreach/Contracts/SendsGmailMessages.php`, bound in `AppServiceProvider` |
-| P2 generated `Message-ID` | Partial | Symfony generates a random id in `Email::toString()`; not a UUID, never captured |
-| P3 `User::sendingIntegration()` | Missing | `User::gmailIntegration()` |
-| P4 neutral wording | Missing | Gmail copy in `lang/*.json`, enums, `CanSendApplications`, job, controller, frontend |
-| P5 error classification | Partial | Reauth and retry exist in `SendApplicationEmail`; no limit or recipient handling |
-| P6 provider list | Missing | `gmail-card.tsx`, `step-gmail.tsx` hardcode Gmail |
-| P7 SMTP credential integration | Missing | Registry only accepts `OAuthIntegrationPlugin` |
-| P8 SMTP form | Missing | — |
-| P9 presets | Missing | — |
-| P10 ports 465/587 only | Missing | — |
-| P11 encrypted credentials | Partial | `encrypted` cast pattern on `ConnectedIntegration`; no credentials column. `AccountExportController` has no integration data |
-| P12 connection test | Missing | `PublicNetworkGuard` is ready (`production-hardening` P7) |
-| P13 from address rule | Missing | — |
-| P14 `SmtpMessageSender` | Missing | `symfony/mailer` 8.1.7 installed |
-| P15 Sent-folder notice | Missing | — |
-| P16 `MicrosoftPlugin` | Missing | `league/oauth2-client` 2.9.1 installed |
-| P17 `GraphMessageSender` | Missing | — |
-| P18 Microsoft env | Missing | — |
-| P19 plan daily limit | Implemented | `SendApplicationEmail::beginAttempt()` is provider-independent |
+| Requirement                      | State       | Evidence                                                                                                                     |
+| -------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| P1 `EmailTransport` and resolver | Missing     | `app/Outreach/Contracts/SendsGmailMessages.php`, bound in `AppServiceProvider`                                               |
+| P2 generated `Message-ID`        | Partial     | Symfony generates a random id in `Email::toString()`; not a UUID, never captured                                             |
+| P3 `User::sendingIntegration()`  | Missing     | `User::gmailIntegration()`                                                                                                   |
+| P4 neutral wording               | Missing     | Gmail copy in `lang/*.json`, enums, `CanSendApplications`, job, controller, frontend                                         |
+| P5 error classification          | Partial     | Reauth and retry exist in `SendApplicationEmail`; no limit or recipient handling                                             |
+| P6 provider list                 | Missing     | `gmail-card.tsx`, `step-gmail.tsx` hardcode Gmail                                                                            |
+| P7 SMTP credential integration   | Missing     | Registry only accepts `OAuthIntegrationPlugin`                                                                               |
+| P8 SMTP form                     | Missing     | —                                                                                                                            |
+| P9 presets                       | Missing     | —                                                                                                                            |
+| P10 ports 465/587 only           | Missing     | —                                                                                                                            |
+| P11 encrypted credentials        | Partial     | `encrypted` cast pattern on `ConnectedIntegration`; no credentials column. `AccountExportController` has no integration data |
+| P12 connection test              | Missing     | `PublicNetworkGuard` is ready (`production-hardening` P7)                                                                    |
+| P13 from address rule            | Missing     | —                                                                                                                            |
+| P14 `SmtpMessageSender`          | Missing     | `symfony/mailer` 8.1.7 installed                                                                                             |
+| P15 Sent-folder notice           | Missing     | —                                                                                                                            |
+| P16 `MicrosoftPlugin`            | Missing     | `league/oauth2-client` 2.9.1 installed                                                                                       |
+| P17 `GraphMessageSender`         | Missing     | —                                                                                                                            |
+| P18 Microsoft env                | Missing     | —                                                                                                                            |
+| P19 plan daily limit             | Implemented | `SendApplicationEmail::beginAttempt()` is provider-independent                                                               |
 
 ## Status board
 
-| Phase | Title | Role | Depends on | Origin | Size | Status |
-| ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
-| 1 | Provider-agnostic transport and `Message-ID` | laravel-backend | none | P1, P2 | M | DONE |
-| 2 | `sendingIntegration()` replaces `gmailIntegration()` | laravel-backend | 1 | P3 | M | DONE |
-| 3 | Enforce one sending account | laravel-backend | 2 | P3 | S | DONE |
-| 4 | Shared error classification | laravel-backend | 1 | P5 | M | DONE |
-| 5 | Provider-limit pause and auto-resume | laravel-backend | 2, 4 | P5 | M | PENDING |
-| 6 | Neutral wording and notification | laravel-backend | 2, 5 | P4 | M | PENDING |
-| 7 | `sendingAccount` contract and main screens | inertia-frontend | 6 | P3, P4 | M | PENDING |
-| 8 | Remove the `gmail` contract key | inertia-frontend | 7 | P4 | M | PENDING |
-| 9 | Provider list from the registry | inertia-frontend | 8 | P6 | M | PENDING |
-| 10 | Credential plugin contract and storage | laravel-backend | 2 | P7, P11 | M | PENDING |
-| 11 | `SmtpMessageSender` | laravel-backend | 4, 10 | P2, P5, P14 | M | PENDING |
-| 12 | SMTP connect endpoint and test | laravel-backend | 3, 11 | P8, P9, P10, P12, P13 | M | PENDING |
-| 13 | SMTP form and registration | inertia-frontend | 9, 12 | P6, P8, P15 | M | PENDING |
-| 14 | `GraphMessageSender` and CV size check | laravel-backend | 4 | P5, P17 | M | PENDING |
-| 15 | `MicrosoftPlugin`, env and card notice | laravel-backend | 9, 10, 14 | P16, P17, P18 | M | PENDING |
-| 16 | Verification and report | laravel-backend | all | all | S | PENDING |
+| Phase | Title                                                | Role             | Depends on | Origin                | Size | Status  |
+| ----- | ---------------------------------------------------- | ---------------- | ---------- | --------------------- | ---- | ------- |
+| 1     | Provider-agnostic transport and `Message-ID`         | laravel-backend  | none       | P1, P2                | M    | DONE    |
+| 2     | `sendingIntegration()` replaces `gmailIntegration()` | laravel-backend  | 1          | P3                    | M    | DONE    |
+| 3     | Enforce one sending account                          | laravel-backend  | 2          | P3                    | S    | DONE    |
+| 4     | Shared error classification                          | laravel-backend  | 1          | P5                    | M    | DONE    |
+| 5     | Provider-limit pause and auto-resume                 | laravel-backend  | 2, 4       | P5                    | M    | DONE    |
+| 6     | Neutral wording and notification                     | laravel-backend  | 2, 5       | P4                    | M    | PENDING |
+| 7     | `sendingAccount` contract and main screens           | inertia-frontend | 6          | P3, P4                | M    | PENDING |
+| 8     | Remove the `gmail` contract key                      | inertia-frontend | 7          | P4                    | M    | PENDING |
+| 9     | Provider list from the registry                      | inertia-frontend | 8          | P6                    | M    | PENDING |
+| 10    | Credential plugin contract and storage               | laravel-backend  | 2          | P7, P11               | M    | PENDING |
+| 11    | `SmtpMessageSender`                                  | laravel-backend  | 4, 10      | P2, P5, P14           | M    | PENDING |
+| 12    | SMTP connect endpoint and test                       | laravel-backend  | 3, 11      | P8, P9, P10, P12, P13 | M    | PENDING |
+| 13    | SMTP form and registration                           | inertia-frontend | 9, 12      | P6, P8, P15           | M    | PENDING |
+| 14    | `GraphMessageSender` and CV size check               | laravel-backend  | 4          | P5, P17               | M    | PENDING |
+| 15    | `MicrosoftPlugin`, env and card notice               | laravel-backend  | 9, 10, 14  | P16, P17, P18         | M    | PENDING |
+| 16    | Verification and report                              | laravel-backend  | all        | all                   | S    | PENDING |
 
 ## Owner decisions
 
@@ -104,27 +104,27 @@ Blocks: none · Options: A email login and same domain (recommended), B same dom
 
 ## Requirement coverage
 
-| Requirement | Phases |
-| ----------- | ------ |
-| P1 | 1, 11, 14 |
-| P2 | 1, 11, 14 |
-| P3 | 2, 3, 7 |
-| P4 | 6, 7, 8 |
-| P5 | 4, 5, 11, 14 |
-| P6 | 9, 13 |
-| P7 | 10, 12 |
-| P8 | 12, 13 |
-| P9 | 12 |
-| P10 | 12 |
-| P11 | 10, 12 |
-| P12 | 12 |
-| P13 | 12 |
-| P14 | 11 |
-| P15 | 13 |
-| P16 | 15 |
-| P17 | 14, 15 |
-| P18 | 15 |
-| P19 | Implemented; verified in 16 |
+| Requirement | Phases                      |
+| ----------- | --------------------------- |
+| P1          | 1, 11, 14                   |
+| P2          | 1, 11, 14                   |
+| P3          | 2, 3, 7                     |
+| P4          | 6, 7, 8                     |
+| P5          | 4, 5, 11, 14                |
+| P6          | 9, 13                       |
+| P7          | 10, 12                      |
+| P8          | 12, 13                      |
+| P9          | 12                          |
+| P10         | 12                          |
+| P11         | 10, 12                      |
+| P12         | 12                          |
+| P13         | 12                          |
+| P14         | 11                          |
+| P15         | 13                          |
+| P16         | 15                          |
+| P17         | 14, 15                      |
+| P18         | 15                          |
+| P19         | Implemented; verified in 16 |
 
 ## Phases
 
@@ -274,7 +274,8 @@ Origin: P5 "Error classification per transport, shared by all"
 
 ### Phase 5 — Provider-limit pause and auto-resume
 
-Status: PENDING
+Status: DONE
+Evidence: pint, `composer types:check`, `yarn run check`, `yarn types:check`, `SendingDatabaseGuards` (7) and `tests/Feature/Outreach` (31) pass; reviewer APPROVED. A rolled-back tinker run with a stub transport throwing `EmailProviderLimitReached` left the application `queued` with `scheduled_for` null, paused the user with `provider_limit`, pushed one delayed `ResumeSendingAfterProviderLimit` on `outreach`, and the resume guards and the real job behaved as specified. Open (non-blocking): a user timezone ahead of the app timezone can push the resume out about two days (same pattern as the daily-limit branch in `beginAttempt()`); if the integration is not `Connected` at resume time the job no-ops and the user resumes manually.
 Role: laravel-backend · Depends on: 2, 4 · Covers: P5 · Size: M
 Origin: P5 "provider sending/rate limit → sending paused until the next day, the application is **not** failed"
 
@@ -333,30 +334,30 @@ Origin: P4 "Provider-neutral wording everywhere listed in 2"
 - `NotificationType` keeps `gmail_reauthorization_required` and adds the new type; update `notifications-popover.tsx`, `handlers.ts` and the fixture catalog.
 - Translations, EN / PT:
 
-| Key | EN | PT |
-| --- | -- | -- |
-| `notifications.email_reauthorization_required` (new) | Your email connection expired — reconnect to keep sending. | Sua conexão de e-mail expirou — reconecte para continuar enviando. |
-| `notifications.gmail_reauthorization_required` | same as above | same as above |
-| `sending.sub.checking_gmail` | Checking email account | Verificando conta de e-mail |
-| `sending.sub.connecting_gmail` | Connecting to email account | Conectando à conta de e-mail |
-| `sending.resume.reconnect_gmail` | Reconnect your email account to resume sending. | Reconecte sua conta de e-mail para retomar o envio. |
-| `dashboard.gmail.expired` | Your email connection expired. Sending is paused until you reconnect. | Sua conexão de e-mail expirou. O envio está pausado até você reconectar. |
-| `dashboard.gmail.reconnect` | Reconnect email | Reconectar e-mail |
-| `plans.summary` | Every plan sends from your own email account. Pick the daily volume and how much control you want. | Todos os planos enviam da sua própria conta de e-mail. Escolha o volume diário e o nível de controle que você quer. |
-| `plans.features.gmail` | Sends from your own email address | Envia do seu próprio endereço de e-mail |
-| `applications.error.gmail` | Your email account is not connected. | Sua conta de e-mail não está conectada. |
-| `onboarding.steps.gmail` | Email | E-mail |
-| `onboarding.gmail.title` | Connect your email | Conectar seu e-mail |
-| `onboarding.gmail.body`, `account.gmail.body` | Applications leave from your own email address. | As candidaturas saem do seu próprio endereço de e-mail. |
-| `onboarding.gmail.connect`, `account.gmail.connect` | Connect email | Conectar e-mail |
-| `onboarding.gmail.connected` | Your email is connected. | Seu e-mail está conectado. |
-| `account.gmail.title` | Email account | Conta de e-mail |
-| `account.gmail.reconnect` | Reconnect email | Reconectar e-mail |
-| `account.gmail.disconnect_title` | Disconnect this email account? | Desconectar esta conta de e-mail? |
-| `account.gmail.disconnected` | Email account disconnected | Conta de e-mail desconectada |
-| `account.gmail.connected_flash` | Email account connected. | Conta de e-mail conectada. |
-| `account.gmail.failed_flash` | We could not connect your email account. Please try again. | Não conseguimos conectar sua conta de e-mail. Tente novamente. |
-| `landing.faq.1.a` | No. We only use your connected account to send applications. We never read, list or delete your messages. | Não. Usamos a conta conectada apenas para enviar candidaturas. Nunca lemos, listamos ou apagamos mensagens. |
+| Key                                                  | EN                                                                                                        | PT                                                                                                                  |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `notifications.email_reauthorization_required` (new) | Your email connection expired — reconnect to keep sending.                                                | Sua conexão de e-mail expirou — reconecte para continuar enviando.                                                  |
+| `notifications.gmail_reauthorization_required`       | same as above                                                                                             | same as above                                                                                                       |
+| `sending.sub.checking_gmail`                         | Checking email account                                                                                    | Verificando conta de e-mail                                                                                         |
+| `sending.sub.connecting_gmail`                       | Connecting to email account                                                                               | Conectando à conta de e-mail                                                                                        |
+| `sending.resume.reconnect_gmail`                     | Reconnect your email account to resume sending.                                                           | Reconecte sua conta de e-mail para retomar o envio.                                                                 |
+| `dashboard.gmail.expired`                            | Your email connection expired. Sending is paused until you reconnect.                                     | Sua conexão de e-mail expirou. O envio está pausado até você reconectar.                                            |
+| `dashboard.gmail.reconnect`                          | Reconnect email                                                                                           | Reconectar e-mail                                                                                                   |
+| `plans.summary`                                      | Every plan sends from your own email account. Pick the daily volume and how much control you want.        | Todos os planos enviam da sua própria conta de e-mail. Escolha o volume diário e o nível de controle que você quer. |
+| `plans.features.gmail`                               | Sends from your own email address                                                                         | Envia do seu próprio endereço de e-mail                                                                             |
+| `applications.error.gmail`                           | Your email account is not connected.                                                                      | Sua conta de e-mail não está conectada.                                                                             |
+| `onboarding.steps.gmail`                             | Email                                                                                                     | E-mail                                                                                                              |
+| `onboarding.gmail.title`                             | Connect your email                                                                                        | Conectar seu e-mail                                                                                                 |
+| `onboarding.gmail.body`, `account.gmail.body`        | Applications leave from your own email address.                                                           | As candidaturas saem do seu próprio endereço de e-mail.                                                             |
+| `onboarding.gmail.connect`, `account.gmail.connect`  | Connect email                                                                                             | Conectar e-mail                                                                                                     |
+| `onboarding.gmail.connected`                         | Your email is connected.                                                                                  | Seu e-mail está conectado.                                                                                          |
+| `account.gmail.title`                                | Email account                                                                                             | Conta de e-mail                                                                                                     |
+| `account.gmail.reconnect`                            | Reconnect email                                                                                           | Reconectar e-mail                                                                                                   |
+| `account.gmail.disconnect_title`                     | Disconnect this email account?                                                                            | Desconectar esta conta de e-mail?                                                                                   |
+| `account.gmail.disconnected`                         | Email account disconnected                                                                                | Conta de e-mail desconectada                                                                                        |
+| `account.gmail.connected_flash`                      | Email account connected.                                                                                  | Conta de e-mail conectada.                                                                                          |
+| `account.gmail.failed_flash`                         | We could not connect your email account. Please try again.                                                | Não conseguimos conectar sua conta de e-mail. Tente novamente.                                                      |
+| `landing.faq.1.a`                                    | No. We only use your connected account to send applications. We never read, list or delete your messages. | Não. Usamos a conta conectada apenas para enviar candidaturas. Nunca lemos, listamos ou apagamos mensagens.         |
 
 **Steps.**
 
@@ -565,13 +566,13 @@ Origin: P8 "Form fields" · P9 "Presets" · P10 "Only ports 465 and 587" · P12 
 - Route, in its own group with `['web', 'auth', 'verified']`, name `integrations.smtp.connect`, `throttle:5,1,smtp-connect`, `SmtpConnectionController::store`. Abort 403 for inactive users, as the OAuth controller does.
 - `config/connected-integrations.php`, `'smtp' => ['presets' => […], 'blocked_hosts' => […]]`:
 
-| Preset | Host | Port | Security |
-| ------ | ---- | ---- | -------- |
-| `yahoo` | `smtp.mail.yahoo.com` | 465 | `tls` |
-| `icloud` | `smtp.mail.me.com` | 587 | `starttls` |
-| `zoho` | `smtp.zoho.com` | 465 | `tls` |
-| `fastmail` | `smtp.fastmail.com` | 465 | `tls` |
-| `custom` | user input | user input | user input |
+| Preset     | Host                  | Port       | Security   |
+| ---------- | --------------------- | ---------- | ---------- |
+| `yahoo`    | `smtp.mail.yahoo.com` | 465        | `tls`      |
+| `icloud`   | `smtp.mail.me.com`    | 587        | `starttls` |
+| `zoho`     | `smtp.zoho.com`       | 465        | `tls`      |
+| `fastmail` | `smtp.fastmail.com`   | 465        | `tls`      |
+| `custom`   | user input            | user input | user input |
 
 - **Verify each row against the provider's official documentation first** (spec Open points). Planning only confirmed Zoho on an official page; the others came from third-party lists. Other Zoho regions use Custom.
 - `blocked_hosts` (Assumption, from spec D3 and P9): `smtp.gmail.com`, `smtp.googlemail.com`, `smtp.office365.com`, `smtp-mail.outlook.com`, `smtp.live.com`.
@@ -629,22 +630,22 @@ Origin: P8 "Form fields" · P15 "the UI says so" · P6
 - `provider-list.tsx` opens the form for `kind === 'credential'`. Reconnect on an SMTP account opens the form with `smtpDefaults`.
 - Translations, EN / PT (`integrations.smtp.*`):
 
-| Key | EN | PT |
-| --- | -- | -- |
-| `label` | Other email (SMTP) | Outro e-mail (SMTP) |
-| `description` | Use your email provider's SMTP server. | Use o servidor SMTP do seu provedor de e-mail. |
-| `preset` | Provider | Provedor |
-| `preset_custom` | Custom | Personalizado |
-| `host` | SMTP server | Servidor SMTP |
-| `port` | Port | Porta |
-| `security` | Security | Segurança |
-| `username` | Username (your email address) | Usuário (seu endereço de e-mail) |
-| `password` | Password | Senha |
-| `password_help` | We recommend an app password from your email provider. | Recomendamos uma senha de aplicativo do seu provedor de e-mail. |
-| `from_address` | From address | Endereço de envio |
-| `display_name` | Display name | Nome de exibição |
-| `submit` | Test and connect | Testar e conectar |
-| `sent_notice` | Your provider may not copy these emails to your Sent folder. You can always see them under Applications. | Seu provedor pode não copiar estes e-mails para a pasta Enviados. Você sempre pode vê-los em Candidaturas. |
+| Key             | EN                                                                                                       | PT                                                                                                         |
+| --------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `label`         | Other email (SMTP)                                                                                       | Outro e-mail (SMTP)                                                                                        |
+| `description`   | Use your email provider's SMTP server.                                                                   | Use o servidor SMTP do seu provedor de e-mail.                                                             |
+| `preset`        | Provider                                                                                                 | Provedor                                                                                                   |
+| `preset_custom` | Custom                                                                                                   | Personalizado                                                                                              |
+| `host`          | SMTP server                                                                                              | Servidor SMTP                                                                                              |
+| `port`          | Port                                                                                                     | Porta                                                                                                      |
+| `security`      | Security                                                                                                 | Segurança                                                                                                  |
+| `username`      | Username (your email address)                                                                            | Usuário (seu endereço de e-mail)                                                                           |
+| `password`      | Password                                                                                                 | Senha                                                                                                      |
+| `password_help` | We recommend an app password from your email provider.                                                   | Recomendamos uma senha de aplicativo do seu provedor de e-mail.                                            |
+| `from_address`  | From address                                                                                             | Endereço de envio                                                                                          |
+| `display_name`  | Display name                                                                                             | Nome de exibição                                                                                           |
+| `submit`        | Test and connect                                                                                         | Testar e conectar                                                                                          |
+| `sent_notice`   | Your provider may not copy these emails to your Sent folder. You can always see them under Applications. | Seu provedor pode não copiar estes e-mails para a pasta Enviados. Você sempre pode vê-los em Candidaturas. |
 
 - `sent_notice` is shown on the card when `providerKey === 'smtp'` and in the form.
 - Confirm the label "Candidaturas" matches the existing PT navigation before finishing.

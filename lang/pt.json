@@ -226,6 +226,7 @@
     "notifications.daily_limit_reached": "Você atingiu o limite de hoje de :count candidaturas.",
     "notifications.jobs_collected": ":count novas vagas combinam com suas preferências.",
     "notifications.sending_auto_paused": "O envio foi pausado automaticamente.",
+    "notifications.sending_provider_limit": "O limite de envio do seu provedor de e-mail foi atingido. O envio será retomado amanhã.",
     "notifications.payment_failed": "Um pagamento falhou. Atualize seu cartão em Gerenciar cobrança para manter seu plano.",
     "topbar.menu": "Abrir menu",
     "topbar.menu_title": "Menu",

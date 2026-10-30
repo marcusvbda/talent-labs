@@ -226,6 +226,7 @@
     "notifications.daily_limit_reached": "You reached today's limit of :count applications.",
     "notifications.jobs_collected": ":count new jobs match your preferences.",
     "notifications.sending_auto_paused": "Sending was paused automatically.",
+    "notifications.sending_provider_limit": "Your email provider's sending limit was reached. Sending resumes tomorrow.",
     "notifications.payment_failed": "A payment failed. Update your card in Manage billing to keep your plan.",
     "topbar.menu": "Open menu",
     "topbar.menu_title": "Menu",

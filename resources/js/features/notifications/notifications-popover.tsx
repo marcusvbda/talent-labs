@@ -41,6 +41,7 @@ const TYPE_VISUALS: Record<NotificationType, IconTint> = {
     daily_limit_reached: { icon: PauseCircle, tint: 'orange' },
     jobs_collected: { icon: Briefcase, tint: 'green' },
     sending_auto_paused: { icon: PauseCircle, tint: 'neutral' },
+    sending_provider_limit: { icon: PauseCircle, tint: 'orange' },
     payment_failed: { icon: CreditCard, tint: 'red' },
 };
 
@@ -55,6 +56,8 @@ const targetFor = (type: NotificationType, canChooseJobs: boolean): string => {
         case 'jobs_collected':
             return canChooseJobs ? jobs().url : dashboard().url;
         case 'sending_auto_paused':
+            return account().url;
+        case 'sending_provider_limit':
             return account().url;
         case 'payment_failed':
             return account().url;
