@@ -121,12 +121,17 @@ Route::post('/logout', LogoutController::class)->middleware('auth')->name('logou
 
 Route::middleware(['auth', 'client'])->prefix('email')->name('verification.')->group(function (): void {
     Route::get('/verify', [EmailVerificationController::class, 'notice'])->name('notice');
-    Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-        ->middleware(['signed', 'throttle:6,1,verification-verify'])
-        ->name('verify');
     Route::post('/verification-notification', [EmailVerificationController::class, 'send'])
         ->middleware('throttle:6,1,verification-send')
         ->name('send');
+});
+
+// Outside `auth`: in open mode the first click on the link also logs the person in.
+Route::prefix('email')->name('verification.')->group(function (): void {
+    Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['client', 'signed', 'throttle:6,1,verification-verify'])
+        ->whereNumber('id')
+        ->name('verify');
 });
 
 Route::middleware(['web', 'auth', 'verified'])->prefix('integrations')->name('integrations.oauth.')->group(function (): void {

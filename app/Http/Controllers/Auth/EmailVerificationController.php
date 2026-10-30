@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Auth;
 use App\Client\AccountStatusPresenter;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Registration\RegistrationMode;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,12 +37,40 @@ class EmailVerificationController extends Controller
         ]);
     }
 
-    public function verify(EmailVerificationRequest $request): RedirectResponse
+    public function verify(Request $request, int $id, string $hash): RedirectResponse
     {
-        $request->fulfill();
+        $user = User::query()->find($id);
+        abort_unless($user !== null && hash_equals($hash, sha1($user->getEmailForVerification())), 403);
 
-        /** @var User $user */
-        $user = $request->user();
+        /** @var User|null $current */
+        $current = $request->user();
+        abort_if($current !== null && $current->id !== $user->id, 403);
+
+        // Invite mode keeps Stage 1: a guest logs in first, then returns here.
+        if ($current === null && ! RegistrationMode::isOpen()) {
+            return redirect()->guest(route('login'));
+        }
+
+        // Only the first use can log in, so a forwarded mail can't be replayed while the link is valid.
+        $firstUse = ! $user->hasVerifiedEmail();
+
+        if ($firstUse) {
+            $user->markEmailAsVerified();
+            event(new Verified($user));
+        }
+
+        if ($firstUse && RegistrationMode::isOpen()) {
+            $this->endOtherSessions($request, $user);
+        }
+
+        if ($current === null) {
+            if (! $firstUse || $user->is_admin || ! $user->isActive()) {
+                return redirect()->route('login');
+            }
+
+            Auth::login($user);
+            $request->session()->regenerate();
+        }
 
         return redirect()->to($this->destination($user))
             ->with('success', __('auth.verify.verified'));
@@ -56,6 +88,21 @@ class EmailVerificationController extends Controller
         $user->sendEmailVerificationNotification();
 
         return back()->with('success', __('auth.verify.sent'));
+    }
+
+    /**
+     * Sign the user out everywhere else: rotate the remember token and drop stored sessions but this one.
+     */
+    private function endOtherSessions(Request $request, User $user): void
+    {
+        $user->forceFill(['remember_token' => Str::random(60)])->save();
+
+        if (config('session.driver') === 'database') {
+            DB::table((string) config('session.table', 'sessions'))
+                ->where('user_id', $user->id)
+                ->where('id', '!=', $request->session()->getId())
+                ->delete();
+        }
     }
 
     /**

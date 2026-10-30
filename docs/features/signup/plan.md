@@ -44,7 +44,7 @@ incomplete until then.
 | 7     | Free costs 0                    | laravel-backend  | none              | P14      | S    | DONE    |
 | 8     | Registration mode switch        | laravel-backend  | 7                 | P11      | M    | DONE    |
 | 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | DONE     |
-| 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | PENDING |
+| 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | DONE     |
 | 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | PENDING |
 | 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | PENDING |
 | 13    | Turnstile enforcement           | laravel-backend  | 12                | P15      | S    | PENDING |
@@ -505,7 +505,8 @@ Origin: P12 "`open` mode: `/register` works without an invite; when a usable inv
 
 ### Phase 10 — In open mode the verification link logs the person in
 
-Status: PENDING
+Status: DONE
+Evidence: `route:list --name=verification` shows `verification.verify` with `client`, `signed`, `throttle:6,1,verification-verify` and `whereNumber('id')`; `notice` and `send` keep `auth`. `composer test` (pint, PHPStan, 33/33) passes. `code-reviewer`: APPROVED. A throwaway PHPUnit class (outside the repo, deleted) against the testing DB covered: open + logged out first click -> verified, logged in, onboarding; second click -> login, not logged in; other `sessions` rows deleted and `remember_token` rotated (database driver); invite mode guest -> login, then the link verifies; another user -> 403; tampered -> notice with the error; wrong hash -> 403; admin and blocked users are verified but not logged in. No frontend change, not exercised in a browser. Notes: in open mode a logged-in user's first verification also rotates their `remember_token` (their own remember-me cookie stops working; the current session stays), as the contract asks. Two simultaneous first clicks could both pass the `hasVerifiedEmail()` check (same window as the contract's code).
 Role: laravel-backend · Depends on: 9 · Covers: P16 (link), D11 (sessions) · Size: S
 Origin: P16 "the signed verification link logs them in"; D11 "Verifying ends the user's other sessions and rotates `remember_token`."
 
