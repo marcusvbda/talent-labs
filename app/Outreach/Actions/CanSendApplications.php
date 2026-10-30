@@ -24,11 +24,11 @@ class CanSendApplications
             $unmet[] = 'Your account is not active.';
         }
 
-        $gmail = $user->gmailIntegration()->first();
+        $integration = $user->sendingIntegration()->first();
 
-        if ($gmail === null || $gmail->status === ConnectedIntegrationStatus::Disconnected) {
+        if ($integration === null || $integration->status === ConnectedIntegrationStatus::Disconnected) {
             $unmet[] = 'Connect your Gmail account.';
-        } elseif ($gmail->status === ConnectedIntegrationStatus::ReauthorizationRequired) {
+        } elseif ($integration->status === ConnectedIntegrationStatus::ReauthorizationRequired) {
             $unmet[] = 'Reconnect your Gmail account.';
         }
 

@@ -23,7 +23,7 @@ final class AccountStatusPresenter
     {
         $plan = $this->plans->for($user);
 
-        $gmail = $user->gmailIntegration;
+        $gmail = $user->sendingIntegration;
         $gmailState = match ($gmail?->status) {
             ConnectedIntegrationStatus::Connected => 'connected',
             ConnectedIntegrationStatus::ReauthorizationRequired => 'reauthorization_required',

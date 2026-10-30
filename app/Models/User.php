@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ConnectedIntegrationStatus;
 use App\Enums\PlanKey;
 use App\Enums\PlanSource;
 use App\Enums\Region;
@@ -10,6 +11,7 @@ use App\Enums\UserStatus;
 use App\Events\Client\Concerns\DispatchesClientEvent;
 use App\Notifications\Client\ResetPassword;
 use App\Notifications\Client\VerifyEmail;
+use App\Services\ConnectedIntegrationRegistry;
 use Database\Factories\UserFactory;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
@@ -57,7 +59,7 @@ use Laravel\Cashier\Billable;
  * @property Carbon|null $updated_at
  * @property-read JobPreference|null $jobPreference
  * @property-read Collection<int, ConnectedIntegration> $connectedIntegrations
- * @property-read ConnectedIntegration|null $gmailIntegration
+ * @property-read ConnectedIntegration|null $sendingIntegration
  * @property-read Collection<int, Application> $applications
  * @property-read Collection<int, ApplicationProfile> $applicationProfiles
  */
@@ -127,11 +129,16 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     }
 
     /**
+     * The user's email sending account: a non-disconnected integration whose
+     * plugin can send email. Rows needing reauthorization are still returned.
+     *
      * @return HasOne<ConnectedIntegration, $this>
      */
-    public function gmailIntegration(): HasOne
+    public function sendingIntegration(): HasOne
     {
-        return $this->hasOne(ConnectedIntegration::class)->where('plugin_key', 'gmail');
+        return $this->hasOne(ConnectedIntegration::class)
+            ->whereIn('plugin_key', app(ConnectedIntegrationRegistry::class)->sendingPluginKeys())
+            ->where('status', '!=', ConnectedIntegrationStatus::Disconnected);
     }
 
     /**

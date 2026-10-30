@@ -35,7 +35,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | Phase | Title | Role | Depends on | Origin | Size | Status |
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | Provider-agnostic transport and `Message-ID` | laravel-backend | none | P1, P2 | M | DONE |
-| 2 | `sendingIntegration()` replaces `gmailIntegration()` | laravel-backend | 1 | P3 | M | PENDING |
+| 2 | `sendingIntegration()` replaces `gmailIntegration()` | laravel-backend | 1 | P3 | M | DONE |
 | 3 | Enforce one sending account | laravel-backend | 2 | P3 | S | PENDING |
 | 4 | Shared error classification | laravel-backend | 1 | P5 | M | PENDING |
 | 5 | Provider-limit pause and auto-resume | laravel-backend | 2, 4 | P5 | M | PENDING |
@@ -167,7 +167,8 @@ Origin: P1 "Replace `SendsGmailMessages` with a provider-agnostic `EmailTranspor
 
 ### Phase 2 — `sendingIntegration()` replaces `gmailIntegration()`
 
-Status: PENDING
+Status: DONE
+Evidence: `grep gmailIntegration app tests resources database routes` empty; pint, `composer types:check` and `SendingDatabaseGuards` (7 tests) pass; reviewer APPROVED. Side effect: the admin Users column shows "Not connected" instead of "Disconnected" for disconnected rows (the relation excludes them, as the contract requires).
 Role: laravel-backend · Depends on: 1 · Covers: P3 · Size: M
 Origin: P3 "`User::sendingIntegration()` replaces `gmailIntegration()`"
 

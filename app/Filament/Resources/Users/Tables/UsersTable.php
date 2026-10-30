@@ -75,7 +75,7 @@ class UsersTable
                         ? $record->sending_pause_reason->getColor()
                         : 'success'),
 
-                TextColumn::make('gmailIntegration.status')
+                TextColumn::make('sendingIntegration.status')
                     ->label('Gmail')
                     ->badge()
                     ->placeholder('Not connected')
@@ -92,7 +92,7 @@ class UsersTable
                     ->sortable(),
             ])
             ->modifyQueryUsing(fn (Builder $query): Builder => $query
-                ->with(['gmailIntegration', 'subscriptions'])
+                ->with(['sendingIntegration', 'subscriptions'])
                 ->withCount(['applications as sent_today_count' => fn ($q) => $q->countedToday()]))
             ->filters([
                 SelectFilter::make('status')

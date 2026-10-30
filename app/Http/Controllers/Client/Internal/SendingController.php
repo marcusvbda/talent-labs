@@ -52,7 +52,7 @@ class SendingController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        if ($user->gmailIntegration?->status !== ConnectedIntegrationStatus::Connected) {
+        if ($user->sendingIntegration?->status !== ConnectedIntegrationStatus::Connected) {
             return response()->json(['message' => __('sending.resume.reconnect_gmail')], 422);
         }
 

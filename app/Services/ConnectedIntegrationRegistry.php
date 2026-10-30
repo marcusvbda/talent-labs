@@ -24,6 +24,19 @@ class ConnectedIntegrationRegistry
             ?? throw new InvalidArgumentException("Unknown connected integration plugin [{$key}].");
     }
 
+    /**
+     * Keys of the registered plugins that can send email.
+     *
+     * @return list<string>
+     */
+    public function sendingPluginKeys(): array
+    {
+        return array_keys(array_filter(
+            $this->plugins,
+            fn (OAuthIntegrationPlugin $plugin): bool => in_array('email.send', $plugin->capabilities(), true),
+        ));
+    }
+
     /** @return list<array{key: string, label: string, description: string, category: string, icon: string, capabilities: list<string>}> */
     public function metadata(): array
     {

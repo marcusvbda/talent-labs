@@ -268,10 +268,10 @@ class SendApplicationEmail implements ShouldQueue
      */
     private function preCheck(Application $application, ConnectedIntegrationTokenManager $tokens, ApplicationStageRecorder $recorder): ?array
     {
-        $application->load(['company', 'contact', 'user.gmailIntegration', 'applicationProfile']);
+        $application->load(['company', 'contact', 'user.sendingIntegration', 'applicationProfile']);
         $user = $application->user;
         $contact = $application->contact;
-        $integration = $user->gmailIntegration;
+        $integration = $user->sendingIntegration;
         $profile = $application->applicationProfile;
         $cvPath = (string) $profile?->cv_path;
         $reauthorization = false;
