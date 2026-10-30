@@ -10,6 +10,7 @@ use App\Support\RegionResolver;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
@@ -35,6 +36,11 @@ class UserForm
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrated(fn (?string $state): bool => filled($state))
                     ->maxLength(255),
+
+                TextEntry::make('email_verified_at')
+                    ->label('Email verified')
+                    ->visibleOn('edit')
+                    ->state(fn (?User $record): string => $record?->email_verified_at?->toDateTimeString() ?? 'Not verified'),
 
                 Toggle::make('is_admin')
                     ->label('Admin')

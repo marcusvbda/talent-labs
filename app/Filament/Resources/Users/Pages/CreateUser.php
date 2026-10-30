@@ -19,6 +19,7 @@ class CreateUser extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['plan_source'] = PlanSource::Manual->value;
+        $data['email_verified_at'] = now();
 
         return $data;
     }

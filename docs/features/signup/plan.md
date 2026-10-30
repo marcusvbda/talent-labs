@@ -38,7 +38,7 @@ incomplete until then.
 | 1 | Verification email | laravel-backend | none | P2, P6 | S | DONE |
 | 2 | Verification routes and page | laravel-backend | 1 | P3, P5 | M | PENDING |
 | 3 | `users:mark-verified` command | laravel-backend | none | P9 | S | DONE |
-| 4 | Admin verification controls | filament-admin | 1 | P7, P8 | S | PENDING |
+| 4 | Admin verification controls | filament-admin | 1 | P7, P8 | S | DONE |
 | 5 | Enforce verification | laravel-backend | 1, 2, 3, 4 | P2, P4 | M | PENDING |
 | 6 | Stage 1 verification and report | laravel-backend | 5 | P1, P10 | S | PENDING |
 | 7 | Free costs 0 | laravel-backend | none | P14 | S | DONE |
@@ -271,7 +271,8 @@ Origin: P9 "Existing users with `email_verified_at` null: read-only by default c
 
 ### Phase 4 — Admins can see, resend and mark verification
 
-Status: PENDING
+Status: DONE
+Evidence: `CreateUser` sets `email_verified_at = now()` (persisted by the existing `forceFill`); `EditUser` shows an `Email verified` entry (edit only, never dehydrated) and the `Resend verification email` / `Mark as verified` actions, visible only while unverified; panel `->emailVerification()` untouched. `pint`, `composer types:check` pass. `code-reviewer` verified against Filament 5 vendor source: APPROVED. Not exercised in a browser. `refreshFormData(['email_verified_at'])` is a harmless no-op (the entry reads the mutated record on re-render).
 Role: filament-admin · Depends on: 1 · Covers: P7, P8, D6 · Size: S
 Origin: P7 "Admin-created users (`CreateUser`) are created verified… The admin panel itself does not require verification."; P8 "`EditUser`: show verified status; actions 'Resend verification email' and 'Mark as verified'."
 

@@ -8,6 +8,7 @@ use App\Enums\PlanSource;
 use App\Enums\UserStatus;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -21,6 +22,32 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('resendVerification')
+                ->label('Resend verification email')
+                ->requiresConfirmation()
+                ->visible(fn (): bool => ! $this->getUserRecord()->hasVerifiedEmail())
+                ->action(function (): void {
+                    $this->getUserRecord()->sendEmailVerificationNotification();
+
+                    Notification::make()
+                        ->title('Verification email sent.')
+                        ->success()
+                        ->send();
+                }),
+            Action::make('markVerified')
+                ->label('Mark as verified')
+                ->requiresConfirmation()
+                ->visible(fn (): bool => ! $this->getUserRecord()->hasVerifiedEmail())
+                ->action(function (): void {
+                    $this->getUserRecord()->markEmailAsVerified();
+
+                    Notification::make()
+                        ->title('Email marked as verified.')
+                        ->success()
+                        ->send();
+
+                    $this->refreshFormData(['email_verified_at']);
+                }),
             DeleteAction::make()
                 ->disabled(fn (): bool => filled((new AdminGuard)->violation(auth()->user(), $this->getUserRecord(), 'delete')))
                 ->tooltip(fn (): ?string => (new AdminGuard)->violation(auth()->user(), $this->getUserRecord(), 'delete'))
