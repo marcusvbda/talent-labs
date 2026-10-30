@@ -115,8 +115,9 @@ production configuration check.
 
 - `config/reverb.php` `allowed_origins` comes from `REVERB_ALLOWED_ORIGINS`
   (comma list of hostnames, wildcards allowed), defaulting to the `APP_URL`
-  host. Reverb rate limiting is on in production through
-  `REVERB_APP_RATE_LIMITING_ENABLED=true`.
+  host. Reverb rate limiting is off by default (`REVERB_APP_RATE_LIMITING_ENABLED`
+  is false); `.env.example` documents setting it to `true` in production, and
+  `app:production-check` does not verify it.
 
 #### Headers
 
@@ -128,7 +129,8 @@ production configuration check.
   `includeSubDomains` or `preload`). `SECURITY_HEADERS_SKIP` (comma list,
   case-insensitive) skips headers nginx already sets.
 - `AddContentSecurityPolicy` (in the `web` group, so not on the Filament
-  panel, and skipped when Vite runs hot) sends
+  panel; skipped when Vite runs hot or when `Content-Security-Policy-Report-Only`
+  is listed in `SECURITY_HEADERS_SKIP`) sends
   `Content-Security-Policy-Report-Only` with a per-request nonce
   (`Vite::useCspNonce()`; the inline script in `landing-essentials.blade.php`
   carries it), `connect-src` including the Reverb websocket host, and
@@ -136,7 +138,7 @@ production configuration check.
   clean report period.
 - `POST /csp-report` (`CspReportController`, outside the `web` group: no
   session, no CSRF; `throttle:30,1,csp-report`) always answers 204, ignores
-  bodies over 8192 bytes or invalid JSON, keeps only `document-uri`,
+  bodies over 8192 bytes, invalid JSON or without a `csp-report` object, keeps only `document-uri`,
   `blocked-uri`, `violated-directive`, `effective-directive`, `source-file`
   and `line-number`, strips query strings and fragments, truncates strings to
   255 characters and logs `CSP violation` at warning level.
