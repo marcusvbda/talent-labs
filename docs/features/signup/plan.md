@@ -41,7 +41,7 @@ incomplete until then.
 | 4 | Admin verification controls | filament-admin | 1 | P7, P8 | S | PENDING |
 | 5 | Enforce verification | laravel-backend | 1, 2, 3, 4 | P2, P4 | M | PENDING |
 | 6 | Stage 1 verification and report | laravel-backend | 5 | P1, P10 | S | PENDING |
-| 7 | Free costs 0 | laravel-backend | none | P14 | S | PENDING |
+| 7 | Free costs 0 | laravel-backend | none | P14 | S | DONE |
 | 8 | Registration mode switch | laravel-backend | 7 | P11 | M | PENDING |
 | 9 | Registration without an invite | laravel-backend | 5, 8 | P12, P13 | M | PENDING |
 | 10 | Verification link logs in | laravel-backend | 9 | P16 | S | PENDING |
@@ -388,7 +388,8 @@ Origin: spec x code gap (verification of Stage 1 before the beta)
 
 ### Phase 7 — Free costs 0
 
-Status: PENDING
+Status: DONE
+Evidence: `grep -rn STRIPE_PRICE_FREE app config .env.example` empty. `BillingController` still answers `free_plan` for a 0-priced plan and a Free manual user is not blocked by `contact_us`; `PlanCatalog`/`SyncPlanFromStripe` tolerate the missing key. `pint`, `composer types:check`, `composer test` (33/33) pass. `code-reviewer`: APPROVED. Note: plan cards render Free as "$0.00 /month" (no special case for 0); left as is, out of scope. Owner must set `PRICE_FREE_*` to 0 in their own `.env`.
 Role: laravel-backend · Depends on: none · Covers: P14, D9 · Size: S
 Origin: P14 "Free must actually be free in open mode: the price config for Free is 0 in every region and no Stripe price is configured for it."
 

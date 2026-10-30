@@ -97,9 +97,9 @@ return [
         // Displayed prices, in minor units per region. 0 = free in that region (no Checkout).
         'prices' => [
             'free' => [
-                'br' => (int) env('PRICE_FREE_BRL', 2500),
-                'eu' => (int) env('PRICE_FREE_EUR', 500),
-                'row' => (int) env('PRICE_FREE_USD', 500),
+                'br' => (int) env('PRICE_FREE_BRL', 0),
+                'eu' => (int) env('PRICE_FREE_EUR', 0),
+                'row' => (int) env('PRICE_FREE_USD', 0),
             ],
             'starter' => [
                 'br' => (int) env('PRICE_STARTER_BRL', 3000),
@@ -114,11 +114,6 @@ return [
         ],
         // Charged prices: Stripe Price IDs per plan and region. Keep them equal to `prices`.
         'stripe_prices' => [
-            'free' => [
-                'br' => env('STRIPE_PRICE_FREE_BRL'),
-                'eu' => env('STRIPE_PRICE_FREE_EUR'),
-                'row' => env('STRIPE_PRICE_FREE_USD'),
-            ],
             'starter' => [
                 'br' => env('STRIPE_PRICE_STARTER_BRL'),
                 'eu' => env('STRIPE_PRICE_STARTER_EUR'),
