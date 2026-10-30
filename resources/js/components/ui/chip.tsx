@@ -2,12 +2,19 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-type ChipVariant = 'stack' | 'language' | 'plan' | 'delta-up' | 'delta-down';
+type ChipVariant =
+    | 'stack'
+    | 'language'
+    | 'plan'
+    | 'match'
+    | 'delta-up'
+    | 'delta-down';
 
 const VARIANTS: Record<ChipVariant, string> = {
     stack: 'bg-tile text-muted',
     language: 'bg-ink text-white',
     plan: 'bg-accent-soft text-accent-deep',
+    match: 'bg-success-bg text-success-text',
     'delta-up': 'bg-success-bg text-success-text',
     'delta-down': 'bg-danger-bg text-danger-text',
 };

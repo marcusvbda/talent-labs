@@ -50,7 +50,7 @@ export function MatchBreakdown({ match }: { match: JobMatch }) {
                 <p className="text-label-sm text-muted">
                     {t('jobs.match.title')}
                 </p>
-                <Chip variant="plan">
+                <Chip variant="match">
                     {t('jobs.match.score', { score: match.score })}
                 </Chip>
             </div>

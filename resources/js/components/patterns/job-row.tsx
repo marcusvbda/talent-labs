@@ -77,7 +77,7 @@ export function JobRow({
                 </span>
                 <span className="flex flex-wrap items-center gap-1.5 md:max-w-[60%] md:justify-end">
                     {matchScore !== null && (
-                        <Chip variant="plan">
+                        <Chip variant="match">
                             {t('jobs.match.score', { score: matchScore })}
                         </Chip>
                     )}

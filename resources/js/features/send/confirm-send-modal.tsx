@@ -31,7 +31,7 @@ const ConfirmBody = ({
 
     return (
         <div className="flex flex-col gap-5">
-            <ul className="flex flex-col gap-2">
+            <ul className="flex max-h-72 flex-col gap-2 overflow-y-auto">
                 {selected.map((job) => (
                     <li
                         key={job.id}
