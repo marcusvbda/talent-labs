@@ -42,7 +42,7 @@ incomplete until then.
 | 5     | Enforce verification            | laravel-backend  | 1, 2, 3, 4        | P2, P4   | M    | DONE    |
 | 6     | Stage 1 verification and report | laravel-backend  | 5                 | P1, P10  | S    | DONE    |
 | 7     | Free costs 0                    | laravel-backend  | none              | P14      | S    | DONE    |
-| 8     | Registration mode switch        | laravel-backend  | 7                 | P11      | M    | PENDING |
+| 8     | Registration mode switch        | laravel-backend  | 7                 | P11      | M    | DONE    |
 | 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | PENDING |
 | 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | PENDING |
 | 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | PENDING |
@@ -423,7 +423,8 @@ Origin: P14 "Free must actually be free in open mode: the price config for Free 
 
 ### Phase 8 — One switch controls registration mode
 
-Status: PENDING
+Status: DONE
+Evidence: `grep -rn "LANDING_BETA_CLOSED\|beta_closed" app config resources .env.example` empty. `composer test` (pint, PHPStan, 33/33), `yarn check`, `yarn types:check` pass. `code-reviewer`: APPROVED. Open mode swaps the hero badge and CTA title for the new `_open` copy; `landing.plans.beta_note` and `landing.cta.closed` were already gated by `betaClosed`. Not verified in a browser. Open items for the owner: `plans.closed_beta.*` is not tied to the mode (left as is); `landing-and-legal/spec.md:23` still names `talent.landing.beta_closed` (run `/update-feature-spec landing-and-legal`); the hero badge keeps its `Lock` icon in open mode (cosmetic); `auth.register.subtitle` ("Join the closed beta.") is handled in phase 9.
 Role: laravel-backend · Depends on: 7 · Covers: P11, D5, D8 · Size: M
 Origin: P11 "One switch: `talent.registration.mode` (env `REGISTRATION_MODE`, `invite` | `open`, default `invite`). The landing `betaClosed` prop derives from it." + D8 "`LANDING_BETA_CLOSED` is removed."
 

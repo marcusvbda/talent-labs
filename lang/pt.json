@@ -900,6 +900,7 @@
     "landing.hero.title.b": ", sem abrir milhares de abas.",
     "landing.hero.lead": "Você define o que procura uma vez. Encontramos as vagas que combinam e enviamos a candidatura do seu próprio e-mail, com você no controle.",
     "landing.hero.badge": "Beta fechada · acesso por convite",
+    "landing.hero.badge_open": "Aberto a todos · comece grátis",
     "landing.hero.secondary": "Ver como funciona",
     "landing.hero.demo.label": "Prévia do produto · dados de exemplo",
     "landing.guarantee.title": "Nossas garantias",
@@ -959,5 +960,6 @@
     "landing.faq.6.q": "Como uma empresa pede para não receber candidaturas?",
     "landing.faq.6.a": "Pela página de opt-out no rodapé. Depois de confirmado, a empresa deixa de receber candidaturas.",
     "landing.cta.title": "Comece com acesso por convite.",
+    "landing.cta.title_open": "Comece grátis hoje.",
     "landing.email.note": "Usamos a permissão do seu e-mail apenas para enviar as candidaturas que você escolhe ou autoriza. Nunca lemos a sua caixa de entrada."
 }

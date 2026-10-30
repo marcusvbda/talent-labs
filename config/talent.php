@@ -178,9 +178,9 @@ return [
         'default_expiry_days' => (int) env('INVITE_EXPIRY_DAYS', 14),
     ],
 
-    'landing' => [
-        // Closed beta: the public landing page shows "request access" instead of open signup.
-        'beta_closed' => (bool) env('LANDING_BETA_CLOSED', true),
+    'registration' => [
+        // `invite` (default) or `open`. Any other value counts as invite, so a typo fails closed.
+        'mode' => env('REGISTRATION_MODE', 'invite'),
     ],
 
     // Public contact address shown on the landing page. Empty/unset = hidden.

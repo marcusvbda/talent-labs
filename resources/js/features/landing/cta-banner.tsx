@@ -11,7 +11,11 @@ export function CtaBanner({ betaClosed }: { betaClosed: boolean }) {
                     id="cta-title"
                     className="text-landing-cta-sm md:text-landing-cta"
                 >
-                    {t('landing.cta.title')}
+                    {t(
+                        betaClosed
+                            ? 'landing.cta.title'
+                            : 'landing.cta.title_open',
+                    )}
                 </h2>
                 <BetaCta
                     betaClosed={betaClosed}

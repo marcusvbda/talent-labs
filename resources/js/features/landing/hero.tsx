@@ -50,7 +50,11 @@ export function Hero({
             <div className="flex flex-col items-start gap-6">
                 <Reveal index={0}>
                     <Pill icon={Lock} tone="tile">
-                        {t('landing.hero.badge')}
+                        {t(
+                            betaClosed
+                                ? 'landing.hero.badge'
+                                : 'landing.hero.badge_open',
+                        )}
                     </Pill>
                 </Reveal>
                 <Reveal index={1}>
