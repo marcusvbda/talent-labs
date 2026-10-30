@@ -74,6 +74,8 @@ class ListInvitations extends ListRecords
                         ->modalWidth(Width::Large)
                         ->closeModalByClickingAway(false)
                         ->closeModalByEscaping(false)
+                        // Closing this modal must not bring the (already submitted) create form back.
+                        ->cancelParentActionsOnClose()
                         ->schema(fn (array $arguments): array => [
                             TextInput::make('link')
                                 ->label('Sign-up link')

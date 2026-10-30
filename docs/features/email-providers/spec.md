@@ -104,7 +104,7 @@ OAuth providers (Gmail, Microsoft) and SMTP. One sending account per user.
   exception messages, and no Symfony exception is chained. The sender display
   name is the account's display name.
 - **Microsoft (`GraphMessageSender`):** `POST
-  https://graph.microsoft.com/v1.0/me/sendMail` with the base64-encoded raw
+https://graph.microsoft.com/v1.0/me/sendMail` with the base64-encoded raw
   MIME as `text/plain`; `202` has no body, so the `Message-ID` is returned
   and Graph saves to Sent Items. Classification by `error.code` (401 and
   access errors → authorization, 429 and throttle/quota codes → provider

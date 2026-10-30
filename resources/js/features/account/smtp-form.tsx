@@ -105,15 +105,15 @@ const SmtpFields = ({
         <form
             onSubmit={onSubmit}
             autoComplete="off"
-            className="flex flex-col gap-4"
+            className="grid items-start gap-4 sm:grid-cols-2"
         >
-            <p className="rounded-tile bg-tile p-card-sm text-body text-muted">
+            <p className="rounded-tile bg-tile p-card-sm text-body text-muted sm:col-span-2">
                 {t('integrations.smtp.sent_notice')}
             </p>
             {formError && (
                 <p
                     role="alert"
-                    className="rounded-tile bg-danger-bg p-card-sm text-body text-danger-text"
+                    className="rounded-tile bg-danger-bg p-card-sm text-body text-danger-text sm:col-span-2"
                 >
                     {formError}
                 </p>
@@ -147,50 +147,46 @@ const SmtpFields = ({
                     />
                 )}
             </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                    label={t('integrations.smtp.port')}
-                    error={fieldError('port')}
-                >
-                    {(control) => (
-                        <Select<465 | 587>
-                            {...control}
-                            value={port}
-                            disabled={locked}
-                            onChange={onPort}
-                            options={[
-                                { value: 465, label: '465' },
-                                { value: 587, label: '587' },
-                            ]}
-                        />
-                    )}
-                </Field>
-                <Field
-                    label={t('integrations.smtp.security')}
-                    error={fieldError('security')}
-                >
-                    {(control) => (
-                        <Select<Security>
-                            {...control}
-                            value={security}
-                            disabled={locked}
-                            onChange={onSecurity}
-                            options={[
-                                {
-                                    value: 'tls',
-                                    label: t('integrations.smtp.security_tls'),
-                                },
-                                {
-                                    value: 'starttls',
-                                    label: t(
-                                        'integrations.smtp.security_starttls',
-                                    ),
-                                },
-                            ]}
-                        />
-                    )}
-                </Field>
-            </div>
+            <Field
+                label={t('integrations.smtp.port')}
+                error={fieldError('port')}
+            >
+                {(control) => (
+                    <Select<465 | 587>
+                        {...control}
+                        value={port}
+                        disabled={locked}
+                        onChange={onPort}
+                        options={[
+                            { value: 465, label: '465' },
+                            { value: 587, label: '587' },
+                        ]}
+                    />
+                )}
+            </Field>
+            <Field
+                label={t('integrations.smtp.security')}
+                error={fieldError('security')}
+            >
+                {(control) => (
+                    <Select<Security>
+                        {...control}
+                        value={security}
+                        disabled={locked}
+                        onChange={onSecurity}
+                        options={[
+                            {
+                                value: 'tls',
+                                label: t('integrations.smtp.security_tls'),
+                            },
+                            {
+                                value: 'starttls',
+                                label: t('integrations.smtp.security_starttls'),
+                            },
+                        ]}
+                    />
+                )}
+            </Field>
             <Field
                 label={t('integrations.smtp.username')}
                 error={fieldError('username')}
@@ -247,7 +243,7 @@ const SmtpFields = ({
                     />
                 )}
             </Field>
-            <div className="flex justify-end">
+            <div className="sticky bottom-0 flex justify-end bg-card pt-2 sm:col-span-2">
                 <Button type="submit" loading={connect.isPending}>
                     {t('integrations.smtp.submit')}
                 </Button>
@@ -271,6 +267,7 @@ export const SmtpForm = ({
         <Modal
             open={open}
             onClose={onClose}
+            size="lg"
             title={t('integrations.smtp.label')}
             description={t('integrations.smtp.description')}
         >
