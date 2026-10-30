@@ -51,7 +51,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 7 | `SmtpProbe` uses the guard | laravel-backend | 6 | P8 | S | DONE |
 | 8 | Reverb origins and rate limit | laravel-backend | 1 | P10 | S | DONE |
 | 9 | Security headers | laravel-backend | 2 | P11 | S | DONE |
-| 10 | CSP report-only and report endpoint | laravel-backend | 9 | P12, P24 | M | PENDING |
+| 10 | CSP report-only and report endpoint | laravel-backend | 9 | P12, P24 | M | DONE |
 | 11 | `app:production-check` and admin path | laravel-backend | 2, 4, 8 | P13, P4, P23 | M | PENDING |
 | 12 | Reject admins at client login | laravel-backend | none | P20 | S | PENDING |
 | 13 | Required admin MFA | filament-admin | 12 | P14 | M | PENDING |
@@ -488,7 +488,8 @@ Origin: P11 "Middleware adding, on web responses"
 
 ### Phase 10 — The client app reports CSP violations without blocking anything
 
-Status: PENDING
+Status: DONE
+Evidence: requests through the HTTP kernel: `/login` and `/` carry `Content-Security-Policy-Report-Only` with a different nonce per request, the same nonce is on the rendered script tags, `/admin/login` has none; `POST /csp-report` returns 204 and logs only the six allowed fields without query string or fragment (`original-policy` and `token=secret` absent); oversized and invalid-JSON bodies return 204 and log nothing; the 31st POST in a minute returns 429; `composer test` passes (pint, PHPStan, 33 tests). `yarn run check` fails only on markdown under `docs/` (five other features' untracked specs plus this plan and spec, already unformatted at HEAD); `resources/js` is untouched. Orchestrator ran the verification itself after the executor hit its turn limit; no separate `code-reviewer` pass. Not checked in a browser: load the built app and confirm the console shows no CSP report for normal pages.
 Role: laravel-backend · Depends on: 9 · Covers: P12, P24 · Size: M
 Origin: P12 "Content Security Policy starts as `Content-Security-Policy-Report-Only`"; P24 "Throttled `POST /csp-report`"
 

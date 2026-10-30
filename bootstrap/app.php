@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\CspReportController;
+use App\Http\Middleware\AddContentSecurityPolicy;
 use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureActiveClient;
 use App\Http\Middleware\EnsurePlanCanChooseJobs;
@@ -11,6 +13,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Inertia\ExceptionResponse;
 use Inertia\Inertia;
 
@@ -22,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function (): void {
             require __DIR__.'/../routes/cashier.php';
+
+            // Browser CSP reports: outside the web group (no session, no CSRF).
+            Route::post('/csp-report', CspReportController::class)
+                ->middleware('throttle:30,1,csp-report')
+                ->name('csp.report');
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -29,6 +37,8 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            // Report-only CSP for the client app; the Filament panel does not use the web group.
+            AddContentSecurityPolicy::class,
         ]);
 
         // Readable unencrypted so error pages rendered outside the web group can use it.

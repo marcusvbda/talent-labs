@@ -9,4 +9,4 @@
     <p>{{ $description }}</p>
     <p>{{ $emailNote }}</p>
 </div>
-<script>document.getElementById('landing-essentials').classList.add('sr-only');</script>
+<script nonce="{{ Vite::cspNonce() }}">document.getElementById('landing-essentials').classList.add('sr-only');</script>
