@@ -22,9 +22,11 @@ use App\Notifications\Client\SendingAutoPaused;
 use App\Notifications\Client\SendingProviderLimitReached;
 use App\Outreach\Actions\CanSendApplications;
 use App\Outreach\Contracts\EmailTransport;
+use App\Outreach\Contracts\LimitsMessageSize;
 use App\Outreach\Data\OutboundEmail;
 use App\Outreach\Exceptions\EmailAuthorizationRejected;
 use App\Outreach\Exceptions\EmailDeliveryDeferred;
+use App\Outreach\Exceptions\EmailMessageTooLarge;
 use App\Outreach\Exceptions\EmailProviderLimitReached;
 use App\Outreach\Exceptions\EmailRecipientRejected;
 use App\Outreach\Support\ApplicationStageRecorder;
@@ -98,20 +100,14 @@ class SendApplicationEmail implements ShouldQueue
 
         // Only a queued row runs the pre-checks; any other status goes straight to beginAttempt().
         if ($candidate !== null && $candidate->status === ApplicationStatus::Queued) {
-            $checked = $this->preCheck($candidate, $tokens, $recorder);
+            $prechecked = $this->preCheck($candidate, $tokens, $recorder, $transports);
 
-            if ($checked === null) {
+            if ($prechecked === null) {
                 return;
             }
 
-            // Resolved before beginAttempt(): a broken config leaves the row queued, not ambiguous.
-            try {
-                $transport = $transports->for($checked[0]);
-            } catch (Throwable $exception) {
-                $recorder->reset($candidate);
-
-                throw $exception;
-            }
+            [$integration, $email, $transport] = $prechecked;
+            $checked = [$integration, $email];
         }
 
         $prepared = DB::transaction(fn (): ?array => $this->beginAttempt($scheduler, $recorder, $plans, $checked));
@@ -159,8 +155,8 @@ class SendApplicationEmail implements ShouldQueue
             $this->afterTerminal($application, isReauthorization: true);
 
             return;
-        } catch (EmailRecipientRejected $exception) {
-            // The address will not be accepted on a retry.
+        } catch (EmailRecipientRejected|EmailMessageTooLarge $exception) {
+            // The address or the message size will not be accepted on a retry.
             $this->finish($application, ApplicationStatus::Failed, $exception);
             $recorder->record($application, SendStage::Failed, SendSubStep::Delivering);
             $this->afterTerminal($application);
@@ -287,9 +283,9 @@ class SendApplicationEmail implements ShouldQueue
      * returns null. Any other error resets the stage and is rethrown: nothing
      * was sent, so the row stays queued for the normal retry.
      *
-     * @return array{0: ConnectedIntegration, 1: OutboundEmail}|null
+     * @return array{0: ConnectedIntegration, 1: OutboundEmail, 2: EmailTransport}|null
      */
-    private function preCheck(Application $application, ConnectedIntegrationTokenManager $tokens, ApplicationStageRecorder $recorder): ?array
+    private function preCheck(Application $application, ConnectedIntegrationTokenManager $tokens, ApplicationStageRecorder $recorder, EmailTransportResolver $transports): ?array
     {
         $application->load(['company', 'contact', 'user.sendingIntegration', 'applicationProfile']);
         $user = $application->user;
@@ -379,7 +375,16 @@ class SendApplicationEmail implements ShouldQueue
 
                 $recorder->record($application, SendStage::AttachingCv, SendSubStep::AttachingFile);
                 $email = $this->buildMime($application, $user, $integration, $profile);
-                $recorder->pace();
+
+                // Resolved before beginAttempt(): a broken config leaves the row queued, not ambiguous.
+                $transport = $transports->for($integration);
+
+                if ($transport instanceof LimitsMessageSize && strlen($email->rawMime) > $transport->maxRawMimeBytes()) {
+                    $failedAt = SendSubStep::AttachingFile;
+                    $reason = 'CV is too large for this email provider.';
+                } else {
+                    $recorder->pace();
+                }
             }
         } catch (Throwable $exception) {
             $recorder->reset($application);
@@ -398,7 +403,7 @@ class SendApplicationEmail implements ShouldQueue
             return null;
         }
 
-        return [$integration, $email];
+        return [$integration, $email, $transport];
     }
 
     /**

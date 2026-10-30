@@ -783,6 +783,7 @@
     "applications.error.content": "O conteúdo deste e-mail é inválido.",
     "applications.error.recipient": "Não conseguimos confirmar o destinatário.",
     "applications.error.recipient_rejected": "O servidor de e-mail do destinatário rejeitou este endereço.",
+    "applications.error.cv_too_large_provider": "Seu currículo é grande demais para envio por uma conta Microsoft. Use um PDF com menos de 2 MB.",
     "applications.error.company": "Esta empresa não está mais disponível.",
     "applications.error.account": "Sua conta não está ativa.",
     "applications.error.unconfirmed": "Não conseguimos confirmar a entrega.",

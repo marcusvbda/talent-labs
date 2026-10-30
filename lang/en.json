@@ -783,6 +783,7 @@
     "applications.error.content": "This email's content is invalid.",
     "applications.error.recipient": "We could not confirm the recipient.",
     "applications.error.recipient_rejected": "The recipient's mail server rejected this address.",
+    "applications.error.cv_too_large_provider": "Your CV is too large to send from a Microsoft account. Use a PDF under 2 MB.",
     "applications.error.company": "This company is no longer available.",
     "applications.error.account": "Your account is not active.",
     "applications.error.unconfirmed": "We could not confirm delivery.",

@@ -21,12 +21,14 @@ final class ClientErrorMessage
         'Gmail is not connected.' => 'applications.error.gmail',
         'CV file is missing.' => 'applications.error.cv',
         'CV file is not a valid PDF.' => 'applications.error.cv_invalid',
+        'CV is too large for this email provider.' => 'applications.error.cv_too_large_provider',
         'Email content is invalid.' => 'applications.error.content',
         'Recipient is not a verified contact' => 'applications.error.recipient',
         'Company is no longer verified' => 'applications.error.company',
         'Client account is not active.' => 'applications.error.account',
         'Worker stopped mid-send.' => 'applications.error.unconfirmed',
         'EmailRecipientRejected' => 'applications.error.recipient_rejected',
+        'EmailMessageTooLarge' => 'applications.error.cv_too_large_provider',
     ];
 
     /**

@@ -3,6 +3,7 @@
 use App\Integrations\Gmail\GmailPlugin;
 use App\Integrations\Smtp\SmtpPlugin;
 use App\Outreach\Support\GmailApiMessageSender;
+use App\Outreach\Support\GraphMessageSender;
 use App\Outreach\Support\SmtpMessageSender;
 
 return [
@@ -17,6 +18,7 @@ return [
     'transports' => [
         'gmail' => GmailApiMessageSender::class,
         'smtp' => SmtpMessageSender::class,
+        'microsoft' => GraphMessageSender::class,
     ],
 
     'gmail' => [

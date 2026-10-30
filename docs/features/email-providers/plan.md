@@ -47,7 +47,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 11    | `SmtpMessageSender`                                  | laravel-backend  | 4, 10      | P2, P5, P14           | M    | DONE    |
 | 12    | SMTP connect endpoint and test                       | laravel-backend  | 3, 11      | P8, P9, P10, P12, P13 | M    | DONE    |
 | 13    | SMTP form and registration                           | inertia-frontend | 9, 12      | P6, P8, P15           | M    | DONE    |
-| 14    | `GraphMessageSender` and CV size check               | laravel-backend  | 4          | P5, P17               | M    | PENDING |
+| 14    | `GraphMessageSender` and CV size check               | laravel-backend  | 4          | P5, P17               | M    | DONE    |
 | 15    | `MicrosoftPlugin`, env and card notice               | laravel-backend  | 9, 10, 14  | P16, P17, P18         | M    | PENDING |
 | 16    | Verification and report                              | laravel-backend  | all        | all                   | S    | PENDING |
 
@@ -674,7 +674,8 @@ Origin: P8 "Form fields" · P15 "the UI says so" · P6
 
 ### Phase 14 — `GraphMessageSender` and CV size check
 
-Status: PENDING
+Status: DONE
+Evidence: pint, `composer types:check`, `SendingDatabaseGuards` (7) and `tests/Feature/Outreach` (31) pass; reviewer APPROVED. Tinker with `Http::fake` (rolled back): 202 returns the `Message-ID`; 401 and `ErrorAccessDenied` give authorization, 429 and `MailboxConcurrency` give limit, `ErrorInvalidRecipients` gives recipient rejected, 413 gives `EmailMessageTooLarge`, 500 gives deferred; the real job with a stub `LimitsMessageSize` transport (100 bytes) ended `failed` with "CV is too large for this email provider.", sub-step `attaching_file`, zero sends; EN and PT messages resolve through `ClientErrorMessage`. Deviation: transport resolution moved from `handle()` into `preCheck()` (right after `buildMime`, inside its try/catch), so a broken config still resets the stage and leaves the row queued, and it still happens before `beginAttempt()`. Not verified: the real Graph error codes and bodies, and the `EmailMessageTooLarge` catch in `handle()` end to end (types only).
 Role: laravel-backend · Depends on: 4 · Covers: P5, P17 · Size: M
 Origin: P17 "`GraphMessageSender`" · P5
 
