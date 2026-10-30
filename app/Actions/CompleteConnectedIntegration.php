@@ -75,7 +75,7 @@ class CompleteConnectedIntegration
 
         $plugin->afterConnected($integration);
 
-        // Reconnecting clears a pause caused by the broken Gmail authorization.
+        // Reconnecting clears a pause caused by the broken email authorization.
         if ($user->fresh()?->sending_pause_reason === SendingPauseReason::ReauthorizationRequired) {
             $this->scheduler->resume($user);
         }

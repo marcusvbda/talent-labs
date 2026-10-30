@@ -42,7 +42,7 @@ class SendingController extends Controller
     }
 
     /**
-     * Resume sending; refused while Gmail is not connected, since every queued
+     * Resume sending; refused while no email account is connected, since every queued
      * item would otherwise fail at `checking_gmail`.
      *
      * @return array<string, mixed>|JsonResponse

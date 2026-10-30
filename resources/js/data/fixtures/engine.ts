@@ -43,7 +43,7 @@ const emitNotification = (
     type:
         | 'application_failed'
         | 'daily_limit_reached'
-        | 'gmail_reauthorization_required',
+        | 'email_reauthorization_required',
     data: Record<string, string | number>,
 ): void =>
     devEmitter.emit('notification.created', {
@@ -340,7 +340,9 @@ const unsubscribe = useFixtures
               gmail === 'needs_reconnection' &&
               lastGmail !== 'needs_reconnection'
           ) {
-              emitNotification('gmail_reauthorization_required', {});
+              emitNotification('email_reauthorization_required', {
+                  provider: 'Gmail',
+              });
           }
 
           lastGmail = gmail;

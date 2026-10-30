@@ -27,9 +27,9 @@ class CanSendApplications
         $integration = $user->sendingIntegration()->first();
 
         if ($integration === null || $integration->status === ConnectedIntegrationStatus::Disconnected) {
-            $unmet[] = 'Connect your Gmail account.';
+            $unmet[] = 'Connect an email account.';
         } elseif ($integration->status === ConnectedIntegrationStatus::ReauthorizationRequired) {
-            $unmet[] = 'Reconnect your Gmail account.';
+            $unmet[] = 'Reconnect your email account.';
         }
 
         if (ApplicationProfile::activeCompleteLanguagesFor($user) === []) {

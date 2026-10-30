@@ -16,6 +16,8 @@ final class ClientErrorMessage
      * @var array<string, string>
      */
     private const PREFIXES = [
+        'Email account is not connected.' => 'applications.error.gmail',
+        // Rows written before the provider-neutral wording.
         'Gmail is not connected.' => 'applications.error.gmail',
         'CV file is missing.' => 'applications.error.cv',
         'CV file is not a valid PDF.' => 'applications.error.cv_invalid',

@@ -22,7 +22,7 @@ use Throwable;
 class ConnectedIntegrationOAuthController extends Controller
 {
     /** Label used when an invalid state gives no trustworthy plugin key. */
-    private const string FALLBACK_LABEL = 'Gmail';
+    private const string FALLBACK_LABEL = 'Email account';
 
     /** Accepted `?return=` keys mapped to the route the OAuth flow lands on. */
     private const RETURN_ROUTES = ['account' => 'account', 'onboarding' => 'onboarding'];

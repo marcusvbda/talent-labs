@@ -154,6 +154,7 @@ export function notificationCreated(
 // Types that also surface as a toast when they arrive over the channel.
 const TOAST_TONES: Partial<Record<NotificationType, 'error' | 'info'>> = {
     gmail_reauthorization_required: 'error',
+    email_reauthorization_required: 'error',
     sending_auto_paused: 'error',
     sending_provider_limit: 'error',
     payment_failed: 'error',

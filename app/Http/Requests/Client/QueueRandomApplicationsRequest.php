@@ -27,7 +27,7 @@ class QueueRandomApplicationsRequest extends FormRequest
     }
 
     /**
-     * Same eligibility as any send (Gmail, active profile, quota left). No pause check: queued rows park until Resume.
+     * Same eligibility as any send (email account, active profile, quota left). No pause check: queued rows park until Resume.
      *
      * @return array<int, callable(Validator): void>
      */

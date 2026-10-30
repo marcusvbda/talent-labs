@@ -39,7 +39,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 3     | Enforce one sending account                          | laravel-backend  | 2          | P3                    | S    | DONE    |
 | 4     | Shared error classification                          | laravel-backend  | 1          | P5                    | M    | DONE    |
 | 5     | Provider-limit pause and auto-resume                 | laravel-backend  | 2, 4       | P5                    | M    | DONE    |
-| 6     | Neutral wording and notification                     | laravel-backend  | 2, 5       | P4                    | M    | PENDING |
+| 6     | Neutral wording and notification                     | laravel-backend  | 2, 5       | P4                    | M    | DONE    |
 | 7     | `sendingAccount` contract and main screens           | inertia-frontend | 6          | P3, P4                | M    | PENDING |
 | 8     | Remove the `gmail` contract key                      | inertia-frontend | 7          | P4                    | M    | PENDING |
 | 9     | Provider list from the registry                      | inertia-frontend | 8          | P6                    | M    | PENDING |
@@ -310,7 +310,8 @@ Origin: P5 "provider sending/rate limit → sending paused until the next day, t
 
 ### Phase 6 — Neutral wording and notification
 
-Status: PENDING
+Status: DONE
+Evidence: no value in `lang/en.json` or `lang/pt.json` contains "Gmail" or "Google"; `ClientErrorMessage` maps both the new and the old "Gmail is not connected." strings to `applications.error.gmail`; pint, `composer types:check`, `yarn run check`, `SendingDatabaseGuards` (7) and `tests/Feature/Outreach` (31) pass; reviewer APPROVED. Note: `yarn check` on Yarn 1 runs Yarn's own command, so `yarn run check` is the real one.
 Role: laravel-backend · Depends on: 2, 5 · Covers: P4 · Size: M
 Origin: P4 "Provider-neutral wording everywhere listed in 2"
 

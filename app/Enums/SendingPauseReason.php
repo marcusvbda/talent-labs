@@ -16,7 +16,7 @@ enum SendingPauseReason: string implements HasColor, HasLabel
     {
         return match ($this) {
             self::Manual => 'Paused manually',
-            self::ReauthorizationRequired => 'Gmail reauthorization',
+            self::ReauthorizationRequired => 'Email reauthorization',
             self::RepeatedFailures => 'Repeated failures',
             self::ProviderLimit => 'Provider sending limit',
         };

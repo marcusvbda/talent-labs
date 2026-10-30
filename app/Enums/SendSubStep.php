@@ -22,13 +22,13 @@ enum SendSubStep: string implements HasLabel
         return match ($this) {
             self::CheckingCompany => 'Checking company',
             self::ConfirmingRecipient => 'Confirming recipient',
-            self::CheckingGmail => 'Checking Gmail',
+            self::CheckingGmail => 'Checking email account',
             self::FillingVariables => 'Filling variables',
             self::BuildingHtml => 'Building HTML',
             self::OpeningCv => 'Opening CV',
             self::CheckingPdf => 'Checking PDF',
             self::AttachingFile => 'Attaching file',
-            self::ConnectingGmail => 'Connecting to Gmail',
+            self::ConnectingGmail => 'Connecting to email account',
             self::Delivering => 'Delivering',
         };
     }

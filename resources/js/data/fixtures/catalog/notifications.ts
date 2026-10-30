@@ -20,8 +20,8 @@ export const NOTIFICATIONS: NotificationItem[] = [
     },
     {
         id: 'n-3',
-        type: 'gmail_reauthorization_required',
-        data: {},
+        type: 'email_reauthorization_required',
+        data: { provider: 'Gmail' },
         readAt: null,
         createdAt: hoursAgo(5),
     },

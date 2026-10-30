@@ -311,7 +311,7 @@ class SendApplicationEmail implements ShouldQueue
                 if ($integration === null
                     || $integration->status !== ConnectedIntegrationStatus::Connected
                     || blank($integration->account_email)) {
-                    return 'Gmail is not connected.';
+                    return 'Email account is not connected.';
                 }
 
                 try {
@@ -319,7 +319,7 @@ class SendApplicationEmail implements ShouldQueue
                 } catch (ConnectedIntegrationReauthorizationRequired) {
                     $reauthorization = true;
 
-                    return 'Gmail is not connected.';
+                    return 'Email account is not connected.';
                 }
 
                 return null;
@@ -595,7 +595,7 @@ class SendApplicationEmail implements ShouldQueue
 
     /**
      * Effects of a terminal status (sent, failed, ambiguous): notify a failure,
-     * auto-pause on a Gmail reauthorization or on repeated failures, and refresh
+     * auto-pause on an email reauthorization or on repeated failures, and refresh
      * the live sending panel.
      */
     private function afterTerminal(Application $application, bool $isReauthorization = false): void

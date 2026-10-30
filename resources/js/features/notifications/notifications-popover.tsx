@@ -37,6 +37,7 @@ type IconTint = {
 
 const TYPE_VISUALS: Record<NotificationType, IconTint> = {
     gmail_reauthorization_required: { icon: Mail, tint: 'orange' },
+    email_reauthorization_required: { icon: Mail, tint: 'orange' },
     application_failed: { icon: TriangleAlert, tint: 'red' },
     daily_limit_reached: { icon: PauseCircle, tint: 'orange' },
     jobs_collected: { icon: Briefcase, tint: 'green' },
@@ -48,6 +49,7 @@ const TYPE_VISUALS: Record<NotificationType, IconTint> = {
 const targetFor = (type: NotificationType, canChooseJobs: boolean): string => {
     switch (type) {
         case 'gmail_reauthorization_required':
+        case 'email_reauthorization_required':
             return account().url;
         case 'application_failed':
             return applications().url;

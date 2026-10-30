@@ -8,8 +8,9 @@ use App\Exceptions\ConnectedIntegrationReauthorizationRequired;
 use App\Exceptions\OAuthRefreshTokenRejected;
 use App\Models\ConnectedIntegration;
 use App\Models\User;
-use App\Notifications\Client\GmailReauthorizationRequired;
+use App\Notifications\Client\EmailReauthorizationRequired;
 use Illuminate\Support\Facades\Cache;
+use InvalidArgumentException;
 use Throwable;
 
 class ConnectedIntegrationTokenManager
@@ -117,12 +118,27 @@ class ConnectedIntegrationTokenManager
             // The query-builder update above skips model events, so dispatch explicitly.
             self::dispatchAccountStatusUpdated($integration->user_id);
 
-            GmailReauthorizationRequired::send($integration->user, new GmailReauthorizationRequired);
+            EmailReauthorizationRequired::send(
+                $integration->user,
+                new EmailReauthorizationRequired($this->providerLabel($integration->plugin_key)),
+            );
         }
 
         throw new ConnectedIntegrationReauthorizationRequired(
             'The connected integration must be authorized again.',
             previous: $previous,
         );
+    }
+
+    /**
+     * Label of the integration's plugin, or a neutral fallback when the key is not registered.
+     */
+    private function providerLabel(string $pluginKey): string
+    {
+        try {
+            return $this->registry->get($pluginKey)->label();
+        } catch (InvalidArgumentException) {
+            return 'Email account';
+        }
     }
 }

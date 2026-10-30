@@ -317,6 +317,7 @@ export type CheckoutResponse = { url: string };
 
 export type NotificationType =
     | 'gmail_reauthorization_required'
+    | 'email_reauthorization_required'
     | 'application_failed'
     | 'daily_limit_reached'
     | 'jobs_collected'

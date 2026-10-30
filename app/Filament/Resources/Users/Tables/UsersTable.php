@@ -76,7 +76,7 @@ class UsersTable
                         : 'success'),
 
                 TextColumn::make('sendingIntegration.status')
-                    ->label('Gmail')
+                    ->label('Email account')
                     ->badge()
                     ->placeholder('Not connected')
                     ->default(null)
