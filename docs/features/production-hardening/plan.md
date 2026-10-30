@@ -47,7 +47,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 3 | Rate limits and separate counters | laravel-backend | 2 | P2, P21 | S | DONE |
 | 4 | Stripe routes gated by billing availability | laravel-backend | none | P3 | S | DONE |
 | 5 | Remove privileged fields from `User` fillable | laravel-backend | none | P5 | M | DONE |
-| 6 | `PublicNetworkGuard` | laravel-backend | none | P7, P9 | S | PENDING |
+| 6 | `PublicNetworkGuard` | laravel-backend | none | P7, P9 | S | DONE |
 | 7 | `SmtpProbe` uses the guard | laravel-backend | 6 | P8 | S | PENDING |
 | 8 | Reverb origins and rate limit | laravel-backend | 1 | P10 | S | PENDING |
 | 9 | Security headers | laravel-backend | 2 | P11 | S | PENDING |
@@ -319,7 +319,8 @@ Origin: P5 "Remove `is_admin`, `status`, `plan_key` and `plan_source` from `User
 
 ### Phase 6 — A shared guard rejects non-public hosts
 
-Status: PENDING
+Status: DONE
+Evidence: tinker `publicAddresses` returns `[]` for `localhost`, `127.0.0.1`, `169.254.169.254`, `100.64.0.1`, `::1`, `::ffff:10.0.0.1`, `::ffff:a00:1`, `fe80::1` and a nonexistent domain, and `["8.8.8.8"]` for `8.8.8.8`; `composer test` passes (pint, PHPStan, 33 tests). Orchestrator-checked the file against the contract, no separate `code-reviewer` pass (one new class, no callers).
 Role: laravel-backend · Depends on: none · Covers: P7, P9 · Size: S
 Origin: P7 "One shared guard"; P9 "P7 is mandatory for: the client SMTP transport and any fetch of company websites"
 
