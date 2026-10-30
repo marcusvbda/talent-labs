@@ -37,6 +37,7 @@ class DisconnectConnectedIntegration
             'status' => ConnectedIntegrationStatus::Disconnected,
             'access_token' => null,
             'refresh_token' => null,
+            'credentials' => null,
             'expires_at' => null,
             'last_error_at' => $disconnectFailed ? now() : null,
         ])->save();

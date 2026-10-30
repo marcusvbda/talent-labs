@@ -47,7 +47,7 @@ class ConnectedIntegrationTokenManager
                     $this->markReauthorizationRequired($integration);
                 }
 
-                $plugin = $this->registry->get($integration->plugin_key);
+                $plugin = $this->registry->oauth($integration->plugin_key);
 
                 try {
                     $token = $plugin->refreshAccessToken((string) $integration->refresh_token, $plugin->redirectUri());
@@ -102,6 +102,7 @@ class ConnectedIntegrationTokenManager
                 'status' => ConnectedIntegrationStatus::ReauthorizationRequired,
                 'access_token' => null,
                 'refresh_token' => null,
+                'credentials' => null,
                 'expires_at' => null,
                 'last_error_at' => now(),
             ]) > 0;

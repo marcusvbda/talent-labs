@@ -21,7 +21,7 @@ class CompleteConnectedIntegration
 
     public function run(User $user, string $pluginKey, OAuthTokenData $token): ConnectedIntegration
     {
-        $plugin = $this->registry->get($pluginKey);
+        $plugin = $this->registry->oauth($pluginKey);
         $plugin->validateConnection($token);
 
         $integration = DB::transaction(function () use ($user, $pluginKey, $token, $plugin): ConnectedIntegration {

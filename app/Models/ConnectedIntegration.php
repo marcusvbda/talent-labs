@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $account_name
  * @property string|null $access_token
  * @property string|null $refresh_token
+ * @property array{username: string, password: string}|null $credentials
  * @property list<string>|null $granted_scopes
  * @property array<string, mixed>|null $metadata
  * @property Carbon|null $expires_at
@@ -30,8 +31,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read User $user
  */
-#[Fillable(['user_id', 'plugin_key', 'status', 'external_account_id', 'account_email', 'account_name', 'access_token', 'refresh_token', 'granted_scopes', 'metadata', 'expires_at', 'connected_at', 'last_refreshed_at', 'last_error_at'])]
-#[Hidden(['access_token', 'refresh_token'])]
+#[Fillable(['user_id', 'plugin_key', 'status', 'external_account_id', 'account_email', 'account_name', 'access_token', 'refresh_token', 'credentials', 'granted_scopes', 'metadata', 'expires_at', 'connected_at', 'last_refreshed_at', 'last_error_at'])]
+#[Hidden(['access_token', 'refresh_token', 'credentials'])]
 class ConnectedIntegration extends Model
 {
     use DispatchesClientEvent;
@@ -56,6 +57,7 @@ class ConnectedIntegration extends Model
             'status' => ConnectedIntegrationStatus::class,
             'access_token' => 'encrypted',
             'refresh_token' => 'encrypted',
+            'credentials' => 'encrypted:array',
             'granted_scopes' => 'array',
             'metadata' => 'array',
             'expires_at' => 'datetime',

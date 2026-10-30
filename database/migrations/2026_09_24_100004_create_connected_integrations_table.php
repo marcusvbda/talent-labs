@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('account_name')->nullable();
             $table->text('access_token')->nullable();
             $table->text('refresh_token')->nullable();
+            $table->text('credentials')->nullable();
             $table->json('granted_scopes')->nullable();
             $table->json('metadata')->nullable();
             $table->timestamp('expires_at')->nullable();

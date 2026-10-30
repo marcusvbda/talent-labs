@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Contracts\OAuthIntegrationPlugin;
+use App\Contracts\IntegrationPlugin;
 use App\Outreach\Support\OutreachConfig;
 use App\Plans\PlanCatalog;
 use App\Services\ConnectedIntegrationRegistry;
@@ -27,11 +27,11 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(ConnectedIntegrationRegistry::class, function (): ConnectedIntegrationRegistry {
-            /** @var list<class-string<OAuthIntegrationPlugin>> $pluginClasses */
+            /** @var list<class-string<IntegrationPlugin>> $pluginClasses */
             $pluginClasses = config('connected-integrations.plugins', []);
 
             return new ConnectedIntegrationRegistry(array_map(
-                fn (string $pluginClass): OAuthIntegrationPlugin => $this->app->make($pluginClass),
+                fn (string $pluginClass): IntegrationPlugin => $this->app->make($pluginClass),
                 $pluginClasses,
             ));
         });

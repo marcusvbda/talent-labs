@@ -78,7 +78,7 @@ class ConnectedIntegrationOAuthController extends Controller
 
         try {
             $state = $this->states->consume((string) $request->query('state'), (int) $user->getKey());
-            $oauthPlugin = $this->registry->get($state->pluginKey);
+            $oauthPlugin = $this->registry->oauth($state->pluginKey);
         } catch (InvalidOAuthState|InvalidArgumentException) {
             // No trustworthy state, so no embedded target: fall back to Account.
             return $this->failed(self::FALLBACK_LABEL, route('account'));
@@ -133,12 +133,18 @@ class ConnectedIntegrationOAuthController extends Controller
     public function disconnect(Request $request, string $plugin): RedirectResponse
     {
         $user = $this->user($request);
-        $oauthPlugin = $this->plugin($plugin);
+
+        // Disconnect is shared by every plugin kind, so it is not limited to OAuth plugins.
+        try {
+            $integrationPlugin = $this->registry->get($plugin);
+        } catch (InvalidArgumentException) {
+            abort(404);
+        }
 
         $this->disconnectIntegration->run($user, $plugin);
 
         Notification::make()
-            ->title("{$oauthPlugin->label()} disconnected")
+            ->title("{$integrationPlugin->label()} disconnected")
             ->success()
             ->send();
 
@@ -195,7 +201,7 @@ class ConnectedIntegrationOAuthController extends Controller
     private function plugin(string $key): OAuthIntegrationPlugin
     {
         try {
-            return $this->registry->get($key);
+            return $this->registry->oauth($key);
         } catch (InvalidArgumentException) {
             abort(404);
         }

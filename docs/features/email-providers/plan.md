@@ -43,7 +43,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 7     | `sendingAccount` contract and main screens           | inertia-frontend | 6          | P3, P4                | M    | DONE    |
 | 8     | Remove the `gmail` contract key                      | inertia-frontend | 7          | P4                    | M    | DONE    |
 | 9     | Provider list from the registry                      | inertia-frontend | 8          | P6                    | M    | DONE    |
-| 10    | Credential plugin contract and storage               | laravel-backend  | 2          | P7, P11               | M    | PENDING |
+| 10    | Credential plugin contract and storage               | laravel-backend  | 2          | P7, P11               | M    | DONE    |
 | 11    | `SmtpMessageSender`                                  | laravel-backend  | 4, 10      | P2, P5, P14           | M    | PENDING |
 | 12    | SMTP connect endpoint and test                       | laravel-backend  | 3, 11      | P8, P9, P10, P12, P13 | M    | PENDING |
 | 13    | SMTP form and registration                           | inertia-frontend | 9, 12      | P6, P8, P15           | M    | PENDING |
@@ -475,7 +475,8 @@ Origin: P6 "Account and onboarding screens list the available providers from the
 
 ### Phase 10 — Credential plugin contract and storage
 
-Status: PENDING
+Status: DONE
+Evidence: read-only tinker: `oauth('gmail')` returns `GmailPlugin`, `oauth('smtp')` throws `InvalidArgumentException`, `get('smtp')->label()` is "Other email (SMTP)"; no code path exposes `credentials` (presenter, export and Filament checked); pint, `composer types:check`, `SendingDatabaseGuards` (7) and `tests/Feature/Outreach` (31) pass; reviewer APPROVED. Reviewer finding fixed: the controller's `disconnect()` now resolves the plugin with `get()` instead of `oauth()`, so a credential plugin can still be disconnected. **Owner: run `php artisan migrate:fresh --seed` now**; disconnect and reauthorization fail on a database without the `credentials` column. No test covers the Gmail connect/callback/reconnect/disconnect flow, so those are verified by types and code reading only.
 Role: laravel-backend · Depends on: 2 · Covers: P7, P11 · Size: M
 Origin: P7 "SMTP is a credential integration, not OAuth" · P11 "Credentials in an encrypted column"
 
