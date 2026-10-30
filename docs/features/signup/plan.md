@@ -48,7 +48,7 @@ incomplete until then.
 | 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | DONE    |
 | 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | DONE    |
 | 13    | Turnstile enforcement           | laravel-backend  | 12                | P15      | S    | DONE    |
-| 14    | IP limit and disposable domains | laravel-backend  | 11                | P15      | M    | PENDING |
+| 14    | IP limit and disposable domains | laravel-backend  | 11                | P15      | M    | DONE    |
 | 15    | Final verification and report   | laravel-backend  | 6, 10, 11, 13, 14 | all      | S    | PENDING |
 
 ## Owner decisions
@@ -693,7 +693,8 @@ Origin: P15 "captcha on the form (Cloudflare Turnstile, verified server-side ove
 
 ### Phase 14 — Abuse limits: signups per IP and disposable domains
 
-Status: PENDING
+Status: DONE
+Evidence: `composer test` (pint, PHPStan, 33/33) and `yarn run check` pass. Tinker: `x@mailinator.com` and `x@a.mailinator.com` blocked, `x@gmail.com`, an address without `@` and `x@com` not. A throwaway PHPUnit class (outside the repo, deleted) against the testing DB in open mode: disposable and subdomain rejected with no user created and no count added; 5 failed validations added nothing, the next 10 valid signups were accepted and the 11th got the `too_many_registrations` error; in invite mode a disposable address with a valid invite registers and the count is untouched. `code-reviewer`: APPROVED. List source: https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf, licence CC0 1.0 (public domain, copying allowed), downloaded 2026-10-30, 10083 domains, stored unchanged in `resources/data/disposable-email-domains.txt`. Notes: with an invite bound to a different address, a disposable domain shows `invite_mismatch` instead of `disposable` (the check skips when `email` already has an error); the check-then-hit gap can overshoot the daily limit by a few concurrent requests; `REGISTRATION_IP_DAILY_LIMIT` of 0 blocks all open signups.
 Role: laravel-backend · Depends on: 11 · Covers: P15 (limits), D10 · Size: M
 Origin: P15 "registrations limited per IP per day (in addition to `throttle:10,1`); disposable-email domains blocked." + D10 "from a static list kept in the repo".
 

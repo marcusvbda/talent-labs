@@ -182,6 +182,9 @@ return [
         // `invite` (default) or `open`. Any other value counts as invite, so a typo fails closed.
         'mode' => env('REGISTRATION_MODE', 'invite'),
 
+        // Open mode: accepted sign-ups per IP per day (failed validations don't count).
+        'ip_daily_limit' => (int) env('REGISTRATION_IP_DAILY_LIMIT', 10),
+
         // Cloudflare Turnstile captcha for open registration.
         'turnstile' => [
             'site_key' => env('TURNSTILE_SITE_KEY'),

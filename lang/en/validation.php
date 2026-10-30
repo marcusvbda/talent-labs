@@ -188,7 +188,9 @@ return [
             'failed' => 'Could not confirm you are human. Please try again.',
         ],
         'email' => [
+            'disposable' => 'Please use a permanent email address.',
             'invite_mismatch' => 'This invitation is bound to a different email address.',
+            'too_many_registrations' => 'Too many sign-ups from this network today. Please try again tomorrow.',
         ],
         'invite' => [
             'unusable' => 'This invitation link is no longer valid.',

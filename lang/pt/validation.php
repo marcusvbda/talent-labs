@@ -182,7 +182,9 @@ return [
             'failed' => 'Não foi possível confirmar que você é humano. Tente novamente.',
         ],
         'email' => [
+            'disposable' => 'Use um endereço de e-mail permanente.',
             'invite_mismatch' => 'Este convite está vinculado a outro endereço de e-mail.',
+            'too_many_registrations' => 'Muitos cadastros nesta rede hoje. Tente novamente amanhã.',
         ],
         'invite' => [
             'unusable' => 'Este link de convite não é mais válido.',

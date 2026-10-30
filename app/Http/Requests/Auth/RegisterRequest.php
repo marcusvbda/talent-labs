@@ -3,11 +3,13 @@
 namespace App\Http\Requests\Auth;
 
 use App\Invitations\InvitationTokens;
+use App\Registration\DisposableEmailDomains;
 use App\Registration\RegistrationMode;
 use App\Registration\TurnstileVerifier;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
 
@@ -75,6 +77,23 @@ class RegisterRequest extends FormRequest
                     && mb_strtolower($invitation->email) !== mb_strtolower($this->string('email')->toString())
                 ) {
                     $validator->errors()->add('email', __('validation.custom.email.invite_mismatch'));
+                }
+            },
+            // Open mode only, before the captcha so a rejected address doesn't burn its token.
+            function (Validator $validator): void {
+                if (! RegistrationMode::isOpen() || $validator->errors()->has('email')) {
+                    return;
+                }
+
+                if (app(DisposableEmailDomains::class)->isBlocked($this->string('email')->toString())) {
+                    $validator->errors()->add('email', __('validation.custom.email.disposable'));
+
+                    return;
+                }
+
+                // Hits are counted by the controller, so failed validations never count.
+                if (RateLimiter::tooManyAttempts('register-ip:'.$this->ip(), (int) config('talent.registration.ip_daily_limit'))) {
+                    $validator->errors()->add('email', __('validation.custom.email.too_many_registrations'));
                 }
             },
             // Last, and only on an otherwise valid form, so a typo doesn't burn the single-use token.

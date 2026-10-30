@@ -12,6 +12,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -44,6 +45,9 @@ class RegisterController extends Controller
 
         // Open mode answers the same way whether or not the address has an account.
         if (RegistrationMode::isOpen()) {
+            // Every accepted submission counts (new, existing or blocked) so the limit reveals nothing.
+            RateLimiter::hit('register-ip:'.$request->ip(), 86400);
+
             app(RegisterOpenClient::class)->run($validated);
 
             return redirect()->route('register.check-inbox');
