@@ -46,7 +46,7 @@ Route::inertia('/plans', 'plans')->middleware(['auth', 'client'])->name('plans')
 
 Route::inertia('/account', 'account')->middleware(['auth', 'client'])->name('account');
 
-Route::middleware(['auth', 'client', 'throttle:120,1'])
+Route::middleware(['auth', 'client', 'throttle:120,1,internal'])
     ->prefix('internal')->name('internal.')
     ->group(function (): void {
         Route::get('/account/status', AccountStatusController::class)->name('account.status');
@@ -93,26 +93,26 @@ Route::middleware(['auth', 'client', 'throttle:120,1'])
             ->name('profiles.preview');
     });
 
-Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');
+Route::put('/locale', [LocaleController::class, 'update'])->middleware('throttle:locale')->name('locale.update');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])
-        ->middleware('throttle:6,1')
+        ->middleware('throttle:6,1,login')
         ->name('login.store');
 
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])
-        ->middleware('throttle:10,1')
+        ->middleware('throttle:10,1,register')
         ->name('register.store');
     Route::inertia('/register/closed', 'auth/closed')->name('register.closed');
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:5,1,forgot-password')
         ->name('password.email');
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
     Route::post('/reset-password', [ResetPasswordController::class, 'store'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:5,1,reset-password')
         ->name('password.update');
 });
 
@@ -121,17 +121,20 @@ Route::post('/logout', LogoutController::class)->middleware('auth')->name('logou
 Route::middleware(['web', 'auth'])->prefix('integrations')->name('integrations.oauth.')->group(function (): void {
     // Registered before the {plugin} routes so "oauth" is never captured as a plugin key.
     Route::get('/oauth/callback', [ConnectedIntegrationOAuthController::class, 'callback'])
-        ->middleware('throttle:20,1')
+        ->middleware('throttle:20,1,oauth-callback')
         ->name('callback');
 
     Route::get('/{plugin}/connect', [ConnectedIntegrationOAuthController::class, 'connect'])
         ->where('plugin', '[a-z0-9-]+')
+        ->middleware('throttle:10,1,integrations')
         ->name('connect');
     Route::get('/{plugin}/reconnect', [ConnectedIntegrationOAuthController::class, 'reconnect'])
         ->where('plugin', '[a-z0-9-]+')
+        ->middleware('throttle:10,1,integrations')
         ->name('reconnect');
     Route::delete('/{plugin}', [ConnectedIntegrationOAuthController::class, 'disconnect'])
         ->where('plugin', '[a-z0-9-]+')
+        ->middleware('throttle:10,1,integrations')
         ->name('disconnect');
 });
 

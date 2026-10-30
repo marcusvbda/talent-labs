@@ -44,7 +44,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | `.env.example` hygiene and production notes | laravel-backend | none | P15, P16 | S | DONE |
 | 2 | Trusted proxies and trusted hosts | laravel-backend | 1 | P1, P22 | S | DONE |
-| 3 | Rate limits and separate counters | laravel-backend | 2 | P2, P21 | S | PENDING |
+| 3 | Rate limits and separate counters | laravel-backend | 2 | P2, P21 | S | DONE |
 | 4 | Stripe routes gated by billing availability | laravel-backend | none | P3 | S | PENDING |
 | 5 | Remove privileged fields from `User` fillable | laravel-backend | none | P5 | M | PENDING (needs test authorization, D1) |
 | 6 | `PublicNetworkGuard` | laravel-backend | none | P7, P9 | S | PENDING |
@@ -199,7 +199,8 @@ Origin: P1 "Configure trusted proxies from env"; P22 "Enable Laravel's trusted h
 
 ### Phase 3 — Every sensitive route has its own rate limit
 
-Status: PENDING
+Status: DONE
+Evidence: `route:list -v` shows the prefixed throttles on internal, login, register, forgot-password, reset-password, oauth-callback, the three integration routes (shared `integrations` counter) and `locale` (named limiter, 30/min per IP); diff checked line by line against the contract; `composer test` passes (pint, PHPStan, 33 tests). Orchestrator-checked, no separate `code-reviewer` pass (mechanical change).
 Role: laravel-backend · Depends on: 2 · Covers: P2, P21 · Size: S
 Origin: P2 "Rate limits after P1"; P21 "Every `throttle:N,1` route … gets its own prefix"
 

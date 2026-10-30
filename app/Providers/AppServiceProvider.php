@@ -9,11 +9,14 @@ use App\Outreach\Support\OutreachConfig;
 use App\Plans\PlanCatalog;
 use App\Services\ConnectedIntegrationRegistry;
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\DevCommands;
 use Illuminate\Http\Middleware\TrustProxies;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Cashier\Cashier;
@@ -55,6 +58,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Fail fast on unsafe sending knobs, in every environment.
         OutreachConfig::validate();
+
+        // Named so the key is the IP even for signed-in users.
+        RateLimiter::for('locale', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
 
         // Client JSON contracts have no envelope.
         JsonResource::withoutWrapping();
