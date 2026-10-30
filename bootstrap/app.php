@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureActiveClient;
 use App\Http\Middleware\EnsurePlanCanChooseJobs;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -45,6 +46,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Rejects forged Host headers outside local/tests: APP_URL host and its subdomains.
         $middleware->trustHosts();
+
+        // Global so the Filament panel (own stack) and error responses get them too.
+        $middleware->append(AddSecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

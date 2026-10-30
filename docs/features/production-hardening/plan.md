@@ -50,7 +50,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 6 | `PublicNetworkGuard` | laravel-backend | none | P7, P9 | S | DONE |
 | 7 | `SmtpProbe` uses the guard | laravel-backend | 6 | P8 | S | DONE |
 | 8 | Reverb origins and rate limit | laravel-backend | 1 | P10 | S | DONE |
-| 9 | Security headers | laravel-backend | 2 | P11 | S | PENDING |
+| 9 | Security headers | laravel-backend | 2 | P11 | S | DONE |
 | 10 | CSP report-only and report endpoint | laravel-backend | 9 | P12, P24 | M | PENDING |
 | 11 | `app:production-check` and admin path | laravel-backend | 2, 4, 8 | P13, P4, P23 | M | PENDING |
 | 12 | Reject admins at client login | laravel-backend | none | P20 | S | PENDING |
@@ -444,7 +444,8 @@ Origin: P10 "Reverb `allowed_origins` from env; enable Reverb rate limiting in p
 
 ### Phase 9 — Every response carries security headers
 
-Status: PENDING
+Status: DONE
+Evidence: requests through the HTTP kernel to `/login`, `/admin/login` and `/nonexistent` (404) carry the four headers and no HSTS locally; with `SECURITY_HEADERS_SKIP=X-Frame-Options` that header is absent and the others stay; with `APP_ENV=production`, `https://` gets `Strict-Transport-Security: max-age=31536000` and `http://` does not; `composer test` passes (pint, PHPStan, 33 tests). Orchestrator-checked diff against the contract, no separate `code-reviewer` pass (small middleware). Not checked in a browser: confirm the panel still loads.
 Role: laravel-backend · Depends on: 2 · Covers: P11 · Size: S
 Origin: P11 "Middleware adding, on web responses"
 

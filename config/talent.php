@@ -194,5 +194,8 @@ return [
     'security' => [
         // Comma list of proxy IPs/CIDRs or `*`. Empty/unset = no proxy is trusted.
         'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+        // Comma list of security header names the proxy already sets (case-insensitive); the app skips them.
+        'headers_skip' => env('SECURITY_HEADERS_SKIP', ''),
     ],
 ];
