@@ -63,11 +63,11 @@ cheaply or for free.
   (`talent.outreach.aggregator_domains`) and ATS/job-board domains (new config
   list). **O1:** free-mail domains (gmail.com etc.).
 - **P3.** Contact **tiers**, per contact (not per source):
-  - **A** — email published in the posting;
-  - **B** — named decision-maker, verified (Stage 2);
-  - **C** — verified role alias (today's `smtp_verified`).
-  Never sendable (unchanged): `catch_all`, `mx_only`, inconclusive,
-  unverified guesses.
+    - **A** — email published in the posting;
+    - **B** — named decision-maker, verified (Stage 2);
+    - **C** — verified role alias (today's `smtp_verified`).
+      Never sendable (unchanged): `catch_all`, `mx_only`, inconclusive,
+      unverified guesses.
 - **P4.** Data (forward migrations only): `contacts.source`
   (`alias_probe` | `posting` | `named`), nullable `contacts.job_posting_id`
   (posting that published it), nullable `person_name`, `person_title`
@@ -80,7 +80,7 @@ cheaply or for free.
   for sending **or** the posting has at least one sendable tier-A email. Same
   rule for the AI profile extraction and its dispatchers. After
   implementation, job-mining §2.4/§2.8 is updated with `/update-feature-spec
-  job-mining`.
+job-mining`.
 - **P7.** Recipient per application: tier A of the same posting → tier B of
   the company → tier C by `RECIPIENT_PRIORITY`. **O3:** may a tier-A email of
   one posting be used for other postings of the same company?
@@ -99,7 +99,7 @@ cheaply or for free.
   `reports:tier-performance` (sent and replies per tier). Without it, tier
   decisions stay guesses.
 - **P13.** Backfill for stored postings: `contacts:extract-published
-  {--limit=} {--force}` — dry run by default, chunks of 200, never deletes
+{--limit=} {--force}` — dry run by default, chunks of 200, never deletes
   (same style as `contacts:recheck`).
 
 ### Stage 2 — Named decision-makers (gated by a measurement)

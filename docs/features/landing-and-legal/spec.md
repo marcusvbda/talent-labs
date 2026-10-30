@@ -31,13 +31,13 @@ policy, terms and the opt-out for companies.
 - Plan cards describe plans by `mode` only (`landing.plans.desc.auto|select|review`
   and `feature.*`).
 - Copy that is wrong or about to be wrong:
-  - FAQ 1: "We only ask Google for permission to send emails" (Gmail only).
-  - FAQ 6: "Through the opt-out page linked in the footer" — the page does not
-    exist.
-  - Live band: "message adaptation to the job" — today it is template
-    variables, not adaptation.
-  - Meta description: "finds developer jobs" — sources also collect support
-    and product roles.
+    - FAQ 1: "We only ask Google for permission to send emails" (Gmail only).
+    - FAQ 6: "Through the opt-out page linked in the footer" — the page does not
+      exist.
+    - Live band: "message adaptation to the job" — today it is template
+      variables, not adaptation.
+    - Meta description: "finds developer jobs" — sources also collect support
+      and product roles.
 
 ## 3. Open points
 
@@ -90,12 +90,12 @@ policy, terms and the opt-out for companies.
   contacted.
 - **P13.** Suppression list: table `outreach_suppressions` (domain or exact
   email, reason, source `opt_out` | `admin`, confirmed_at). Effects:
-  - `QueueApplication` rejects suppressed recipients with a client message
-    ("This company asked not to receive applications");
-  - `SendApplicationEmail` re-checks before delivery and cancels;
-  - contact discovery and Stage 2 lookups skip suppressed domains (no
-    probing).
-  Filament resource to list, add and remove suppressions.
+    - `QueueApplication` rejects suppressed recipients with a client message
+      ("This company asked not to receive applications");
+    - `SendApplicationEmail` re-checks before delivery and cancels;
+    - contact discovery and Stage 2 lookups skip suppressed domains (no
+      probing).
+      Filament resource to list, add and remove suppressions.
 - **P14.** Footer links appear once P10 exists (no extra code needed).
 
 ## Decisions

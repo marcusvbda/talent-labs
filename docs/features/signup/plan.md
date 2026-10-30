@@ -8,24 +8,24 @@ Phase status is updated in place in this file.
 
 Implemented: 2 · Partial: 1 · Divergent: 1 · Missing: 12 · Unverifiable: 0
 
-| Requirement | State | Evidence |
-| ----------- | ----- | -------- |
-| P1 invite-only, plan from invite, admin changes plan | Implemented | `RegisterController`, `EditUser` |
-| P2 `MustVerifyEmail`, no stamp, fires `Registered` | Missing | `app/Models/User.php:5`, `RegisterController.php:59` |
-| P3 verification routes and page | Missing | `routes/web.php` |
-| P4 `verified` on client routes, 403 message | Missing | `routes/web.php`, `resources/js/data/api.ts` |
-| P5 verify page | Missing | `resources/js/pages/auth/` |
-| P6 localized email | Missing | Pattern: `app/Notifications/Client/ResetPassword.php` |
-| P7 admin-created users verified | Missing | `CreateUser.php` |
-| P8 status and actions in `EditUser` | Missing | `EditUser.php`, `UserForm.php` |
-| P9 `users:mark-verified` | Missing | `app/Console/Commands/` |
-| P10 production flags `log`/`array` | Implemented | `ProductionCheck.php:95` |
-| P11 mode switch | Missing | `config/talent.php`, `LandingController.php` |
-| P12 open mode without invite | Missing | `RegisterRequest.php` |
-| P13 plan never from request, paid via Checkout | Partial | Holds today; must survive P12 |
-| P14 Free is free | Divergent (pending) | `config/talent.php` defaults 2500/500/500 |
-| P15 captcha, IP limit, disposable domains | Missing | `AddContentSecurityPolicy.php` also needs Cloudflare |
-| P16 no enumeration, link logs in | Missing | `unique:users,email`, `Auth::login` in `store` |
+| Requirement                                          | State               | Evidence                                              |
+| ---------------------------------------------------- | ------------------- | ----------------------------------------------------- |
+| P1 invite-only, plan from invite, admin changes plan | Implemented         | `RegisterController`, `EditUser`                      |
+| P2 `MustVerifyEmail`, no stamp, fires `Registered`   | Missing             | `app/Models/User.php:5`, `RegisterController.php:59`  |
+| P3 verification routes and page                      | Missing             | `routes/web.php`                                      |
+| P4 `verified` on client routes, 403 message          | Missing             | `routes/web.php`, `resources/js/data/api.ts`          |
+| P5 verify page                                       | Missing             | `resources/js/pages/auth/`                            |
+| P6 localized email                                   | Missing             | Pattern: `app/Notifications/Client/ResetPassword.php` |
+| P7 admin-created users verified                      | Missing             | `CreateUser.php`                                      |
+| P8 status and actions in `EditUser`                  | Missing             | `EditUser.php`, `UserForm.php`                        |
+| P9 `users:mark-verified`                             | Missing             | `app/Console/Commands/`                               |
+| P10 production flags `log`/`array`                   | Implemented         | `ProductionCheck.php:95`                              |
+| P11 mode switch                                      | Missing             | `config/talent.php`, `LandingController.php`          |
+| P12 open mode without invite                         | Missing             | `RegisterRequest.php`                                 |
+| P13 plan never from request, paid via Checkout       | Partial             | Holds today; must survive P12                         |
+| P14 Free is free                                     | Divergent (pending) | `config/talent.php` defaults 2500/500/500             |
+| P15 captcha, IP limit, disposable domains            | Missing             | `AddContentSecurityPolicy.php` also needs Cloudflare  |
+| P16 no enumeration, link logs in                     | Missing             | `unique:users,email`, `Auth::login` in `store`        |
 
 ## Status board
 
@@ -33,23 +33,23 @@ Phases 1-6 are Stage 1 (beta). Phases 7-15 are Stage 2 (public launch). Do not
 set `REGISTRATION_MODE=open` anywhere real before phase 15 passes: open mode is
 incomplete until then.
 
-| Phase | Title | Role | Depends on | Origin | Size | Status |
-| ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
-| 1 | Verification email | laravel-backend | none | P2, P6 | S | DONE |
-| 2 | Verification routes and page | laravel-backend | 1 | P3, P5 | M | DONE |
-| 3 | `users:mark-verified` command | laravel-backend | none | P9 | S | DONE |
-| 4 | Admin verification controls | filament-admin | 1 | P7, P8 | S | DONE |
-| 5 | Enforce verification | laravel-backend | 1, 2, 3, 4 | P2, P4 | M | DONE |
-| 6 | Stage 1 verification and report | laravel-backend | 5 | P1, P10 | S | PENDING |
-| 7 | Free costs 0 | laravel-backend | none | P14 | S | DONE |
-| 8 | Registration mode switch | laravel-backend | 7 | P11 | M | PENDING |
-| 9 | Registration without an invite | laravel-backend | 5, 8 | P12, P13 | M | PENDING |
-| 10 | Verification link logs in | laravel-backend | 9 | P16 | S | PENDING |
-| 11 | Signup without enumeration | laravel-backend | 10 | P16 | M | PENDING |
-| 12 | Turnstile widget and CSP | inertia-frontend | 9 | P15 | M | PENDING |
-| 13 | Turnstile enforcement | laravel-backend | 12 | P15 | S | PENDING |
-| 14 | IP limit and disposable domains | laravel-backend | 11 | P15 | M | PENDING |
-| 15 | Final verification and report | laravel-backend | 6, 10, 11, 13, 14 | all | S | PENDING |
+| Phase | Title                           | Role             | Depends on        | Origin   | Size | Status  |
+| ----- | ------------------------------- | ---------------- | ----------------- | -------- | ---- | ------- |
+| 1     | Verification email              | laravel-backend  | none              | P2, P6   | S    | DONE    |
+| 2     | Verification routes and page    | laravel-backend  | 1                 | P3, P5   | M    | DONE    |
+| 3     | `users:mark-verified` command   | laravel-backend  | none              | P9       | S    | DONE    |
+| 4     | Admin verification controls     | filament-admin   | 1                 | P7, P8   | S    | DONE    |
+| 5     | Enforce verification            | laravel-backend  | 1, 2, 3, 4        | P2, P4   | M    | DONE    |
+| 6     | Stage 1 verification and report | laravel-backend  | 5                 | P1, P10  | S    | DONE    |
+| 7     | Free costs 0                    | laravel-backend  | none              | P14      | S    | DONE    |
+| 8     | Registration mode switch        | laravel-backend  | 7                 | P11      | M    | PENDING |
+| 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | PENDING |
+| 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | PENDING |
+| 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | PENDING |
+| 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | PENDING |
+| 13    | Turnstile enforcement           | laravel-backend  | 12                | P15      | S    | PENDING |
+| 14    | IP limit and disposable domains | laravel-backend  | 11                | P15      | M    | PENDING |
+| 15    | Final verification and report   | laravel-backend  | 6, 10, 11, 13, 14 | all      | S    | PENDING |
 
 ## Owner decisions
 
@@ -97,25 +97,25 @@ Blocks: none · Answer: newest signup wins; verifying ends other sessions and ro
 
 ## Requirement coverage
 
-| Requirement | Phases |
-| ----------- | ------ |
-| P1 | 6 (verify only), 5 (preserved) |
-| P2 | 1, 5 |
-| P3 | 2 |
-| P4 | 5 |
-| P5 | 2 |
-| P6 | 1 |
-| P7 | 4 |
-| P8 | 4 |
-| P9 | 3 |
-| P10 | 6 (verify only) |
-| P11 | 8 |
-| P12 | 9 |
-| P13 | 9, 15 |
-| P14 | 7 |
-| P15 | 12, 13, 14 |
-| P16 | 10, 11 |
-| D6-D11 | 2, 5, 7, 8, 14, 10, 11 |
+| Requirement | Phases                         |
+| ----------- | ------------------------------ |
+| P1          | 6 (verify only), 5 (preserved) |
+| P2          | 1, 5                           |
+| P3          | 2                              |
+| P4          | 5                              |
+| P5          | 2                              |
+| P6          | 1                              |
+| P7          | 4                              |
+| P8          | 4                              |
+| P9          | 3                              |
+| P10         | 6 (verify only)                |
+| P11         | 8                              |
+| P12         | 9                              |
+| P13         | 9, 15                          |
+| P14         | 7                              |
+| P15         | 12, 13, 14                     |
+| P16         | 10, 11                         |
+| D6-D11      | 2, 5, 7, 8, 14, 10, 11         |
 
 ## Phases
 
@@ -135,27 +135,27 @@ Origin: P2 "`User` implements `MustVerifyEmail`"; P6 "Verification email: locali
 - `app/Models/User.php`: replace the commented import with `use Illuminate\Contracts\Auth\MustVerifyEmail;`, add `MustVerifyEmail` to `implements`. The base `Authenticatable` already provides the trait methods.
 - Add to `User`, next to `sendPasswordResetNotification`:
 
-  ```php
-  public function sendEmailVerificationNotification(): void
-  {
-      $this->notify(new VerifyEmail);
-  }
-  ```
+    ```php
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmail);
+    }
+    ```
 
 - `app/Notifications/Client/VerifyEmail.php`: `class VerifyEmail extends \Illuminate\Auth\Notifications\VerifyEmail implements ShouldQueue` with `use Queueable`. Mirror `ResetPassword`: `via()` returns `['mail']`; `toMail($notifiable)` returns a `MailMessage` with subject `__('mail.verify.subject', ['brand' => $brand])` and `->view('mail.client.verify-email', ['brand' => $brand, 'url' => $this->verificationUrl($notifiable), 'user' => $notifiable, 'expireMinutes' => config('auth.verification.expire', 60)])`.
 - `Assumption:` queued on the default queue. Sent synchronously, a mail failure would return a 500 after the invite was consumed. Locale still comes from `User::preferredLocale()`.
 - `resources/views/mail/client/verify-email.blade.php`: copy `reset-password.blade.php`, changing only the `mail.reset.*` keys to `mail.verify.*`.
 - Copy (`lang/en.json` / `lang/pt.json`):
 
-  | Key | EN | PT |
-  | --- | -- | -- |
-  | `mail.verify.subject` | Confirm your :brand email | Confirme seu e-mail no :brand |
-  | `mail.verify.greeting` | Hi :name, | Olá, :name, |
-  | `mail.verify.body` | Confirm your email address to start using :brand. | Confirme seu endereço de e-mail para começar a usar o :brand. |
-  | `mail.verify.button` | Confirm email | Confirmar e-mail |
-  | `mail.verify.fallback` | If the button doesn't work, copy and paste this link into your browser: | Se o botão não funcionar, copie e cole este link no seu navegador: |
-  | `mail.verify.expiry` | This link expires in :minutes minutes. | Este link expira em :minutes minutos. |
-  | `mail.verify.ignore` | If you didn't create a :brand account, you can safely ignore this email. | Se você não criou uma conta no :brand, pode ignorar este e-mail com segurança. |
+    | Key                    | EN                                                                       | PT                                                                             |
+    | ---------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+    | `mail.verify.subject`  | Confirm your :brand email                                                | Confirme seu e-mail no :brand                                                  |
+    | `mail.verify.greeting` | Hi :name,                                                                | Olá, :name,                                                                    |
+    | `mail.verify.body`     | Confirm your email address to start using :brand.                        | Confirme seu endereço de e-mail para começar a usar o :brand.                  |
+    | `mail.verify.button`   | Confirm email                                                            | Confirmar e-mail                                                               |
+    | `mail.verify.fallback` | If the button doesn't work, copy and paste this link into your browser:  | Se o botão não funcionar, copie e cole este link no seu navegador:             |
+    | `mail.verify.expiry`   | This link expires in :minutes minutes.                                   | Este link expira em :minutes minutos.                                          |
+    | `mail.verify.ignore`   | If you didn't create a :brand account, you can safely ignore this email. | Se você não criou uma conta no :brand, pode ignorar este e-mail com segurança. |
 
 **Steps.**
 
@@ -185,45 +185,45 @@ Origin: P3 "Routes (Inertia page `auth/verify-email`, en/pt)… After verificati
 **Contract.**
 
 - `app/Http/Controllers/Auth/EmailVerificationController.php`:
-  - `notice(Request $request): Response|RedirectResponse`: already verified -> redirect to the destination. Otherwise `Inertia::render('auth/verify-email', ['contactEmail' => $contactEmail])`, where `contactEmail` is `config('talent.contact_email')` when a non-empty string, else `null` (same check as `LandingController`). The address comes from the shared `auth.user.email`.
-  - `verify(EmailVerificationRequest $request): RedirectResponse`: `$request->fulfill()`, redirect to the destination with `->with('success', __('auth.verify.verified'))`.
-  - `send(Request $request): RedirectResponse`: already verified -> redirect to the destination. Otherwise `$user->sendEmailVerificationNotification()` and `back()->with('success', __('auth.verify.sent'))`.
-  - Private destination: `route('onboarding')` when `AccountStatusPresenter::forUser($user)['onboarding']['complete']` is false, else `route('dashboard')`.
+    - `notice(Request $request): Response|RedirectResponse`: already verified -> redirect to the destination. Otherwise `Inertia::render('auth/verify-email', ['contactEmail' => $contactEmail])`, where `contactEmail` is `config('talent.contact_email')` when a non-empty string, else `null` (same check as `LandingController`). The address comes from the shared `auth.user.email`.
+    - `verify(EmailVerificationRequest $request): RedirectResponse`: `$request->fulfill()`, redirect to the destination with `->with('success', __('auth.verify.verified'))`.
+    - `send(Request $request): RedirectResponse`: already verified -> redirect to the destination. Otherwise `$user->sendEmailVerificationNotification()` and `back()->with('success', __('auth.verify.sent'))`.
+    - Private destination: `route('onboarding')` when `AccountStatusPresenter::forUser($user)['onboarding']['complete']` is false, else `route('dashboard')`.
 - `routes/web.php`, outside the `guest` group:
 
-  ```php
-  Route::middleware(['auth', 'client'])->prefix('email')->name('verification.')->group(function (): void {
-      Route::get('/verify', [EmailVerificationController::class, 'notice'])->name('notice');
-      Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-          ->middleware(['signed', 'throttle:6,1,verification-verify'])
-          ->name('verify');
-      Route::post('/verification-notification', [EmailVerificationController::class, 'send'])
-          ->middleware('throttle:6,1,verification-send')
-          ->name('send');
-  });
-  ```
+    ```php
+    Route::middleware(['auth', 'client'])->prefix('email')->name('verification.')->group(function (): void {
+        Route::get('/verify', [EmailVerificationController::class, 'notice'])->name('notice');
+        Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+            ->middleware(['signed', 'throttle:6,1,verification-verify'])
+            ->name('verify');
+        Route::post('/verification-notification', [EmailVerificationController::class, 'send'])
+            ->middleware('throttle:6,1,verification-send')
+            ->name('send');
+    });
+    ```
 
 - `Assumption:` `client` is added beyond P3's `auth` so blocked users are still logged out.
 - `Assumption:` an expired or invalid link should not end on a bare 403. In `bootstrap/app.php` `withExceptions`, add a render for `Illuminate\Routing\Exceptions\InvalidSignatureException`: when `$request->routeIs('verification.verify')`, redirect to `route('verification.notice')` with `->with('error', __('auth.verify.link_invalid'))`; otherwise return `null`.
 - `resources/js/pages/auth/verify-email.tsx`, using `GuestLayout`, `useT`, `Button`:
-  - Heading `auth.verify.title`; body `t('auth.verify.body', { email })`, where `email` is `auth.user.email` from `usePage<SharedProps>()`.
-  - Resend button posts `send()` from `@/actions/App/Http/Controllers/Auth/EmailVerificationController`. On success start a 60-second cooldown in local state; while it runs the button is disabled and shows `t('auth.verify.resend_wait', { seconds })`, otherwise `auth.verify.resend`. A `setInterval` in `useEffect` with cleanup is fine.
-  - `Assumption:` no cooldown on first load, since a person arriving by login may have an expired link. The 6/min throttle is the backstop.
-  - "Wrong address?" block: `auth.verify.wrong_title`, then `t('auth.verify.wrong_contact', { email: contactEmail })` when `contactEmail` is set, else `auth.verify.wrong_no_contact`. A logout button (`user_menu.logout`) calls `router.post(logout().url)`.
+    - Heading `auth.verify.title`; body `t('auth.verify.body', { email })`, where `email` is `auth.user.email` from `usePage<SharedProps>()`.
+    - Resend button posts `send()` from `@/actions/App/Http/Controllers/Auth/EmailVerificationController`. On success start a 60-second cooldown in local state; while it runs the button is disabled and shows `t('auth.verify.resend_wait', { seconds })`, otherwise `auth.verify.resend`. A `setInterval` in `useEffect` with cleanup is fine.
+    - `Assumption:` no cooldown on first load, since a person arriving by login may have an expired link. The 6/min throttle is the backstop.
+    - "Wrong address?" block: `auth.verify.wrong_title`, then `t('auth.verify.wrong_contact', { email: contactEmail })` when `contactEmail` is set, else `auth.verify.wrong_no_contact`. A logout button (`user_menu.logout`) calls `router.post(logout().url)`.
 - Copy:
 
-  | Key | EN | PT |
-  | --- | -- | -- |
-  | `auth.verify.title` | Confirm your email | Confirme seu e-mail |
-  | `auth.verify.body` | We sent a confirmation link to :email. Open it to continue. | Enviamos um link de confirmação para :email. Abra-o para continuar. |
-  | `auth.verify.resend` | Resend email | Reenviar e-mail |
-  | `auth.verify.resend_wait` | Resend in :seconds s | Reenviar em :seconds s |
-  | `auth.verify.sent` | We sent a new link to your email. | Enviamos um novo link para o seu e-mail. |
-  | `auth.verify.verified` | Email confirmed. | E-mail confirmado. |
-  | `auth.verify.link_invalid` | This link has expired or is invalid. Request a new one. | Este link expirou ou é inválido. Solicite um novo. |
-  | `auth.verify.wrong_title` | Wrong address? | Endereço errado? |
-  | `auth.verify.wrong_contact` | Log out and write to :email so we can fix it. | Saia da conta e escreva para :email para corrigirmos. |
-  | `auth.verify.wrong_no_contact` | Log out and contact whoever invited you. | Saia da conta e fale com quem enviou seu convite. |
+    | Key                            | EN                                                          | PT                                                                  |
+    | ------------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------- |
+    | `auth.verify.title`            | Confirm your email                                          | Confirme seu e-mail                                                 |
+    | `auth.verify.body`             | We sent a confirmation link to :email. Open it to continue. | Enviamos um link de confirmação para :email. Abra-o para continuar. |
+    | `auth.verify.resend`           | Resend email                                                | Reenviar e-mail                                                     |
+    | `auth.verify.resend_wait`      | Resend in :seconds s                                        | Reenviar em :seconds s                                              |
+    | `auth.verify.sent`             | We sent a new link to your email.                           | Enviamos um novo link para o seu e-mail.                            |
+    | `auth.verify.verified`         | Email confirmed.                                            | E-mail confirmado.                                                  |
+    | `auth.verify.link_invalid`     | This link has expired or is invalid. Request a new one.     | Este link expirou ou é inválido. Solicite um novo.                  |
+    | `auth.verify.wrong_title`      | Wrong address?                                              | Endereço errado?                                                    |
+    | `auth.verify.wrong_contact`    | Log out and write to :email so we can fix it.               | Saia da conta e escreva para :email para corrigirmos.               |
+    | `auth.verify.wrong_no_contact` | Log out and contact whoever invited you.                    | Saia da conta e fale com quem enviou seu convite.                   |
 
 **Steps.**
 
@@ -286,8 +286,8 @@ Origin: P7 "Admin-created users (`CreateUser`) are created verified… The admin
 - `CreateUser::mutateFormDataBeforeCreate`: add `$data['email_verified_at'] = now();`. The existing `forceFill` persists it.
 - `UserForm`: a read-only status visible only on the edit operation, label `Email verified`, state `$record->email_verified_at?->toDateTimeString() ?? 'Not verified'`. It must not dehydrate. Use Boost `search-docs` for the right Filament 5 schema component.
 - `EditUser::getHeaderActions()`, before `DeleteAction`:
-  - `Action::make('resendVerification')`, label `Resend verification email`, `requiresConfirmation()`, visible when `! $record->hasVerifiedEmail()`: `$record->sendEmailVerificationNotification()`, success notification `Verification email sent.`
-  - `Action::make('markVerified')`, label `Mark as verified`, `requiresConfirmation()`, same visibility: `$record->markEmailAsVerified()`, success notification `Email marked as verified.`, then `$this->refreshFormData(['email_verified_at'])` or the Filament 5 equivalent so the status updates.
+    - `Action::make('resendVerification')`, label `Resend verification email`, `requiresConfirmation()`, visible when `! $record->hasVerifiedEmail()`: `$record->sendEmailVerificationNotification()`, success notification `Verification email sent.`
+    - `Action::make('markVerified')`, label `Mark as verified`, `requiresConfirmation()`, same visibility: `$record->markEmailAsVerified()`, success notification `Email marked as verified.`, then `$this->refreshFormData(['email_verified_at'])` or the Filament 5 equivalent so the status updates.
 - `Assumption:` changing the email in `EditUser` leaves `email_verified_at` as it is (admins vouch for addresses, as P7 does). For D6: the admin saves the corrected address, then resends. Clients cannot change their email (`AccountController::update` doesn't accept it).
 - Do not enable `->emailVerification()` on the panel.
 
@@ -321,22 +321,22 @@ Origin: P2 "`RegisterController::store` no longer sets `email_verified_at`; it f
 - `RegisterController::store`: remove `'email_verified_at' => now()`. After the `$user === null` check, call `event(new Registered($user))` (`Illuminate\Auth\Events\Registered`), outside the transaction, then `Auth::login`, session regenerate, `redirect()->route('verification.notice')`. Keep invitation locking and consumption untouched (P1, D6). The framework registers the mail listener automatically; check that exactly one job is queued per registration.
 - `app/Http/Middleware/EnsureEmailIsVerified.php` (own class; the framework's returns an untranslated message):
 
-  ```php
-  public function handle(Request $request, Closure $next): Response
-  {
-      $user = $request->user();
+    ```php
+    public function handle(Request $request, Closure $next): Response
+    {
+        $user = $request->user();
 
-      if (! $user instanceof MustVerifyEmail || $user->hasVerifiedEmail()) {
-          return $next($request);
-      }
+        if (! $user instanceof MustVerifyEmail || $user->hasVerifiedEmail()) {
+            return $next($request);
+        }
 
-      if ($request->expectsJson()) {
-          return response()->json(['message' => __('auth.verify.required'), 'code' => 'email_unverified'], 403);
-      }
+        if ($request->expectsJson()) {
+            return response()->json(['message' => __('auth.verify.required'), 'code' => 'email_unverified'], 403);
+        }
 
-      return redirect()->route('verification.notice');
-  }
-  ```
+        return redirect()->route('verification.notice');
+    }
+    ```
 
 - `bootstrap/app.php` aliases: `'verified' => EnsureEmailIsVerified::class`.
 - `routes/web.php`: add `verified` directly after `client` on `dashboard`, `onboarding`, `jobs`, `applications`, `profiles`, `preferences`, `plans`, `account` and the `internal.` group; after `auth` on the `integrations.oauth.` group. Keep `plan.jobs` and all throttles. Do not add it to `logout`, `verification.*` or `locale.update`.
@@ -363,7 +363,8 @@ Origin: P2 "`RegisterController::store` no longer sets `email_verified_at`; it f
 
 ### Phase 6 — Stage 1 verified and reported
 
-Status: PENDING
+Status: DONE
+Evidence: `composer ci:check` passes (frontend check, `tsc`, pint, PHPStan, 33/33 tests). It had failed only on docs formatting; the owner asked to resolve it, so `yarn check:fix` formatted the 6 docs files (whitespace/table alignment only; the four other features' specs and this plan are in this commit, the owner's uncommitted `signup/spec.md` is left out). P1: `GET /register` without a usable invite still redirects to `register.closed` (`RegisterController.php:28,73`). P10: `ProductionCheck.php:95` still fails on `MAIL_MAILER` `log`/`array`. Greps for `->poll(`, `wire:poll`, `refetchInterval` find only a comment in `query-client.ts`; `lang/` has only `en` and `pt`.
 Role: laravel-backend · Depends on: 5 · Covers: P1, P10, all Stage 1 · Size: S
 Origin: spec x code gap (verification of Stage 1 before the beta)
 
@@ -439,10 +440,10 @@ Origin: P11 "One switch: `talent.registration.mode` (env `REGISTRATION_MODE`, `i
 - `hero.tsx` and `cta-banner.tsx`: show the open copy when `betaClosed` is false. `CtaBanner` already gets the prop; `Hero` too.
 - Copy:
 
-  | Key | EN | PT |
-  | --- | -- | -- |
-  | `landing.hero.badge_open` | Now open · start for free | Aberto a todos · comece grátis |
-  | `landing.cta.title_open` | Start for free today. | Comece grátis hoje. |
+    | Key                       | EN                        | PT                             |
+    | ------------------------- | ------------------------- | ------------------------------ |
+    | `landing.hero.badge_open` | Now open · start for free | Aberto a todos · comece grátis |
+    | `landing.cta.title_open`  | Start for free today.     | Comece grátis hoje.            |
 
 - Run `grep -n -i "invite\|beta" lang/en.json` and handle any other landing string shown when the mode is open. `plans.closed_beta.*` isn't tied to the mode: report it to the owner, don't change it.
 
@@ -473,14 +474,14 @@ Origin: P12 "`open` mode: `/register` works without an invite; when a usable inv
 
 - `RegisterController::create`: in open mode render `auth/register` with `invite` = `['email' => $invitation->email]` when usable, else `null`; plus prop `open: true`. Invite mode keeps the redirect and passes `open: false`.
 - `RegisterRequest`:
-  - `invite` rule: open -> `['nullable', 'string']`; invite -> current rule.
-  - `after()`: in open mode a blank or unusable invite adds no error and skips the email lock. A usable invite keeps the lock.
-  - `Assumption:` an unusable invite in open mode is ignored rather than redirecting to Closed.
+    - `invite` rule: open -> `['nullable', 'string']`; invite -> current rule.
+    - `after()`: in open mode a blank or unusable invite adds no error and skips the email lock. A usable invite keeps the lock.
+    - `Assumption:` an unusable invite in open mode is ignored rather than redirecting to Closed.
 - `RegisterController::store`, inside the transaction:
-  - Invite mode: unchanged.
-  - Open mode: look up with the row lock only when an invite was submitted; treat an unusable one as none.
-  - `plan_key` = `$invitation?->planKeyOrDefault() ?? app(PlanCatalog::class)->get((string) config('talent.plans.default'))->key`. Nothing from the request.
-  - Mark the invitation used only when there is a usable one.
+    - Invite mode: unchanged.
+    - Open mode: look up with the row lock only when an invite was submitted; treat an unusable one as none.
+    - `plan_key` = `$invitation?->planKeyOrDefault() ?? app(PlanCatalog::class)->get((string) config('talent.plans.default'))->key`. Nothing from the request.
+    - Mark the invitation used only when there is a usable one.
 - PHPStan shape for `$validated`: `invite: string|null` (`$validated['invite'] ?? null`).
 - `register.tsx`: prop `invite: { email: string | null } | null`, `open: boolean`; use `invite?.email ?? null` for the lock. Show `auth.register.subtitle_open` when `open`.
 - Copy: `auth.register.subtitle_open` — EN `Create your account and start for free.` / PT `Crie sua conta e comece grátis.`
@@ -515,40 +516,40 @@ Origin: P16 "the signed verification link logs them in"; D11 "Verifying ends the
 - `routes/web.php`: move `verification.verify` out of the `auth` group: middleware `['client', 'signed', 'throttle:6,1,verification-verify']`, `->whereNumber('id')`. `client` passes guests through.
 - `EmailVerificationController::verify(Request $request, int $id, string $hash)`, replacing `EmailVerificationRequest`:
 
-  ```php
-  $user = User::query()->find($id);
-  abort_unless($user !== null && hash_equals($hash, sha1($user->getEmailForVerification())), 403);
+    ```php
+    $user = User::query()->find($id);
+    abort_unless($user !== null && hash_equals($hash, sha1($user->getEmailForVerification())), 403);
 
-  $current = $request->user();
-  abort_if($current !== null && $current->id !== $user->id, 403);
+    $current = $request->user();
+    abort_if($current !== null && $current->id !== $user->id, 403);
 
-  // Invite mode keeps Stage 1: a guest logs in first, then returns here.
-  if ($current === null && ! RegistrationMode::isOpen()) {
-      return redirect()->guest(route('login'));
-  }
+    // Invite mode keeps Stage 1: a guest logs in first, then returns here.
+    if ($current === null && ! RegistrationMode::isOpen()) {
+        return redirect()->guest(route('login'));
+    }
 
-  $firstUse = ! $user->hasVerifiedEmail();
+    $firstUse = ! $user->hasVerifiedEmail();
 
-  if ($firstUse) {
-      $user->markEmailAsVerified();
-      event(new Verified($user));
-  }
+    if ($firstUse) {
+        $user->markEmailAsVerified();
+        event(new Verified($user));
+    }
 
-  if ($firstUse && RegistrationMode::isOpen()) {
-      // end other sessions and rotate remember_token (below)
-  }
+    if ($firstUse && RegistrationMode::isOpen()) {
+        // end other sessions and rotate remember_token (below)
+    }
 
-  if ($current === null) {
-      if (! $firstUse || $user->is_admin || ! $user->isActive()) {
-          return redirect()->route('login');
-      }
+    if ($current === null) {
+        if (! $firstUse || $user->is_admin || ! $user->isActive()) {
+            return redirect()->route('login');
+        }
 
-      Auth::login($user);
-      $request->session()->regenerate();
-  }
+        Auth::login($user);
+        $request->session()->regenerate();
+    }
 
-  // redirect to the destination with the verified flash
-  ```
+    // redirect to the destination with the verified flash
+    ```
 
 - A link logs in only the first time, so a forwarded mail can't be replayed for a login during the 60 minutes.
 - End other sessions: `$user->forceFill(['remember_token' => Str::random(60)])->save();` and, when `config('session.driver') === 'database'`, `DB::table(config('session.table', 'sessions'))->where('user_id', $user->id)->where('id', '!=', $request->session()->getId())->delete();`.
@@ -581,13 +582,13 @@ Origin: P16 "No account enumeration in open mode: an email that already exists g
 **Contract.**
 
 - `RegisterRequest`:
-  - `prepareForValidation()`: `email` trimmed and lowercased, in both modes. `Assumption:` Postgres `unique` is case-sensitive, so this stops `Foo@x` and `foo@x` becoming two accounts.
-  - `unique:users,email` only in invite mode.
+    - `prepareForValidation()`: `email` trimmed and lowercased, in both modes. `Assumption:` Postgres `unique` is case-sensitive, so this stops `Foo@x` and `foo@x` becoming two accounts.
+    - `unique:users,email` only in invite mode.
 - `app/Actions/Users/RegisterOpenClient.php`, `run(array $validated): void`. Look up with `User::query()->whereRaw('lower(email) = ?', [$email])->first()`:
-  - **None:** the phase 9 creation in its transaction, then `event(new Registered($user))`. Catch `UniqueConstraintViolationException` from a concurrent signup and treat it as the case below.
-  - **Exists, unverified, active, not admin (D11):** `forceFill` new `name`, `password`, `timezone`, save, and send a fresh verification email. The invite is not consumed; plan unchanged.
-  - **Exists, verified or admin:** `Hash::make($validated['password'])` and discard (same work as the other paths, so timing doesn't reveal the account), then notify `RegistrationAttempted`.
-  - **Exists, blocked:** `Hash::make`, no change, no email.
+    - **None:** the phase 9 creation in its transaction, then `event(new Registered($user))`. Catch `UniqueConstraintViolationException` from a concurrent signup and treat it as the case below.
+    - **Exists, unverified, active, not admin (D11):** `forceFill` new `name`, `password`, `timezone`, save, and send a fresh verification email. The invite is not consumed; plan unchanged.
+    - **Exists, verified or admin:** `Hash::make($validated['password'])` and discard (same work as the other paths, so timing doesn't reveal the account), then notify `RegistrationAttempted`.
+    - **Exists, blocked:** `Hash::make`, no change, no email.
 - `Assumption:` per-address cap on these emails with `RateLimiter::attempt('register-mail:'.sha1($email), 3, ..., 3600)`, so the form can't flood an inbox. D11's password update still happens when capped. A new account's first email is exempt.
 - `RegisterController::store`: open mode -> run the action, `redirect()->route('register.check-inbox')`, no `Auth::login`. Invite mode: unchanged, still logged in.
 - `app/Notifications/Client/RegistrationAttempted.php`: `extends Notification implements ShouldQueue`, `via` mail; view `resources/views/mail/client/registration-attempted.blade.php`, based on `reset-password.blade.php`, button to `route('password.request')`.
@@ -595,15 +596,15 @@ Origin: P16 "No account enumeration in open mode: an email that already exists g
 - `resources/js/pages/auth/check-inbox.tsx`: same layout as `closed.tsx`, button `auth.closed.login_link`. It shows no address.
 - Copy:
 
-  | Key | EN | PT |
-  | --- | -- | -- |
-  | `auth.check_inbox.title` | Check your inbox | Verifique sua caixa de entrada |
-  | `auth.check_inbox.body` | We sent the next step to the address you entered. Open the email to continue. | Enviamos o próximo passo para o endereço informado. Abra o e-mail para continuar. |
-  | `mail.attempt.subject` | Someone tried to sign up to :brand with your email | Alguém tentou se cadastrar no :brand com seu e-mail |
-  | `mail.attempt.greeting` | Hi :name, | Olá, :name, |
-  | `mail.attempt.body` | Someone tried to create a :brand account with this email, but you already have one. If it was you, log in or reset your password. | Alguém tentou criar uma conta no :brand com este e-mail, mas você já tem uma. Se foi você, entre ou redefina sua senha. |
-  | `mail.attempt.button` | Reset password | Redefinir senha |
-  | `mail.attempt.ignore` | If it wasn't you, you can safely ignore this email. Your account has not changed. | Se não foi você, pode ignorar este e-mail com segurança. Sua conta não foi alterada. |
+    | Key                      | EN                                                                                                                                | PT                                                                                                                      |
+    | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+    | `auth.check_inbox.title` | Check your inbox                                                                                                                  | Verifique sua caixa de entrada                                                                                          |
+    | `auth.check_inbox.body`  | We sent the next step to the address you entered. Open the email to continue.                                                     | Enviamos o próximo passo para o endereço informado. Abra o e-mail para continuar.                                       |
+    | `mail.attempt.subject`   | Someone tried to sign up to :brand with your email                                                                                | Alguém tentou se cadastrar no :brand com seu e-mail                                                                     |
+    | `mail.attempt.greeting`  | Hi :name,                                                                                                                         | Olá, :name,                                                                                                             |
+    | `mail.attempt.body`      | Someone tried to create a :brand account with this email, but you already have one. If it was you, log in or reset your password. | Alguém tentou criar uma conta no :brand com este e-mail, mas você já tem uma. Se foi você, entre ou redefina sua senha. |
+    | `mail.attempt.button`    | Reset password                                                                                                                    | Redefinir senha                                                                                                         |
+    | `mail.attempt.ignore`    | If it wasn't you, you can safely ignore this email. Your account has not changed.                                                 | Se não foi você, pode ignorar este e-mail com segurança. Sua conta não foi alterada.                                    |
 
 **Steps.**
 
@@ -702,8 +703,8 @@ Origin: P15 "registrations limited per IP per day (in addition to `throttle:10,1
 - `app/Registration/DisposableEmailDomains.php`: `isBlocked(string $email): bool`. Lowercase the domain; match it and each parent domain (`a.mailinator.com` matches `mailinator.com`). Load the file once per instance as a keyed array.
 - `RegisterRequest::after()`, open mode: blocked domain -> `email` error `validation.custom.email.disposable`. This applies to new and existing addresses alike, so it reveals nothing. It also applies with an invite.
 - `lang/en/validation.php`, `lang/pt/validation.php` under `custom.email`:
-  - `too_many_registrations`: EN `Too many sign-ups from this network today. Please try again tomorrow.` / PT `Muitos cadastros nesta rede hoje. Tente novamente amanhã.`
-  - `disposable`: EN `Please use a permanent email address.` / PT `Use um endereço de e-mail permanente.`
+    - `too_many_registrations`: EN `Too many sign-ups from this network today. Please try again tomorrow.` / PT `Muitos cadastros nesta rede hoje. Tente novamente amanhã.`
+    - `disposable`: EN `Please use a permanent email address.` / PT `Use um endereço de e-mail permanente.`
 - `$this->ip()` depends on `TRUSTED_PROXIES` (production-hardening P1, done).
 
 **Steps.**
@@ -740,12 +741,12 @@ Origin: spec x code gap (required last phase)
 1. Run `composer ci:check`.
 2. Walk through P1-P16 and D6-D11, recording evidence for each.
 3. Give the owner this manual checklist:
-   - Set `PRICE_FREE_*` to 0 in `.env`; set up Turnstile keys and a real mailer.
-   - Run `php artisan app:production-check` in open mode.
-   - Open mode: sign up new (link logs in), repeat on an unverified address (old password stops working), repeat on a verified address (attempt email, account unchanged), disposable address, stale invite.
-   - Free user upgrades through Stripe Checkout.
-   - Corporate mail scanners may open the link first. It verifies the account and uses up the one-time login, so the person is sent to the login page; they still have their password. Decide if this is acceptable after real use.
-   - Back to invite mode: Stage 1 behaviour is unchanged.
+    - Set `PRICE_FREE_*` to 0 in `.env`; set up Turnstile keys and a real mailer.
+    - Run `php artisan app:production-check` in open mode.
+    - Open mode: sign up new (link logs in), repeat on an unverified address (old password stops working), repeat on a verified address (attempt email, account unchanged), disposable address, stale invite.
+    - Free user upgrades through Stripe Checkout.
+    - Corporate mail scanners may open the link first. It verifies the account and uses up the one-time login, so the person is sent to the login page; they still have their password. Decide if this is acceptable after real use.
+    - Back to invite mode: Stage 1 behaviour is unchanged.
 
 **Done when.**
 

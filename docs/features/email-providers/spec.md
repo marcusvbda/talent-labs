@@ -23,7 +23,7 @@ client should choose between OAuth providers (Gmail, Microsoft) and SMTP.
   `config/connected-integrations.php` (`plugins => [GmailPlugin::class]`).
 - **Gmail:** `GmailPlugin extends GoogleOAuthPlugin`, key `gmail`,
   capability `email.send`, scopes `openid email profile
-  https://www.googleapis.com/auth/gmail.send`; `validateConnection` requires
+https://www.googleapis.com/auth/gmail.send`; `validateConnection` requires
   the send scope and a valid account email.
 - **Storage:** `ConnectedIntegration` (`plugin_key`, `status`,
   `external_account_id`, `account_email`, `account_name`, `access_token` and
@@ -44,7 +44,7 @@ client should choose between OAuth providers (Gmail, Microsoft) and SMTP.
   label "Gmail reauthorization"; notification `GmailReauthorizationRequired`;
   `AccountStatusPresenter`, `SendingController`, `UsersTable`; translations
   `account.gmail.*`; `ConnectedIntegrationOAuthController::FALLBACK_LABEL =
-  'Gmail'`; landing FAQ "We only ask Google for permission to send".
+'Gmail'`; landing FAQ "We only ask Google for permission to send".
 
 ## 3. Open points
 
@@ -57,7 +57,7 @@ client should choose between OAuth providers (Gmail, Microsoft) and SMTP.
 
 - **P1.** Replace `SendsGmailMessages` with a provider-agnostic
   `EmailTransport` (`send(ConnectedIntegration $integration, string $rawMime):
-  string`) and a resolver by `plugin_key`: `gmail` → `GmailApiMessageSender`,
+string`) and a resolver by `plugin_key`: `gmail` → `GmailApiMessageSender`,
   `microsoft` → `GraphMessageSender`, `smtp` → `SmtpMessageSender`. The
   `email.send` capability stays the marker of a sending account.
 - **P2.** Every MIME message the app builds carries a generated `Message-ID`
@@ -74,12 +74,12 @@ client should choose between OAuth providers (Gmail, Microsoft) and SMTP.
   change — only labels/translations — so existing rows stay valid. The
   notification class becomes provider-neutral.
 - **P5.** Error classification per transport, shared by all:
-  - auth/consent revoked → `reauthorization_required` (pause + notify, as
-    Gmail today);
-  - provider sending/rate limit → sending paused until the next day, the
-    application is **not** failed (new pause reason, e.g. `provider_limit`);
-  - recipient rejected → application failed (as today);
-  - timeout/5xx/network → existing retry/backoff.
+    - auth/consent revoked → `reauthorization_required` (pause + notify, as
+      Gmail today);
+    - provider sending/rate limit → sending paused until the next day, the
+      application is **not** failed (new pause reason, e.g. `provider_limit`);
+    - recipient rejected → application failed (as today);
+    - timeout/5xx/network → existing retry/backoff.
 - **P6.** Account and onboarding screens list the available providers from
   the plugin registry (label, icon, description) instead of a Gmail button.
 
@@ -119,11 +119,11 @@ client should choose between OAuth providers (Gmail, Microsoft) and SMTP.
 - **P16.** `MicrosoftPlugin` (key `microsoft`, label "Outlook / Microsoft
   365"): Microsoft identity platform v2, tenant `common` (personal and work
   accounts), PKCE, scopes `openid email profile offline_access
-  https://graph.microsoft.com/Mail.Send` (plus `User.Read` if needed for the
+https://graph.microsoft.com/Mail.Send` (plus `User.Read` if needed for the
   account identity). Build on `league/oauth2-client`, already installed; any
   new package needs the owner's approval.
 - **P17.** `GraphMessageSender`: `POST
-  https://graph.microsoft.com/v1.0/me/sendMail` with the base64-encoded raw
+https://graph.microsoft.com/v1.0/me/sendMail` with the base64-encoded raw
   MIME and `Content-Type: text/plain`. `202 Accepted` has no body → return the
   `Message-ID` (P2). Graph saves to Sent Items.
 - **P18.** Env (append to `.env.example`): `MICROSOFT_CLIENT_ID`,

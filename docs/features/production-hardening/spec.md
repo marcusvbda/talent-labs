@@ -123,7 +123,7 @@ production configuration check.
 
 - `AddSecurityHeaders` is global middleware (the panel has its own stack) and
   sets `X-Content-Type-Options: nosniff`, `Referrer-Policy:
-  strict-origin-when-cross-origin`, `X-Frame-Options: DENY`,
+strict-origin-when-cross-origin`, `X-Frame-Options: DENY`,
   `Permissions-Policy: camera=(), microphone=(), geolocation=()` and, only in
   production over HTTPS, `Strict-Transport-Security: max-age=31536000` (no
   `includeSubDomains` or `preload`). `SECURITY_HEADERS_SKIP` (comma list,
@@ -163,7 +163,7 @@ production configuration check.
 
 - Filament app authentication (TOTP) is required for every admin with
   recovery codes (`AdminPanelProvider::multiFactorAuthentication(...,
-  isRequired: true)` plus a full `profile()` page where admins regenerate
+isRequired: true)` plus a full `profile()` page where admins regenerate
   codes). `User` implements `HasAppAuthentication` and
   `HasAppAuthenticationRecovery`; `app_authentication_secret` and
   `app_authentication_recovery_codes` live in the users create migration,
