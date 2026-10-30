@@ -45,7 +45,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 1 | `.env.example` hygiene and production notes | laravel-backend | none | P15, P16 | S | DONE |
 | 2 | Trusted proxies and trusted hosts | laravel-backend | 1 | P1, P22 | S | DONE |
 | 3 | Rate limits and separate counters | laravel-backend | 2 | P2, P21 | S | DONE |
-| 4 | Stripe routes gated by billing availability | laravel-backend | none | P3 | S | PENDING |
+| 4 | Stripe routes gated by billing availability | laravel-backend | none | P3 | S | DONE |
 | 5 | Remove privileged fields from `User` fillable | laravel-backend | none | P5 | M | PENDING (needs test authorization, D1) |
 | 6 | `PublicNetworkGuard` | laravel-backend | none | P7, P9 | S | PENDING |
 | 7 | `SmtpProbe` uses the guard | laravel-backend | 6 | P8 | S | PENDING |
@@ -238,7 +238,8 @@ Origin: P2 "Rate limits after P1"; P21 "Every `throttle:N,1` route … gets its 
 
 ### Phase 4 — Stripe routes answer 404 unless billing is available
 
-Status: PENDING
+Status: DONE
+Evidence: `route:list --path=stripe` shows `cashier.payment` and `cashier.webhook` (also after `route:cache`, then cleared); unsigned `POST /stripe/webhook` -> 404 with billing off or no webhook secret, 403 when fully configured, `WebhookReceived` never dispatched; `yarn types:check` and `composer test` pass (pint, PHPStan, 33 tests). Orchestrator-checked diff against the contract, no separate `code-reviewer` pass (small, runtime-verified).
 Role: laravel-backend · Depends on: none · Covers: P3 · Size: S
 Origin: P3 "When `Billing::available()` is false, the Stripe webhook route rejects every request (404)"
 

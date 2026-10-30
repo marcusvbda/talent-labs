@@ -41,6 +41,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SendsGmailMessages::class, GmailApiMessageSender::class);
 
         $this->app->singleton(PlanCatalog::class);
+
+        // Re-registered in routes/cashier.php behind EnsureBillingAvailable.
+        Cashier::ignoreRoutes();
     }
 
     /**
