@@ -269,6 +269,7 @@
     "auth.verify.wrong_title": "Endereço errado?",
     "auth.verify.wrong_contact": "Saia da conta e escreva para :email para corrigirmos.",
     "auth.verify.wrong_no_contact": "Saia da conta e fale com quem enviou seu convite.",
+    "auth.verify.required": "Confirme seu e-mail para continuar.",
     "auth.reset.title": "Escolha uma nova senha",
     "auth.reset.password": "Nova senha",
     "auth.reset.password_confirmation": "Confirmar nova senha",

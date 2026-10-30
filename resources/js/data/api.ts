@@ -1,3 +1,7 @@
+import { router } from '@inertiajs/react';
+import { toast } from '@/components/ui/toast';
+import { notice } from '@/routes/verification';
+
 export class ApiError extends Error {
     status: number;
     errors?: Record<string, string[]>;
@@ -24,6 +28,31 @@ const xsrfToken = (): string | null => {
     const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
 
     return match ? decodeURIComponent(match[1]) : null;
+};
+
+let unverifiedHandled = false;
+
+// An unverified account is sent to the verification notice once, even when
+// several requests fail in parallel. Runs before any caller-side 403 handling.
+const handleUnverified = (
+    status: number,
+    data: { code?: unknown },
+    message: string,
+) => {
+    if (
+        status !== 403 ||
+        data.code !== 'email_unverified' ||
+        unverifiedHandled
+    ) {
+        return;
+    }
+
+    unverifiedHandled = true;
+    toast.error(message);
+    router.visit(notice().url);
+    setTimeout(() => {
+        unverifiedHandled = false;
+    }, 3000);
 };
 
 export async function apiFetch<T>(url: string, init: ApiInit = {}): Promise<T> {
@@ -67,6 +96,7 @@ export async function apiFetch<T>(url: string, init: ApiInit = {}): Promise<T> {
     if (!response.ok) {
         const data = (payload ?? {}) as {
             message?: unknown;
+            code?: unknown;
             errors?: Record<string, string[]>;
         };
         const message =
@@ -74,6 +104,8 @@ export async function apiFetch<T>(url: string, init: ApiInit = {}): Promise<T> {
                 ? data.message
                 : response.statusText ||
                   `Request failed with status ${response.status}`;
+
+        handleUnverified(response.status, data, message);
 
         throw new ApiError(response.status, message, data.errors);
     }
@@ -131,6 +163,7 @@ export function apiUpload<T>(
             if (request.status < 200 || request.status >= 300) {
                 const data = (payload ?? {}) as {
                     message?: unknown;
+                    code?: unknown;
                     errors?: Record<string, string[]>;
                 };
                 const message =
@@ -139,6 +172,7 @@ export function apiUpload<T>(
                         : request.statusText ||
                           `Request failed with status ${request.status}`;
 
+                handleUnverified(request.status, data, message);
                 reject(new ApiError(request.status, message, data.errors));
 
                 return;

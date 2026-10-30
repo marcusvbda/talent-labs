@@ -4,6 +4,7 @@ use App\Http\Controllers\CspReportController;
 use App\Http\Middleware\AddContentSecurityPolicy;
 use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureActiveClient;
+use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsurePlanCanChooseJobs;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
@@ -51,6 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'client' => EnsureActiveClient::class,
             'plan.jobs' => EnsurePlanCanChooseJobs::class,
+            'verified' => EnsureEmailIsVerified::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));

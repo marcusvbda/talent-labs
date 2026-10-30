@@ -33,21 +33,21 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 
-Route::get('/dashboard', DashboardPageController::class)->middleware(['auth', 'client'])->name('dashboard');
-Route::inertia('/onboarding', 'onboarding')->middleware(['auth', 'client'])->name('onboarding');
+Route::get('/dashboard', DashboardPageController::class)->middleware(['auth', 'client', 'verified'])->name('dashboard');
+Route::inertia('/onboarding', 'onboarding')->middleware(['auth', 'client', 'verified'])->name('onboarding');
 
-Route::get('/jobs', JobsPageController::class)->middleware(['auth', 'client', 'plan.jobs'])->name('jobs');
-Route::get('/applications', ApplicationsPageController::class)->middleware(['auth', 'client'])->name('applications');
+Route::get('/jobs', JobsPageController::class)->middleware(['auth', 'client', 'verified', 'plan.jobs'])->name('jobs');
+Route::get('/applications', ApplicationsPageController::class)->middleware(['auth', 'client', 'verified'])->name('applications');
 
-Route::inertia('/profiles', 'profiles')->middleware(['auth', 'client'])->name('profiles');
+Route::inertia('/profiles', 'profiles')->middleware(['auth', 'client', 'verified'])->name('profiles');
 
-Route::inertia('/preferences', 'preferences')->middleware(['auth', 'client'])->name('preferences');
+Route::inertia('/preferences', 'preferences')->middleware(['auth', 'client', 'verified'])->name('preferences');
 
-Route::inertia('/plans', 'plans')->middleware(['auth', 'client'])->name('plans');
+Route::inertia('/plans', 'plans')->middleware(['auth', 'client', 'verified'])->name('plans');
 
-Route::inertia('/account', 'account')->middleware(['auth', 'client'])->name('account');
+Route::inertia('/account', 'account')->middleware(['auth', 'client', 'verified'])->name('account');
 
-Route::middleware(['auth', 'client', 'throttle:120,1,internal'])
+Route::middleware(['auth', 'client', 'verified', 'throttle:120,1,internal'])
     ->prefix('internal')->name('internal.')
     ->group(function (): void {
         Route::get('/account/status', AccountStatusController::class)->name('account.status');
@@ -129,7 +129,7 @@ Route::middleware(['auth', 'client'])->prefix('email')->name('verification.')->g
         ->name('send');
 });
 
-Route::middleware(['web', 'auth'])->prefix('integrations')->name('integrations.oauth.')->group(function (): void {
+Route::middleware(['web', 'auth', 'verified'])->prefix('integrations')->name('integrations.oauth.')->group(function (): void {
     // Registered before the {plugin} routes so "oauth" is never captured as a plugin key.
     Route::get('/oauth/callback', [ConnectedIntegrationOAuthController::class, 'callback'])
         ->middleware('throttle:20,1,oauth-callback')

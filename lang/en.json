@@ -269,6 +269,7 @@
     "auth.verify.wrong_title": "Wrong address?",
     "auth.verify.wrong_contact": "Log out and write to :email so we can fix it.",
     "auth.verify.wrong_no_contact": "Log out and contact whoever invited you.",
+    "auth.verify.required": "Confirm your email to continue.",
     "auth.reset.title": "Choose a new password",
     "auth.reset.password": "New password",
     "auth.reset.password_confirmation": "Confirm new password",

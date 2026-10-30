@@ -25,6 +25,7 @@ function clientOn(PlanKey $plan): User
         'status' => UserStatus::Active,
         'plan_key' => $plan,
         'locale' => 'en',
+        'email_verified_at' => now(),
     ]);
     $user->id = 4242;
 

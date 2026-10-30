@@ -39,7 +39,7 @@ incomplete until then.
 | 2 | Verification routes and page | laravel-backend | 1 | P3, P5 | M | DONE |
 | 3 | `users:mark-verified` command | laravel-backend | none | P9 | S | DONE |
 | 4 | Admin verification controls | filament-admin | 1 | P7, P8 | S | DONE |
-| 5 | Enforce verification | laravel-backend | 1, 2, 3, 4 | P2, P4 | M | PENDING |
+| 5 | Enforce verification | laravel-backend | 1, 2, 3, 4 | P2, P4 | M | DONE |
 | 6 | Stage 1 verification and report | laravel-backend | 5 | P1, P10 | S | PENDING |
 | 7 | Free costs 0 | laravel-backend | none | P14 | S | DONE |
 | 8 | Registration mode switch | laravel-backend | 7 | P11 | M | PENDING |
@@ -307,7 +307,8 @@ Origin: P7 "Admin-created users (`CreateUser`) are created verified… The admin
 
 ### Phase 5 — Unverified users are held at the verify page
 
-Status: PENDING
+Status: DONE
+Evidence: `composer test` 33/33, `pint`, `composer types:check`, `yarn types:check` pass; `code-reviewer` APPROVED. The owner asked for the one-line fix to `tests/Feature/Outreach/SendingGuardsHttpTest.php` (`clientOn()` now sets `email_verified_at`), since the stub user is unverified and `verified` rightly answers 403 before validation. A smoke run with a throwaway user confirmed: register -> 302 `/email/verify`, `email_verified_at` null, invite consumed, exactly 1 queued `VerifyEmail` job, unverified `/dashboard` redirects, `GET /internal/account/status` (JSON) returns 403 `email_unverified`, logout works. All 8 client pages, 44 `internal.*` and 4 `integrations.oauth.*` routes carry `verified`. The `/email/verify` page was not rendered (stale Vite manifest).
 Role: laravel-backend · Depends on: 1, 2, 3, 4 · Covers: P1, P2, P4, D7 · Size: M
 Origin: P2 "`RegisterController::store` no longer sets `email_verified_at`; it fires `Registered`"; P4 "Every client route — pages, the `internal.*` group and the `integrations.*` OAuth routes — requires `verified`… `internal.*` JSON requests get 403 with a message the client UI shows. Logout stays reachable."
 

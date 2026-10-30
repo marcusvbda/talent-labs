@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Invitations\InvitationTokens;
 use App\Models\Invitation;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -56,7 +57,6 @@ class RegisterController extends Controller
                 'password' => $validated['password'],
                 'is_admin' => false,
                 'status' => UserStatus::Active,
-                'email_verified_at' => now(),
                 'plan_key' => $invitation->planKeyOrDefault(),
                 'locale' => app()->getLocale(),
                 'timezone' => $validated['timezone'],
@@ -73,10 +73,13 @@ class RegisterController extends Controller
             return redirect()->route('register.closed');
         }
 
+        // Outside the transaction so the queued verification mail never points at a rolled-back user.
+        event(new Registered($user));
+
         Auth::login($user);
 
         $request->session()->regenerate();
 
-        return redirect()->route('onboarding');
+        return redirect()->route('verification.notice');
     }
 }
