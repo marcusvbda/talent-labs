@@ -35,7 +35,7 @@ incomplete until then.
 
 | Phase | Title | Role | Depends on | Origin | Size | Status |
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
-| 1 | Verification email | laravel-backend | none | P2, P6 | S | PENDING |
+| 1 | Verification email | laravel-backend | none | P2, P6 | S | DONE |
 | 2 | Verification routes and page | laravel-backend | 1 | P3, P5 | M | PENDING |
 | 3 | `users:mark-verified` command | laravel-backend | none | P9 | S | DONE |
 | 4 | Admin verification controls | filament-admin | 1 | P7, P8 | S | PENDING |
@@ -121,7 +121,8 @@ Blocks: none · Answer: newest signup wins; verifying ends other sessions and ro
 
 ### Phase 1 — The app can send a localized verification email
 
-Status: PENDING
+Status: DONE
+Evidence: tinker: `User::factory()->make() instanceof MustVerifyEmail` true; `VerifyEmail::via()` returns `['mail']`, implements `ShouldQueue`. `pint`, `composer types:check`, `composer test` (33/33 on a clean run) pass. `code-reviewer`: APPROVED.
 Role: laravel-backend · Depends on: none · Covers: P2 (model), P6 · Size: S
 Origin: P2 "`User` implements `MustVerifyEmail`"; P6 "Verification email: localized to the user's locale (en/pt), product name, link expiry from `auth.verification.expire` (default 60 min)."
 

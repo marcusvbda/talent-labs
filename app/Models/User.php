@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\PlanKey;
 use App\Enums\PlanSource;
 use App\Enums\Region;
@@ -10,6 +9,7 @@ use App\Enums\SendingPauseReason;
 use App\Enums\UserStatus;
 use App\Events\Client\Concerns\DispatchesClientEvent;
 use App\Notifications\Client\ResetPassword;
+use App\Notifications\Client\VerifyEmail;
 use Database\Factories\UserFactory;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
@@ -17,6 +17,7 @@ use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -62,7 +63,7 @@ use Laravel\Cashier\Billable;
  */
 #[Fillable(['name', 'email', 'password', 'locale', 'timezone', 'country', 'region'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasLocalePreference
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasLocalePreference, MustVerifyEmail
 {
     use Billable, DispatchesClientEvent;
 
@@ -162,6 +163,11 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
         $this->notify(new ResetPassword($token));
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmail);
     }
 
     public function isActive(): bool
