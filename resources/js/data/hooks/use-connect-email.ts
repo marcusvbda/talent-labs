@@ -15,7 +15,7 @@ export function useConnectEmail() {
         window.location.assign(href);
     };
     const fixture = async (_href: string) => {
-        setDevState({ gmail: 'connected' });
+        setDevState({ gmail: 'connected', smtp: null });
     };
 
     return useMutation<void, Error, string>({
@@ -41,7 +41,7 @@ export function useDisconnectEmail(providerKey: string | null) {
         await apiFetch<void>(e.url, { method: e.method });
     };
     const fixture = async () => {
-        setDevState({ gmail: 'disconnected' });
+        setDevState({ gmail: 'disconnected', smtp: null });
     };
 
     return useMutation<void, Error, void>({

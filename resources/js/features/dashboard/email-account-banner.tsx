@@ -1,13 +1,23 @@
 import { TriangleAlert } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useConnectEmail } from '@/data/hooks/use-connect-email';
+import { SmtpForm } from '@/features/account/smtp-form';
 import { useT } from '@/i18n/i18n-provider';
 import { dashboard } from '@/routes';
 import { reconnect } from '@/routes/integrations/oauth';
+import type { AccountStatus } from '@/types/contracts';
 
-export function EmailAccountBanner({ providerKey }: { providerKey: string }) {
+export function EmailAccountBanner({
+    providerKey,
+    smtpDefaults,
+}: {
+    providerKey: string;
+    smtpDefaults: AccountStatus['sendingAccount']['smtpDefaults'];
+}) {
     const { t } = useT();
     const connectEmail = useConnectEmail();
+    const [smtpOpen, setSmtpOpen] = useState(false);
     const href = reconnect(providerKey, {
         query: { redirect: dashboard().url },
     }).url;
@@ -28,10 +38,19 @@ export function EmailAccountBanner({ providerKey }: { providerKey: string }) {
             <Button
                 size="sm"
                 loading={connectEmail.isPending}
-                onClick={() => connectEmail.mutate(href)}
+                onClick={() =>
+                    providerKey === 'smtp'
+                        ? setSmtpOpen(true)
+                        : connectEmail.mutate(href)
+                }
             >
                 {t('dashboard.gmail.reconnect')}
             </Button>
+            <SmtpForm
+                open={smtpOpen}
+                onClose={() => setSmtpOpen(false)}
+                defaults={smtpDefaults}
+            />
         </div>
     );
 }

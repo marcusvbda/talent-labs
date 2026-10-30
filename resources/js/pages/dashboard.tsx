@@ -163,7 +163,12 @@ export default function Dashboard() {
                 }
             />
             {expiredProviderKey && (
-                <EmailAccountBanner providerKey={expiredProviderKey} />
+                <EmailAccountBanner
+                    providerKey={expiredProviderKey}
+                    smtpDefaults={
+                        status.data?.sendingAccount.smtpDefaults ?? null
+                    }
+                />
             )}
             <DashboardGrid
                 setup={

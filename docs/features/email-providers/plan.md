@@ -46,7 +46,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 10    | Credential plugin contract and storage               | laravel-backend  | 2          | P7, P11               | M    | DONE    |
 | 11    | `SmtpMessageSender`                                  | laravel-backend  | 4, 10      | P2, P5, P14           | M    | DONE    |
 | 12    | SMTP connect endpoint and test                       | laravel-backend  | 3, 11      | P8, P9, P10, P12, P13 | M    | DONE    |
-| 13    | SMTP form and registration                           | inertia-frontend | 9, 12      | P6, P8, P15           | M    | PENDING |
+| 13    | SMTP form and registration                           | inertia-frontend | 9, 12      | P6, P8, P15           | M    | DONE    |
 | 14    | `GraphMessageSender` and CV size check               | laravel-backend  | 4          | P5, P17               | M    | PENDING |
 | 15    | `MicrosoftPlugin`, env and card notice               | laravel-backend  | 9, 10, 14  | P16, P17, P18         | M    | PENDING |
 | 16    | Verification and report                              | laravel-backend  | all        | all                   | S    | PENDING |
@@ -619,7 +619,8 @@ Origin: P8 "Form fields" · P9 "Presets" · P10 "Only ports 465 and 587" · P12 
 
 ### Phase 13 — SMTP form and registration
 
-Status: PENDING
+Status: DONE
+Evidence: pint, `composer types:check`, `yarn run check`, `yarn types:check` and `SendingDatabaseGuards` (7) pass; reviewer CHANGES_REQUIRED once (password stayed in the TanStack mutation cache for 5 minutes), fixed with `gcTime: 0` and re-checked. Tinker: with no account the presenter lists `gmail` (oauth) and `smtp` (credential) and `smtpDefaults` is null; `GET /integrations/smtp/connect|reconnect` still 404; `SmtpPlugin::disconnect()` is a no-op and disconnect nulls the credentials. `smtpDefaults` never carries username or password, and the status broadcast goes on a private user channel. Added translation keys beyond the plan table: `integrations.smtp.preset_yahoo|icloud|zoho|fastmail` and `security_tls|starttls`. Confirmed "Candidaturas" matches `nav.applications`. Not exercised in a browser or the network panel (owner check): connect, notice, wrong password, reconnect, disconnect on account and onboarding, and that the password never appears in responses or page props. Open (non-blocking): a non-API failure (network drop) shows no message in the form; the username is not prefilled on reconnect by design.
 Role: inertia-frontend · Depends on: 9, 12 · Covers: P6, P8, P15 · Size: M
 Origin: P8 "Form fields" · P15 "the UI says so" · P6
 

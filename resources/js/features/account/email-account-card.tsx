@@ -8,6 +8,7 @@ import {
     useConnectEmail,
     useDisconnectEmail,
 } from '@/data/hooks/use-connect-email';
+import { SmtpForm } from '@/features/account/smtp-form';
 import { ProviderList } from '@/features/account/provider-list';
 import { useT } from '@/i18n/i18n-provider';
 import { reconnect } from '@/routes/integrations/oauth';
@@ -24,6 +25,8 @@ export const EmailAccountCard = ({
     const connectEmail = useConnectEmail();
     const disconnectEmail = useDisconnectEmail(account.providerKey);
     const [confirming, setConfirming] = useState(false);
+    const [smtpOpen, setSmtpOpen] = useState(false);
+    const isSmtp = account.providerKey === 'smtp';
 
     const redirect = { query: { return: 'account' } };
     const reconnectHref =
@@ -75,6 +78,11 @@ export const EmailAccountCard = ({
                             : t(`account.gmail.status.${account.state}`)}
                     </span>
                 </p>
+                {isSmtp && account.state !== 'disconnected' && (
+                    <p className="text-body text-muted">
+                        {t('integrations.smtp.sent_notice')}
+                    </p>
+                )}
                 {account.state === 'disconnected' && (
                     <ProviderList
                         providers={account.providers}
@@ -85,10 +93,17 @@ export const EmailAccountCard = ({
                     {account.state === 'reauthorization_required' && (
                         <Button
                             loading={connectEmail.isPending}
-                            onClick={() =>
-                                reconnectHref !== null &&
-                                connectEmail.mutate(reconnectHref)
-                            }
+                            onClick={() => {
+                                if (isSmtp) {
+                                    setSmtpOpen(true);
+
+                                    return;
+                                }
+
+                                if (reconnectHref !== null) {
+                                    connectEmail.mutate(reconnectHref);
+                                }
+                            }}
                         >
                             {t('account.gmail.reconnect')}
                         </Button>
@@ -104,6 +119,11 @@ export const EmailAccountCard = ({
                     )}
                 </div>
             </div>
+            <SmtpForm
+                open={smtpOpen}
+                onClose={() => setSmtpOpen(false)}
+                defaults={account.smtpDefaults}
+            />
             <Modal
                 open={confirming}
                 onClose={() => setConfirming(false)}

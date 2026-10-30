@@ -2,9 +2,11 @@
 
 namespace App\Client;
 
+use App\Contracts\CredentialIntegrationPlugin;
 use App\Enums\ConnectedIntegrationStatus;
 use App\Enums\SendingPauseReason;
 use App\Models\ApplicationProfile;
+use App\Models\ConnectedIntegration;
 use App\Models\User;
 use App\Plans\PlanCatalog;
 use App\Services\ConnectedIntegrationRegistry;
@@ -58,9 +60,13 @@ final class AccountStatusPresenter
                 // Key and kind only: label/description are localized client-side, because the
                 // status is also broadcast, where the server locale is not the user's.
                 'providers' => array_map(
-                    fn (string $key): array => ['key' => $key, 'kind' => 'oauth'],
+                    fn (string $key): array => [
+                        'key' => $key,
+                        'kind' => $this->integrations->get($key) instanceof CredentialIntegrationPlugin ? 'credential' : 'oauth',
+                    ],
                     $this->integrations->sendingPluginKeys(),
                 ),
+                'smtpDefaults' => $account?->plugin_key === 'smtp' ? $this->smtpDefaults($account) : null,
             ],
             'sending' => [
                 'paused' => $user->isSendingPaused(),
@@ -79,6 +85,25 @@ final class AccountStatusPresenter
             'country' => $user->country,
             'timezone' => $user->timezone,
             'unreadNotifications' => $user->unreadNotifications()->count(),
+        ];
+    }
+
+    /**
+     * Prefill for the SMTP form. Never includes the username or password.
+     *
+     * @return array{preset: string, host: string, port: int, security: string, fromAddress: string, displayName: string}
+     */
+    private function smtpDefaults(ConnectedIntegration $account): array
+    {
+        $metadata = $account->metadata ?? [];
+
+        return [
+            'preset' => (string) ($metadata['preset'] ?? 'custom'),
+            'host' => (string) ($metadata['host'] ?? ''),
+            'port' => (int) ($metadata['port'] ?? 0),
+            'security' => (string) ($metadata['security'] ?? 'tls'),
+            'fromAddress' => (string) $account->account_email,
+            'displayName' => (string) $account->account_name,
         ];
     }
 

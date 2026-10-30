@@ -1,6 +1,7 @@
 <?php
 
 use App\Integrations\Gmail\GmailPlugin;
+use App\Integrations\Smtp\SmtpPlugin;
 use App\Outreach\Support\GmailApiMessageSender;
 use App\Outreach\Support\SmtpMessageSender;
 
@@ -9,6 +10,7 @@ return [
 
     'plugins' => [
         GmailPlugin::class,
+        SmtpPlugin::class,
     ],
 
     // Email transport per plugin key, resolved by EmailTransportResolver.

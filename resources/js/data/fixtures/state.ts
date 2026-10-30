@@ -300,6 +300,7 @@ const accountStatus = (): AccountStatus => {
         dev.gmail === 'needs_reconnection'
             ? 'reauthorization_required'
             : dev.gmail;
+    const smtp = dev.smtp;
     const account = data.account;
     const forced = dev.onboardingComplete;
     const flags = {
@@ -320,9 +321,17 @@ const accountStatus = (): AccountStatus => {
         quota: quota(),
         sendingAccount: {
             state: accountState,
-            accountEmail: dev.gmail === 'disconnected' ? null : ACCOUNT_EMAIL,
-            providerKey: dev.gmail === 'disconnected' ? null : 'gmail',
-            providers: [{ key: 'gmail', kind: 'oauth' }],
+            accountEmail:
+                dev.gmail === 'disconnected'
+                    ? null
+                    : (smtp?.fromAddress ?? ACCOUNT_EMAIL),
+            providerKey:
+                dev.gmail === 'disconnected' ? null : smtp ? 'smtp' : 'gmail',
+            providers: [
+                { key: 'gmail', kind: 'oauth' },
+                { key: 'smtp', kind: 'credential' },
+            ],
+            smtpDefaults: dev.gmail === 'disconnected' ? null : smtp,
         },
         sending: {
             paused: data.paused || reauth,

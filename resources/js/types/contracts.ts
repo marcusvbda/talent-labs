@@ -67,7 +67,15 @@ export type AccountStatus = {
         state: 'connected' | 'reauthorization_required' | 'disconnected';
         accountEmail: string | null;
         providerKey: string | null;
-        providers: { key: string; kind: 'oauth' }[];
+        providers: { key: string; kind: 'oauth' | 'credential' }[];
+        smtpDefaults: {
+            preset: string;
+            host: string;
+            port: number;
+            security: 'tls' | 'starttls';
+            fromAddress: string;
+            displayName: string;
+        } | null;
     };
     sending: {
         paused: boolean;

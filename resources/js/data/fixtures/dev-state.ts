@@ -1,11 +1,13 @@
 import { useSyncExternalStore } from 'react';
 import { queryClient } from '@/data/query-client';
+import type { AccountStatus } from '@/types/contracts';
 import type { PlanKey } from '@/types/plans';
 
 export type DevState = {
     plan: PlanKey;
     state: 'normal' | 'loading' | 'empty' | 'error';
     gmail: 'connected' | 'needs_reconnection' | 'disconnected';
+    smtp: AccountStatus['sendingAccount']['smtpDefaults'];
     onboardingComplete: boolean;
     failNext: boolean;
 };
@@ -14,6 +16,7 @@ const DEFAULT_STATE: DevState = {
     plan: 'starter',
     state: 'normal',
     gmail: 'connected',
+    smtp: null,
     onboardingComplete: true,
     failNext: false,
 };
@@ -23,6 +26,7 @@ const INVALIDATING_KEYS: (keyof DevState)[] = [
     'plan',
     'state',
     'gmail',
+    'smtp',
     'onboardingComplete',
 ];
 
