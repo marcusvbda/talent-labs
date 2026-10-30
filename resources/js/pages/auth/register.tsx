@@ -17,9 +17,12 @@ const browserTimezone = () => {
 
 export default function Register({
     invite,
+    open,
 }: {
-    invite: { email: string | null };
+    invite: { email: string | null } | null;
+    open: boolean;
 }) {
+    const inviteEmail = invite?.email ?? null;
     const { t } = useT();
     const inviteToken = useMemo(
         () => new URLSearchParams(window.location.search).get('invite') ?? '',
@@ -35,7 +38,9 @@ export default function Register({
                     {t('auth.register.title')}
                 </h1>
                 <p className="text-body text-muted">
-                    {t('auth.register.subtitle')}
+                    {open
+                        ? t('auth.register.subtitle_open')
+                        : t('auth.register.subtitle')}
                 </p>
             </div>
             <Form
@@ -71,7 +76,7 @@ export default function Register({
                             label={t('auth.register.email')}
                             error={errors.email}
                             hint={
-                                invite.email !== null
+                                inviteEmail !== null
                                     ? t('auth.register.invite_locked_hint')
                                     : undefined
                             }
@@ -83,8 +88,8 @@ export default function Register({
                                     type="email"
                                     size="lg"
                                     autoComplete="username"
-                                    defaultValue={invite.email ?? ''}
-                                    readOnly={invite.email !== null}
+                                    defaultValue={inviteEmail ?? ''}
+                                    readOnly={inviteEmail !== null}
                                     required
                                 />
                             )}

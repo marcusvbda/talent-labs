@@ -251,6 +251,7 @@
     "auth.forgot.submit": "Enviar link de redefinição",
     "auth.register.title": "Crie sua conta",
     "auth.register.subtitle": "Participe do beta fechado.",
+    "auth.register.subtitle_open": "Crie sua conta e comece grátis.",
     "auth.register.name": "Nome",
     "auth.register.email": "E-mail",
     "auth.register.password": "Senha",

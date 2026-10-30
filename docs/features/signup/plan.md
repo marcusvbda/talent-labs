@@ -43,7 +43,7 @@ incomplete until then.
 | 6     | Stage 1 verification and report | laravel-backend  | 5                 | P1, P10  | S    | DONE    |
 | 7     | Free costs 0                    | laravel-backend  | none              | P14      | S    | DONE    |
 | 8     | Registration mode switch        | laravel-backend  | 7                 | P11      | M    | DONE    |
-| 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | PENDING |
+| 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | DONE     |
 | 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | PENDING |
 | 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | PENDING |
 | 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | PENDING |
@@ -463,7 +463,8 @@ Origin: P11 "One switch: `talent.registration.mode` (env `REGISTRATION_MODE`, `i
 
 ### Phase 9 — Open mode registers without an invite
 
-Status: PENDING
+Status: DONE
+Evidence: `composer test` (pint, PHPStan, 33/33), `yarn check`, `yarn types:check` pass. `code-reviewer`: APPROVED. A throwaway PHPUnit class (outside the repo, deleted) against the testing DB covered: open + no invite -> user on the default plan with `email_verified_at` null even with `plan_key=pro` in the POST body; open + usable invite -> invite plan, email lock, invite consumed; open + expired/garbage invite -> registers as no invite, invite untouched; invite mode -> `/register` and POST without an invite redirect to `register.closed`, a valid invite registers, a consumed one redirects to Closed. Not rendered in a browser. Known edge: in open mode a non-string `invite` (e.g. `invite[]=x`) fails the `string` rule and redirects to Closed (malformed POST only, no security impact).
 Role: laravel-backend · Depends on: 5, 8 · Covers: P12, P13 · Size: M
 Origin: P12 "`open` mode: `/register` works without an invite; when a usable invite is present it still applies (email lock, plan) and is consumed."; P13 "Without an invite the plan is always the default plan. The plan is never read from the request or URL."
 

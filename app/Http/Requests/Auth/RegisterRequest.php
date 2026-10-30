@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Invitations\InvitationTokens;
+use App\Registration\RegistrationMode;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Foundation\Http\FormRequest;
@@ -25,7 +26,9 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'min:2', 'max:80'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:10', 'confirmed'],
-            'invite' => ['required', 'string', 'size:'.InvitationTokens::TOKEN_LENGTH],
+            'invite' => RegistrationMode::isOpen()
+                ? ['nullable', 'string']
+                : ['required', 'string', 'size:'.InvitationTokens::TOKEN_LENGTH],
             'timezone' => ['required', 'string', 'timezone'],
         ];
     }
@@ -44,6 +47,11 @@ class RegisterRequest extends FormRequest
                 $invitation = InvitationTokens::find($this->string('invite')->toString());
 
                 if ($invitation === null || ! $invitation->isUsable()) {
+                    // Open mode ignores a blank or unusable invite and registers without it.
+                    if (RegistrationMode::isOpen()) {
+                        return;
+                    }
+
                     $validator->errors()->add('invite', __('validation.custom.invite.unusable'));
 
                     return;
@@ -61,7 +69,8 @@ class RegisterRequest extends FormRequest
 
     /**
      * A missing, unknown or no-longer-usable invite sends the visitor to the
-     * Closed page instead of back to the form.
+     * Closed page instead of back to the form (invite mode only; open mode
+     * never adds an `invite` error).
      *
      * @throws ValidationException
      */

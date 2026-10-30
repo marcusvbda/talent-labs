@@ -251,6 +251,7 @@
     "auth.forgot.submit": "Send reset link",
     "auth.register.title": "Create your account",
     "auth.register.subtitle": "Join the closed beta.",
+    "auth.register.subtitle_open": "Create your account and start for free.",
     "auth.register.name": "Name",
     "auth.register.email": "Email",
     "auth.register.password": "Password",
