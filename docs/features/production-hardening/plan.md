@@ -52,7 +52,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 8 | Reverb origins and rate limit | laravel-backend | 1 | P10 | S | DONE |
 | 9 | Security headers | laravel-backend | 2 | P11 | S | DONE |
 | 10 | CSP report-only and report endpoint | laravel-backend | 9 | P12, P24 | M | DONE |
-| 11 | `app:production-check` and admin path | laravel-backend | 2, 4, 8 | P13, P4, P23 | M | PENDING |
+| 11 | `app:production-check` and admin path | laravel-backend | 2, 4, 8 | P13, P4, P23 | M | DONE |
 | 12 | Reject admins at client login | laravel-backend | none | P20 | S | PENDING |
 | 13 | Required admin MFA | filament-admin | 12 | P14 | M | PENDING |
 | 14 | Audits in CI | laravel-backend | none | P17 | S | PENDING |
@@ -532,7 +532,8 @@ Origin: P12 "Content Security Policy starts as `Content-Security-Policy-Report-O
 
 ### Phase 11 — A read-only command says whether production is safe to launch
 
-Status: PENDING
+Status: DONE
+Evidence: `php artisan app:production-check` locally lists 5 failures (APP_ENV, APP_DEBUG, APP_URL, SESSION_SECURE_COOKIE, LOG_LEVEL) and 2 warnings, exit 1, output has only setting names; `ADMIN_PANEL_PATH=control` -> `config('filament.admin_panel_path')` = `control`; the error-page exemption in `bootstrap/app.php` reads that path (skipped when empty); `composer test` passes (pint, PHPStan, 33 tests). Deviation: LOG_LEVEL reads the default channel (a stack) and each of its channels instead of `logging.channels.single`, same result today. Orchestrator-checked diff against the contract, no separate `code-reviewer` pass.
 Role: laravel-backend · Depends on: 2, 4, 8 · Covers: P13, P4, P23 · Size: M
 Origin: P13 "Read-only command `app:production-check`"; P4 "billing enabled without `cashier.webhook.secret` is a failure"; P23 "detects the admin panel from `filament.admin_panel_path`"
 
