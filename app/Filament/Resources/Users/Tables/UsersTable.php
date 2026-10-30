@@ -124,7 +124,7 @@ class UsersTable
                             return;
                         }
 
-                        $record->update(['status' => UserStatus::Blocked]);
+                        $record->forceFill(['status' => UserStatus::Blocked])->save();
 
                         Notification::make()
                             ->title('User blocked.')
@@ -138,7 +138,7 @@ class UsersTable
                     ->requiresConfirmation()
                     ->visible(fn (User $record): bool => $record->status === UserStatus::Blocked)
                     ->action(function (User $record): void {
-                        $record->update(['status' => UserStatus::Active]);
+                        $record->forceFill(['status' => UserStatus::Active])->save();
 
                         Notification::make()
                             ->title('User unblocked.')

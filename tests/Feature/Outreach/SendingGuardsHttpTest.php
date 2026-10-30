@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Queue;
 
 function clientOn(PlanKey $plan): User
 {
-    $user = new User([
+    $user = (new User)->forceFill([
         'name' => 'Ada Lovelace',
         'email' => 'ada@example.com',
         'status' => UserStatus::Active,

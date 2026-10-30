@@ -4,7 +4,9 @@ namespace App\Filament\Resources\Users\Pages;
 
 use App\Enums\PlanSource;
 use App\Filament\Resources\Users\UserResource;
+use App\Models\User;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateUser extends CreateRecord
 {
@@ -19,5 +21,16 @@ class CreateUser extends CreateRecord
         $data['plan_source'] = PlanSource::Manual->value;
 
         return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    protected function handleRecordCreation(array $data): Model
+    {
+        $user = new User;
+        $user->forceFill($data)->save();
+
+        return $user;
     }
 }

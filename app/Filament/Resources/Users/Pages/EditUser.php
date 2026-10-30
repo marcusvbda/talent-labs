@@ -96,6 +96,8 @@ class EditUser extends EditRecord
             }
         }
 
-        return parent::handleRecordUpdate($record, $data);
+        $record->forceFill($data)->save();
+
+        return $record;
     }
 }

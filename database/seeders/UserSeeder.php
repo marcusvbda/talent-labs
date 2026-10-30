@@ -44,7 +44,8 @@ class UserSeeder extends Seeder
                 continue;
             }
 
-            $user = User::updateOrCreate(['email' => $email], [
+            $user = User::query()->firstOrNew(['email' => $email]);
+            $user->forceFill([
                 'name' => $name,
                 'password' => Hash::make($password),
                 'is_admin' => $profile['is_admin'],
@@ -55,7 +56,7 @@ class UserSeeder extends Seeder
                 'locale' => $profile['locale'],
                 'timezone' => $profile['timezone'],
                 'plan_key' => $profile['plan_key'],
-            ]);
+            ])->save();
 
             if ($key === 'client') {
                 $this->seedClientState($user);

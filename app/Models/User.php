@@ -54,7 +54,7 @@ use Laravel\Cashier\Billable;
  * @property-read Collection<int, Application> $applications
  * @property-read Collection<int, ApplicationProfile> $applicationProfiles
  */
-#[Fillable(['name', 'email', 'password', 'is_admin', 'status', 'locale', 'timezone', 'country', 'region', 'plan_key', 'plan_source'])]
+#[Fillable(['name', 'email', 'password', 'locale', 'timezone', 'country', 'region'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, HasLocalePreference
 {

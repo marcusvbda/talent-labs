@@ -46,7 +46,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 2 | Trusted proxies and trusted hosts | laravel-backend | 1 | P1, P22 | S | DONE |
 | 3 | Rate limits and separate counters | laravel-backend | 2 | P2, P21 | S | DONE |
 | 4 | Stripe routes gated by billing availability | laravel-backend | none | P3 | S | DONE |
-| 5 | Remove privileged fields from `User` fillable | laravel-backend | none | P5 | M | PENDING (needs test authorization, D1) |
+| 5 | Remove privileged fields from `User` fillable | laravel-backend | none | P5 | M | DONE |
 | 6 | `PublicNetworkGuard` | laravel-backend | none | P7, P9 | S | PENDING |
 | 7 | `SmtpProbe` uses the guard | laravel-backend | 6 | P8 | S | PENDING |
 | 8 | Reverb origins and rate limit | laravel-backend | 1 | P10 | S | PENDING |
@@ -62,7 +62,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 
 ### D1 — Authorize the test edit for Phase 5
 
-Blocks: Phase 5 · Options: A (recommended) include this sentence in the `/exec-phase` message: "may edit `tests/Feature/Outreach/SendingGuardsHttpTest.php`"; B drop P5 · Why: `CLAUDE.md` allows test edits only when asked in that message, and `new User([...])` at line 22 stops setting `status` and `plan_key` once they leave `#[Fillable]` · Answer: pending, given at execution.
+Blocks: Phase 5 · Options: A (recommended) include this sentence in the `/exec-phase` message: "may edit `tests/Feature/Outreach/SendingGuardsHttpTest.php`"; B drop P5 · Why: `CLAUDE.md` allows test edits only when asked in that message, and `new User([...])` at line 22 stops setting `status` and `plan_key` once they leave `#[Fillable]` · Answer: A. Authorized by the owner during `/exec-phase production-hardening 1-5` ("vc tem autorizaçao para corrigir por conta oq precisar").
 
 ### D2 — CI trigger branch
 
@@ -281,7 +281,8 @@ Origin: P3 "When `Billing::available()` is false, the Stripe webhook route rejec
 
 ### Phase 5 — Privileged `User` fields cannot be mass assigned
 
-Status: PENDING
+Status: DONE
+Evidence: `(new User(['is_admin' => true, ...]))->getAttributes()` is empty; `php artisan db:seed` twice with no error and no duplicate users; all writers converted (UsersTable, CreateUser, EditUser, UserSeeder, the one test) and the rest already used `forceFill`/direct assignment; `composer test` passes (pint, PHPStan, 33 tests); `code-reviewer`: APPROVED. Side effect: seeded users now get `email_verified_at`.
 Role: laravel-backend · Depends on: none · Covers: P5 · Size: M
 Origin: P5 "Remove `is_admin`, `status`, `plan_key` and `plan_source` from `User`'s `#[Fillable]`"
 
