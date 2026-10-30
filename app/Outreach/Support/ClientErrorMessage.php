@@ -24,12 +24,13 @@ final class ClientErrorMessage
         'Company is no longer verified' => 'applications.error.company',
         'Client account is not active.' => 'applications.error.account',
         'Worker stopped mid-send.' => 'applications.error.unconfirmed',
+        'EmailRecipientRejected' => 'applications.error.recipient_rejected',
     ];
 
     /**
      * @var list<string>
      */
-    private const TRANSPORT_ERRORS = ['ConnectionException', 'RequestException', 'TransportException'];
+    private const TRANSPORT_ERRORS = ['ConnectionException', 'RequestException', 'TransportException', 'EmailDeliveryUnconfirmed'];
 
     public static function for(?string $lastError): ?string
     {

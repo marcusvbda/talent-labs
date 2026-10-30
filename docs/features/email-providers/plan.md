@@ -37,7 +37,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 1 | Provider-agnostic transport and `Message-ID` | laravel-backend | none | P1, P2 | M | DONE |
 | 2 | `sendingIntegration()` replaces `gmailIntegration()` | laravel-backend | 1 | P3 | M | DONE |
 | 3 | Enforce one sending account | laravel-backend | 2 | P3 | S | DONE |
-| 4 | Shared error classification | laravel-backend | 1 | P5 | M | PENDING |
+| 4 | Shared error classification | laravel-backend | 1 | P5 | M | DONE |
 | 5 | Provider-limit pause and auto-resume | laravel-backend | 2, 4 | P5 | M | PENDING |
 | 6 | Neutral wording and notification | laravel-backend | 2, 5 | P4 | M | PENDING |
 | 7 | `sendingAccount` contract and main screens | inertia-frontend | 6 | P3, P4 | M | PENDING |
@@ -225,7 +225,8 @@ Origin: P3 "connecting another provider requires disconnecting the current one"
 
 ### Phase 4 — Shared error classification
 
-Status: PENDING
+Status: DONE
+Evidence: `grep "RequestException\|isAuthorizationError" app/Outreach/Jobs` empty; pint, `composer types:check`, `SendingDatabaseGuards` (7) and `tests/Feature/Outreach` (31) pass; reviewer APPROVED. Open (non-blocking): when retries run out, `last_error` `EmailDeliveryDeferred`/`EmailProviderLimitReached`/`EmailAuthorizationRejected` now shows `applications.error.default` to the client instead of "could not confirm delivery".
 Role: laravel-backend · Depends on: 1 · Covers: P5 · Size: M
 Origin: P5 "Error classification per transport, shared by all"
 

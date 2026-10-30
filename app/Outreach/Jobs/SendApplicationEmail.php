@@ -21,6 +21,10 @@ use App\Notifications\Client\SendingAutoPaused;
 use App\Outreach\Actions\CanSendApplications;
 use App\Outreach\Contracts\EmailTransport;
 use App\Outreach\Data\OutboundEmail;
+use App\Outreach\Exceptions\EmailAuthorizationRejected;
+use App\Outreach\Exceptions\EmailDeliveryDeferred;
+use App\Outreach\Exceptions\EmailProviderLimitReached;
+use App\Outreach\Exceptions\EmailRecipientRejected;
 use App\Outreach\Support\ApplicationStageRecorder;
 use App\Outreach\Support\ApplicationTemplateRenderer;
 use App\Outreach\Support\EmailTransportResolver;
@@ -33,7 +37,6 @@ use Closure;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -141,21 +144,27 @@ class SendApplicationEmail implements ShouldQueue
             $this->afterTerminal($application, isReauthorization: true);
 
             return;
-        } catch (RequestException $exception) {
-            if ($this->isAuthorizationError($exception)) {
-                try {
-                    $tokens->requireReauthorization($application->user, $integration->plugin_key, $exception);
-                } catch (ConnectedIntegrationReauthorizationRequired) {
-                    // Expected: the integration is now marked for reauthorization.
-                }
-
-                $this->finish($application, ApplicationStatus::Failed, $exception);
-                $recorder->record($application, SendStage::Failed, SendSubStep::Delivering);
-                $this->afterTerminal($application, isReauthorization: true);
-
-                return;
+        } catch (EmailAuthorizationRejected $exception) {
+            try {
+                $tokens->requireReauthorization($application->user, $integration->plugin_key, $exception);
+            } catch (ConnectedIntegrationReauthorizationRequired) {
+                // Expected: the integration is now marked for reauthorization.
             }
 
+            $this->finish($application, ApplicationStatus::Failed, $exception);
+            $recorder->record($application, SendStage::Failed, SendSubStep::Delivering);
+            $this->afterTerminal($application, isReauthorization: true);
+
+            return;
+        } catch (EmailRecipientRejected $exception) {
+            // The address will not be accepted on a retry.
+            $this->finish($application, ApplicationStatus::Failed, $exception);
+            $recorder->record($application, SendStage::Failed, SendSubStep::Delivering);
+            $this->afterTerminal($application);
+
+            return;
+        } catch (EmailProviderLimitReached|EmailDeliveryDeferred $exception) {
+            // Provider limits share the deferred retry for now; Phase 5 splits them out.
             if ($this->attempts() >= $this->tries) {
                 $this->finish($application, ApplicationStatus::Failed, $exception);
                 $recorder->record($application, SendStage::Failed, SendSubStep::Delivering);
@@ -623,21 +632,5 @@ class SendApplicationEmail implements ShouldQueue
 
         return $statuses->count() === $threshold
             && $statuses->doesntContain(ApplicationStatus::Sent);
-    }
-
-    private function isAuthorizationError(RequestException $exception): bool
-    {
-        $response = $exception->response;
-
-        if ($response->status() === 401) {
-            return true;
-        }
-
-        $json = $response->json();
-        $reason = is_array($json) ? data_get($json, 'error.errors.0.reason') : null;
-        $status = is_array($json) ? data_get($json, 'error.status') : null;
-
-        return in_array($reason, ['authError', 'insufficientPermissions'], true)
-            || $status === 'UNAUTHENTICATED';
     }
 }

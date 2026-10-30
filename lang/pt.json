@@ -780,6 +780,7 @@
     "applications.error.cv_invalid": "O arquivo do seu currículo não é um PDF válido.",
     "applications.error.content": "O conteúdo deste e-mail é inválido.",
     "applications.error.recipient": "Não conseguimos confirmar o destinatário.",
+    "applications.error.recipient_rejected": "O servidor de e-mail do destinatário rejeitou este endereço.",
     "applications.error.company": "Esta empresa não está mais disponível.",
     "applications.error.account": "Sua conta não está ativa.",
     "applications.error.unconfirmed": "Não conseguimos confirmar a entrega.",
