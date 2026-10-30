@@ -107,6 +107,7 @@ Route::middleware('guest')->group(function (): void {
         ->middleware('throttle:10,1,register')
         ->name('register.store');
     Route::inertia('/register/closed', 'auth/closed')->name('register.closed');
+    Route::inertia('/register/check-inbox', 'auth/check-inbox')->name('register.check-inbox');
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
         ->middleware('throttle:5,1,forgot-password')

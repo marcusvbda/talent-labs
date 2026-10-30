@@ -2,20 +2,16 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Enums\Region;
-use App\Enums\UserStatus;
+use App\Actions\Users\CreateClientAccount;
+use App\Actions\Users\RegisterOpenClient;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Invitations\InvitationTokens;
-use App\Models\Invitation;
-use App\Models\User;
-use App\Plans\PlanCatalog;
 use App\Registration\RegistrationMode;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -42,50 +38,16 @@ class RegisterController extends Controller
     {
         /** @var array{name: string, email: string, password: string, invite?: string|null, timezone: string} $validated */
         $validated = $request->validated();
-        $invite = $validated['invite'] ?? null;
-        $open = RegistrationMode::isOpen();
 
-        // The row lock serialises concurrent submits of the same link: the
-        // loser re-reads the invitation as used and, in invite mode, lands on
-        // Closed; in open mode it registers without the invitation.
-        $user = DB::transaction(function () use ($validated, $invite, $open): ?User {
-            $invitation = null;
+        // Open mode answers the same way whether or not the address has an account.
+        if (RegistrationMode::isOpen()) {
+            app(RegisterOpenClient::class)->run($validated);
 
-            if ($invite !== null && $invite !== '') {
-                $invitation = Invitation::query()
-                    ->where('token_hash', InvitationTokens::hash($invite))
-                    ->lockForUpdate()
-                    ->first();
-            }
+            return redirect()->route('register.check-inbox');
+        }
 
-            if ($invitation !== null && ! $invitation->isUsable()) {
-                $invitation = null;
-            }
-
-            if ($invitation === null && ! $open) {
-                return null;
-            }
-
-            $user = new User;
-            $user->forceFill([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => $validated['password'],
-                'is_admin' => false,
-                'status' => UserStatus::Active,
-                // Never from the request: the invitation's plan or the configured default.
-                'plan_key' => $invitation?->planKeyOrDefault()
-                    ?? app(PlanCatalog::class)->get((string) config('talent.plans.default'))->key,
-                'locale' => app()->getLocale(),
-                'timezone' => $validated['timezone'],
-                'country' => null,
-                'region' => Region::Row,
-            ])->save();
-
-            $invitation?->forceFill(['used_by' => $user->id, 'used_at' => now()])->save();
-
-            return $user;
-        });
+        // A concurrent submit of the same link loses the invitation and lands on Closed.
+        $user = app(CreateClientAccount::class)->run($validated, requireInvitation: true);
 
         if ($user === null) {
             return redirect()->route('register.closed');

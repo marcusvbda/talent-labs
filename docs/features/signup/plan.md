@@ -43,9 +43,9 @@ incomplete until then.
 | 6     | Stage 1 verification and report | laravel-backend  | 5                 | P1, P10  | S    | DONE    |
 | 7     | Free costs 0                    | laravel-backend  | none              | P14      | S    | DONE    |
 | 8     | Registration mode switch        | laravel-backend  | 7                 | P11      | M    | DONE    |
-| 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | DONE     |
-| 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | DONE     |
-| 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | PENDING |
+| 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | DONE    |
+| 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | DONE    |
+| 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | DONE    |
 | 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | PENDING |
 | 13    | Turnstile enforcement           | laravel-backend  | 12                | P15      | S    | PENDING |
 | 14    | IP limit and disposable domains | laravel-backend  | 11                | P15      | M    | PENDING |
@@ -424,7 +424,7 @@ Origin: P14 "Free must actually be free in open mode: the price config for Free 
 ### Phase 8 — One switch controls registration mode
 
 Status: DONE
-Evidence: `grep -rn "LANDING_BETA_CLOSED\|beta_closed" app config resources .env.example` empty. `composer test` (pint, PHPStan, 33/33), `yarn check`, `yarn types:check` pass. `code-reviewer`: APPROVED. Open mode swaps the hero badge and CTA title for the new `_open` copy; `landing.plans.beta_note` and `landing.cta.closed` were already gated by `betaClosed`. Not verified in a browser. Open items for the owner: `plans.closed_beta.*` is not tied to the mode (left as is); `landing-and-legal/spec.md:23` still names `talent.landing.beta_closed` (run `/update-feature-spec landing-and-legal`); the hero badge keeps its `Lock` icon in open mode (cosmetic); `auth.register.subtitle` ("Join the closed beta.") is handled in phase 9.
+Evidence: `grep -rn "LANDING_BETA_CLOSED\|beta_closed" app config resources .env.example` empty. `composer test` (pint, PHPStan, 33/33), `yarn run check` (`vp check`), `yarn types:check` pass. `code-reviewer`: APPROVED. Open mode swaps the hero badge and CTA title for the new `_open` copy; `landing.plans.beta_note` and `landing.cta.closed` were already gated by `betaClosed`. Not verified in a browser. Open items for the owner: `plans.closed_beta.*` is not tied to the mode (left as is); `landing-and-legal/spec.md:23` still names `talent.landing.beta_closed` (run `/update-feature-spec landing-and-legal`); the hero badge keeps its `Lock` icon in open mode (cosmetic); `auth.register.subtitle` ("Join the closed beta.") is handled in phase 9.
 Role: laravel-backend · Depends on: 7 · Covers: P11, D5, D8 · Size: M
 Origin: P11 "One switch: `talent.registration.mode` (env `REGISTRATION_MODE`, `invite` | `open`, default `invite`). The landing `betaClosed` prop derives from it." + D8 "`LANDING_BETA_CLOSED` is removed."
 
@@ -464,7 +464,7 @@ Origin: P11 "One switch: `talent.registration.mode` (env `REGISTRATION_MODE`, `i
 ### Phase 9 — Open mode registers without an invite
 
 Status: DONE
-Evidence: `composer test` (pint, PHPStan, 33/33), `yarn check`, `yarn types:check` pass. `code-reviewer`: APPROVED. A throwaway PHPUnit class (outside the repo, deleted) against the testing DB covered: open + no invite -> user on the default plan with `email_verified_at` null even with `plan_key=pro` in the POST body; open + usable invite -> invite plan, email lock, invite consumed; open + expired/garbage invite -> registers as no invite, invite untouched; invite mode -> `/register` and POST without an invite redirect to `register.closed`, a valid invite registers, a consumed one redirects to Closed. Not rendered in a browser. Known edge: in open mode a non-string `invite` (e.g. `invite[]=x`) fails the `string` rule and redirects to Closed (malformed POST only, no security impact).
+Evidence: `composer test` (pint, PHPStan, 33/33), `yarn run check` (`vp check`), `yarn types:check` pass. `code-reviewer`: APPROVED. A throwaway PHPUnit class (outside the repo, deleted) against the testing DB covered: open + no invite -> user on the default plan with `email_verified_at` null even with `plan_key=pro` in the POST body; open + usable invite -> invite plan, email lock, invite consumed; open + expired/garbage invite -> registers as no invite, invite untouched; invite mode -> `/register` and POST without an invite redirect to `register.closed`, a valid invite registers, a consumed one redirects to Closed. Not rendered in a browser. Known edge: in open mode a non-string `invite` (e.g. `invite[]=x`) fails the `string` rule and redirects to Closed (malformed POST only, no security impact).
 Role: laravel-backend · Depends on: 5, 8 · Covers: P12, P13 · Size: M
 Origin: P12 "`open` mode: `/register` works without an invite; when a usable invite is present it still applies (email lock, plan) and is consumed."; P13 "Without an invite the plan is always the default plan. The plan is never read from the request or URL."
 
@@ -574,7 +574,8 @@ Origin: P16 "the signed verification link logs them in"; D11 "Verifying ends the
 
 ### Phase 11 — Open-mode signup reveals nothing about existing accounts
 
-Status: PENDING
+Status: DONE
+Evidence: `composer test` (pint, PHPStan, 33/33), `yarn run check` (`vp check`: 286 files formatted, no lint errors) and `yarn types:check` pass. `code-reviewer`: APPROVED. A throwaway PHPUnit class (outside the repo, deleted) against the testing DB, 12 cases in open mode: new, unverified, verified, admin and blocked addresses all redirect to `register.check-inbox` with no session; new -> account on the default plan, unverified, `Registered` fired; unverified -> name/password/timezone replaced, fresh verification mail, invite not consumed, plan unchanged; verified and admin -> `RegistrationAttempted`, account unchanged; blocked -> nothing, no mail; `FOO@X.com ` matches `foo@x.com`; a 4th repeat in an hour sends no mail (the unverified password update still happens); identical password-validation errors for known and unknown addresses; the mail renders in pt. Invite mode: unique error, login, invite consumption and redirect to Closed as before. Deviation: account creation moved into a shared `CreateClientAccount` action (used by invite mode and open mode), with invite-mode behaviour unchanged. Invite mode now also lowercases the email before saving. Not rendered in a browser. Note: bare `yarn check` is yarn's own integrity check, not `vp check`; use `yarn run check`.
 Role: laravel-backend · Depends on: 10 · Covers: P16, D11 · Size: M
 Origin: P16 "No account enumeration in open mode: an email that already exists gets the same screen as a new signup ('check your inbox') and the existing owner receives an email saying someone tried to register with it."; D11 "the newest signup wins".
 

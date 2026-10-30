@@ -17,6 +17,15 @@ class RegisterRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $email = $this->input('email');
+
+        if (is_string($email)) {
+            $this->merge(['email' => mb_strtolower(trim($email))]);
+        }
+    }
+
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
@@ -24,7 +33,10 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'min:2', 'max:80'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            // Open mode never reveals whether an address has an account (no unique rule).
+            'email' => RegistrationMode::isOpen()
+                ? ['required', 'string', 'email', 'max:255']
+                : ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:10', 'confirmed'],
             'invite' => RegistrationMode::isOpen()
                 ? ['nullable', 'string']
