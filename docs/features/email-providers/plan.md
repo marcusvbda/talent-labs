@@ -49,7 +49,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 13    | SMTP form and registration                           | inertia-frontend | 9, 12      | P6, P8, P15           | M    | DONE    |
 | 14    | `GraphMessageSender` and CV size check               | laravel-backend  | 4          | P5, P17               | M    | DONE    |
 | 15    | `MicrosoftPlugin`, env and card notice               | laravel-backend  | 9, 10, 14  | P16, P17, P18         | M    | DONE    |
-| 16    | Verification and report                              | laravel-backend  | all        | all                   | S    | PENDING |
+| 16    | Verification and report                              | laravel-backend  | all        | all                   | S    | DONE    |
 
 ## Owner decisions
 
@@ -760,7 +760,8 @@ Origin: P16 "`MicrosoftPlugin`" · P18 "Env" · P17 (card mention)
 
 ### Phase 16 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: `composer ci:check` passes (frontend check, `tsc`, pint, PHPStan 0 errors, 33 tests / 1017 assertions). Greps over the feature's diff (`f469512..HEAD`): no `->poll(`, `wire:poll` or `pollingInterval`, no git write commands in code; no value in `lang/*.json` names Gmail or Google except `integrations.gmail.*` and the `:gmail` parameter name in `send.confirm.body` and `send.random.body` (kept by the plan's Assumption that parameters keep their names). Credential grep: `credentials` appears in no presenter, resource, Filament schema or export (`AccountExportController` has no integration data); the only `password` hits are the app user's own password; the two `Log::warning` calls in the SMTP path log only ids, code and class. P19: the plan limit is checked in `beginAttempt()` before any transport, so it applies to all three providers. Pending changes P1–P19 folded into the spec body; `## Pending changes` and `## Open points` removed.
 Role: laravel-backend · Depends on: all · Covers: all · Size: S
 Origin: spec x code gap
 
