@@ -53,7 +53,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 9 | Security headers | laravel-backend | 2 | P11 | S | DONE |
 | 10 | CSP report-only and report endpoint | laravel-backend | 9 | P12, P24 | M | DONE |
 | 11 | `app:production-check` and admin path | laravel-backend | 2, 4, 8 | P13, P4, P23 | M | DONE |
-| 12 | Reject admins at client login | laravel-backend | none | P20 | S | PENDING |
+| 12 | Reject admins at client login | laravel-backend | none | P20 | S | DONE |
 | 13 | Required admin MFA | filament-admin | 12 | P14 | M | PENDING |
 | 14 | Audits in CI | laravel-backend | none | P17 | S | PENDING |
 | 15 | Verification and report | qa-tester | 1-14 | spec x code gap | S | PENDING |
@@ -590,7 +590,8 @@ $adminPath = trim((string) config('filament.admin_panel_path'), '/');
 
 ### Phase 12 — Admins can only sign in at the panel
 
-Status: PENDING
+Status: DONE
+Evidence: `LoginRequest::authenticate()` run in tinker inside a rolled-back transaction: a valid admin gets the `auth.failed` validation error and no session, a valid client authenticates; Filament's login, `EnsureActiveClient` and the failure branch are untouched; `composer test` passes (pint, PHPStan, 33 tests). Orchestrator-checked, no separate `code-reviewer` pass (one call changed). Not checked in a browser: confirm an admin can still sign in at the panel.
 Role: laravel-backend · Depends on: none · Covers: P20 · Size: S
 Origin: P20 "The client `POST /login` rejects admin accounts"
 
