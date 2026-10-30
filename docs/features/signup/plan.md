@@ -33,23 +33,23 @@ Phases 1-6 are Stage 1 (beta). Phases 7-15 are Stage 2 (public launch). Do not
 set `REGISTRATION_MODE=open` anywhere real before phase 15 passes: open mode is
 incomplete until then.
 
-| Phase | Title                           | Role             | Depends on        | Origin   | Size | Status  |
-| ----- | ------------------------------- | ---------------- | ----------------- | -------- | ---- | ------- |
-| 1     | Verification email              | laravel-backend  | none              | P2, P6   | S    | DONE    |
-| 2     | Verification routes and page    | laravel-backend  | 1                 | P3, P5   | M    | DONE    |
-| 3     | `users:mark-verified` command   | laravel-backend  | none              | P9       | S    | DONE    |
-| 4     | Admin verification controls     | filament-admin   | 1                 | P7, P8   | S    | DONE    |
-| 5     | Enforce verification            | laravel-backend  | 1, 2, 3, 4        | P2, P4   | M    | DONE    |
-| 6     | Stage 1 verification and report | laravel-backend  | 5                 | P1, P10  | S    | DONE    |
-| 7     | Free costs 0                    | laravel-backend  | none              | P14      | S    | DONE    |
-| 8     | Registration mode switch        | laravel-backend  | 7                 | P11      | M    | DONE    |
-| 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | DONE    |
-| 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | DONE    |
-| 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | DONE    |
-| 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | DONE    |
-| 13    | Turnstile enforcement           | laravel-backend  | 12                | P15      | S    | DONE    |
-| 14    | IP limit and disposable domains | laravel-backend  | 11                | P15      | M    | DONE    |
-| 15    | Final verification and report   | laravel-backend  | 6, 10, 11, 13, 14 | all      | S    | PENDING |
+| Phase | Title                           | Role             | Depends on        | Origin   | Size | Status |
+| ----- | ------------------------------- | ---------------- | ----------------- | -------- | ---- | ------ |
+| 1     | Verification email              | laravel-backend  | none              | P2, P6   | S    | DONE   |
+| 2     | Verification routes and page    | laravel-backend  | 1                 | P3, P5   | M    | DONE   |
+| 3     | `users:mark-verified` command   | laravel-backend  | none              | P9       | S    | DONE   |
+| 4     | Admin verification controls     | filament-admin   | 1                 | P7, P8   | S    | DONE   |
+| 5     | Enforce verification            | laravel-backend  | 1, 2, 3, 4        | P2, P4   | M    | DONE   |
+| 6     | Stage 1 verification and report | laravel-backend  | 5                 | P1, P10  | S    | DONE   |
+| 7     | Free costs 0                    | laravel-backend  | none              | P14      | S    | DONE   |
+| 8     | Registration mode switch        | laravel-backend  | 7                 | P11      | M    | DONE   |
+| 9     | Registration without an invite  | laravel-backend  | 5, 8              | P12, P13 | M    | DONE   |
+| 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | DONE   |
+| 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | DONE   |
+| 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | DONE   |
+| 13    | Turnstile enforcement           | laravel-backend  | 12                | P15      | S    | DONE   |
+| 14    | IP limit and disposable domains | laravel-backend  | 11                | P15      | M    | DONE   |
+| 15    | Final verification and report   | laravel-backend  | 6, 10, 11, 13, 14 | all      | S    | DONE   |
 
 ## Owner decisions
 
@@ -730,7 +730,8 @@ Origin: P15 "registrations limited per IP per day (in addition to `throttle:10,1
 
 ### Phase 15 — Final verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: `composer ci:check` passes (frontend check, `tsc`, pint, PHPStan, 33/33 tests). Greps: no `->poll(`, `wire:poll` or `refetchInterval` (only the "forbidden" comment in `query-client.ts`), no `LANDING_BETA_CLOSED`, no `STRIPE_PRICE_FREE`, `lang/` has only `en` and `pt`, `plan_key` is never read from a request in `RegisterController` or `RegisterRequest`. `git diff` on `composer.json`, `composer.lock`, `package.json`, `yarn.lock` across the signup commits (phase 1 onward) is empty. `code-reviewer` over the whole feature and the folded spec: APPROVED, no blocking findings. The pending changes covered by the plan were folded into `spec.md` and `## Pending changes` removed; the two non-blocking edge cases the review found (unverified-address takeover under D11, invite-holder side channel) are recorded as open points. Not exercised: Cloudflare, a real mailer, a browser.
 Role: laravel-backend · Depends on: 6, 10, 11, 13, 14 · Covers: all, P13 · Size: S
 Origin: spec x code gap (required last phase)
 
