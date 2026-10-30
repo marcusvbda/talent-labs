@@ -8,8 +8,9 @@ import {
     useConnectEmail,
     useDisconnectEmail,
 } from '@/data/hooks/use-connect-email';
+import { ProviderList } from '@/features/account/provider-list';
 import { useT } from '@/i18n/i18n-provider';
-import { connect, reconnect } from '@/routes/integrations/oauth';
+import { reconnect } from '@/routes/integrations/oauth';
 import type { AccountStatus } from '@/types/contracts';
 
 export const EmailAccountCard = ({
@@ -25,7 +26,6 @@ export const EmailAccountCard = ({
     const [confirming, setConfirming] = useState(false);
 
     const redirect = { query: { return: 'account' } };
-    const connectHref = connect('gmail', redirect).url;
     const reconnectHref =
         account.providerKey === null
             ? null
@@ -75,15 +75,13 @@ export const EmailAccountCard = ({
                             : t(`account.gmail.status.${account.state}`)}
                     </span>
                 </p>
+                {account.state === 'disconnected' && (
+                    <ProviderList
+                        providers={account.providers}
+                        returnTo="account"
+                    />
+                )}
                 <div className="flex flex-wrap gap-3">
-                    {account.state === 'disconnected' && (
-                        <Button
-                            loading={connectEmail.isPending}
-                            onClick={() => connectEmail.mutate(connectHref)}
-                        >
-                            {t('account.gmail.connect')}
-                        </Button>
-                    )}
                     {account.state === 'reauthorization_required' && (
                         <Button
                             loading={connectEmail.isPending}

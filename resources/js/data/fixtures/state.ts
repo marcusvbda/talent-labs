@@ -322,6 +322,7 @@ const accountStatus = (): AccountStatus => {
             state: accountState,
             accountEmail: dev.gmail === 'disconnected' ? null : ACCOUNT_EMAIL,
             providerKey: dev.gmail === 'disconnected' ? null : 'gmail',
+            providers: [{ key: 'gmail', kind: 'oauth' }],
         },
         sending: {
             paused: data.paused || reauth,

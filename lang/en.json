@@ -836,6 +836,8 @@
     "account.gmail.status.disconnected": "Not connected",
     "account.gmail.status.reauthorization_required": "Connection expired",
     "account.gmail.connected_as": "Connected as :email",
+    "integrations.gmail.label": "Gmail",
+    "integrations.gmail.description": "Send applications from your own Gmail account.",
     "account.gmail.connect": "Connect email",
     "account.gmail.reconnect": "Reconnect email",
     "account.gmail.disconnect": "Disconnect",

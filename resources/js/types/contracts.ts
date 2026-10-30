@@ -67,6 +67,7 @@ export type AccountStatus = {
         state: 'connected' | 'reauthorization_required' | 'disconnected';
         accountEmail: string | null;
         providerKey: string | null;
+        providers: { key: string; kind: 'oauth' }[];
     };
     sending: {
         paused: boolean;

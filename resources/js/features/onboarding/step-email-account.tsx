@@ -1,10 +1,8 @@
 import { CircleCheck } from 'lucide-react';
 import { DataCard } from '@/components/patterns/data-card';
-import { Button } from '@/components/ui/button';
-import { useConnectEmail } from '@/data/hooks/use-connect-email';
+import { ProviderList } from '@/features/account/provider-list';
 import { StepFooter } from '@/features/onboarding/step-footer';
 import { useT } from '@/i18n/i18n-provider';
-import { connect } from '@/routes/integrations/oauth';
 import type { AccountStatus } from '@/types/contracts';
 
 export const StepEmailAccount = ({
@@ -17,11 +15,7 @@ export const StepEmailAccount = ({
     onDone: () => void;
 }) => {
     const { t } = useT();
-    const connectEmail = useConnectEmail();
     const connected = account.state === 'connected';
-    const href = connect('gmail', {
-        query: { return: 'onboarding' },
-    }).url;
 
     return (
         <DataCard
@@ -45,14 +39,10 @@ export const StepEmailAccount = ({
                         </span>
                     </p>
                 ) : (
-                    <div>
-                        <Button
-                            loading={connectEmail.isPending}
-                            onClick={() => connectEmail.mutate(href)}
-                        >
-                            {t('onboarding.gmail.connect')}
-                        </Button>
-                    </div>
+                    <ProviderList
+                        providers={account.providers}
+                        returnTo="onboarding"
+                    />
                 )}
                 <StepFooter
                     onBack={onBack}

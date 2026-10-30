@@ -42,7 +42,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 6     | Neutral wording and notification                     | laravel-backend  | 2, 5       | P4                    | M    | DONE    |
 | 7     | `sendingAccount` contract and main screens           | inertia-frontend | 6          | P3, P4                | M    | DONE    |
 | 8     | Remove the `gmail` contract key                      | inertia-frontend | 7          | P4                    | M    | DONE    |
-| 9     | Provider list from the registry                      | inertia-frontend | 8          | P6                    | M    | PENDING |
+| 9     | Provider list from the registry                      | inertia-frontend | 8          | P6                    | M    | DONE    |
 | 10    | Credential plugin contract and storage               | laravel-backend  | 2          | P7, P11               | M    | PENDING |
 | 11    | `SmtpMessageSender`                                  | laravel-backend  | 4, 10      | P2, P5, P14           | M    | PENDING |
 | 12    | SMTP connect endpoint and test                       | laravel-backend  | 3, 11      | P8, P9, P10, P12, P13 | M    | PENDING |
@@ -444,7 +444,8 @@ Origin: P4 "Provider-neutral wording everywhere"
 
 ### Phase 9 — Provider list from the registry
 
-Status: PENDING
+Status: DONE
+Evidence: presenter tinker output `sendingAccount.providers = [{"key":"gmail","kind":"oauth"}]`; pint, `composer types:check`, `yarn run check`, `yarn types:check` and `SendingDatabaseGuards` (7) pass; reviewer APPROVED. Deviation from the contract: `providers[]` carries `{key, kind}` only, and the frontend translates `integrations.{key}.label` and `.description` with `t()`, because `AccountStatusPresenter` also feeds the `AccountStatusUpdated` broadcast, which has no per-user locale. Not exercised in a browser. Open (non-blocking): `onboarding.gmail.connect` is now unused; one `useConnectEmail` instance is shared by all rows, so every button shows loading with two providers (revisit in Phase 13/15).
 Role: inertia-frontend · Depends on: 8 · Covers: P6 · Size: M
 Origin: P6 "Account and onboarding screens list the available providers from the plugin registry"
 

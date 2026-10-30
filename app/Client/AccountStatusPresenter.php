@@ -7,11 +7,13 @@ use App\Enums\SendingPauseReason;
 use App\Models\ApplicationProfile;
 use App\Models\User;
 use App\Plans\PlanCatalog;
+use App\Services\ConnectedIntegrationRegistry;
 
 final class AccountStatusPresenter
 {
     public function __construct(
         private PlanCatalog $plans,
+        private ConnectedIntegrationRegistry $integrations,
     ) {}
 
     /**
@@ -53,6 +55,12 @@ final class AccountStatusPresenter
                 'state' => $accountState,
                 'accountEmail' => $accountEmail,
                 'providerKey' => $account?->plugin_key,
+                // Key and kind only: label/description are localized client-side, because the
+                // status is also broadcast, where the server locale is not the user's.
+                'providers' => array_map(
+                    fn (string $key): array => ['key' => $key, 'kind' => 'oauth'],
+                    $this->integrations->sendingPluginKeys(),
+                ),
             ],
             'sending' => [
                 'paused' => $user->isSendingPaused(),

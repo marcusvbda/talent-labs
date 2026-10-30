@@ -836,6 +836,8 @@
     "account.gmail.status.disconnected": "Não conectado",
     "account.gmail.status.reauthorization_required": "Conexão expirada",
     "account.gmail.connected_as": "Conectado como :email",
+    "integrations.gmail.label": "Gmail",
+    "integrations.gmail.description": "Envie candidaturas da sua própria conta do Gmail.",
     "account.gmail.connect": "Conectar e-mail",
     "account.gmail.reconnect": "Reconectar e-mail",
     "account.gmail.disconnect": "Desconectar",
