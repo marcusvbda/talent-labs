@@ -2,7 +2,6 @@
 
 namespace App\Outreach\Queries;
 
-use App\Collection\Support\PostingDay;
 use App\Collection\Support\PostingRestrictions;
 use App\Enums\ContactConfidence;
 use App\Enums\OutreachStatus;
@@ -37,8 +36,8 @@ final class MatchingJobPostings
      * through a dev posting never surfaces its non-target (e.g. sales) postings. Postings marked
      * not eligible (ineligible_reason, e.g. multi-role posts) never enter the pool. Postings are
      * left out unless their language has an active, complete application profile for this
-     * user (skippable with $withLanguageRule = false). Only postings whose first run (collection_run_id)
-     * started inside the last talent.collection.window_days app-timezone days, today included, are kept.
+     * user (skippable with $withLanguageRule = false). There is no age limit: a posting stays in the
+     * pool, however old, until this client applies to its company.
      *
      * Preferences narrow the pool: terms inside one field are ORed, fields are ANDed, and an
      * empty field applies no filter (no preferences at all = the whole pool). Titles,
@@ -91,7 +90,6 @@ final class MatchingJobPostings
             ->when($withLanguageRule, fn (Builder $query) => $query->whereIn('job_posting_profiles.language', ApplicationProfile::activeCompleteLanguagesFor($user)))
             ->whereIn('job_postings.role_family', config('talent.collection.target_role_families'))
             ->whereNull('job_postings.ineligible_reason')
-            ->where('first_run.started_at', '>=', PostingDay::windowStartsAt())
             ->whereExists(function ($contacts): void {
                 $contacts->select(DB::raw(1))
                     ->from('contacts')

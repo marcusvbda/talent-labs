@@ -101,6 +101,7 @@ export type JobCard = {
     summary: string | null; // one sentence, client-safe
     firstSeenAt: ISODateTime;
     collectedToday: boolean;
+    collectedDaysAgo: number; // whole days since the run that collected it; 0 = today
     jobUrl: string | null; // captured job page; non-null only on paid plans
     match: JobMatch | null; // null without scored preferences
 };
@@ -176,7 +177,12 @@ export type DashboardPeriod = 'today' | 'week' | 'month';
 export type DashboardData = {
     period: DashboardPeriod;
     kpis: {
-        collected: { value: number; previous: number };
+        collected: {
+            value: number;
+            previous: number;
+            today: number; // collected today, whatever the period
+            week: number; // collected this week, whatever the period
+        };
         sent: { value: number; previous: number };
         totalSent: number;
         firstSentAt: ISODateTime | null;

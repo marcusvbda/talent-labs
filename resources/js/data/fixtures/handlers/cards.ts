@@ -106,6 +106,7 @@ export const toJobCard = (job: JobDetail): JobCard => {
         summary: job.summary,
         firstSeenAt: job.firstSeenAt,
         collectedToday: job.collectedToday,
+        collectedDaysAgo: job.collectedDaysAgo,
         jobUrl: job.jobUrl,
         match: fixtureMatch(job, fixtureState.get().preferences),
     };

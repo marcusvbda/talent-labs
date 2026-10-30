@@ -16,6 +16,7 @@ export function StatTile({
     delta,
     context,
     meter,
+    breakdown,
     loading = false,
 }: {
     label: string;
@@ -26,6 +27,8 @@ export function StatTile({
     delta?: { direction: 'up' | 'down'; label: string; context?: string };
     context?: string;
     meter?: { total: number; filled: number };
+    /** Extra figures shown under the value, one `label value` pair each. */
+    breakdown?: { label: string; value: string }[];
     loading?: boolean;
 }) {
     const { t } = useT();
@@ -64,6 +67,16 @@ export function StatTile({
                             filled={meter.filled}
                             label={label}
                         />
+                    )}
+                    {breakdown && (
+                        <dl className="flex flex-wrap gap-x-4 gap-y-1 text-label-sm text-muted">
+                            {breakdown.map((row) => (
+                                <div key={row.label} className="flex gap-1.5">
+                                    <dt>{row.label}</dt>
+                                    <dd className="text-ink">{row.value}</dd>
+                                </div>
+                            ))}
+                        </dl>
                     )}
                     {delta ? (
                         <div className="flex flex-wrap items-center gap-2">

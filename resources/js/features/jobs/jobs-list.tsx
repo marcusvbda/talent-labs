@@ -2,7 +2,7 @@ import { JobRow } from '@/components/patterns/job-row';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/i18n/i18n-provider';
 import type { JobCard } from '@/types/contracts';
-import { jobMeta } from './job-meta';
+import { jobMeta, collectedLabel } from './job-meta';
 
 export function JobsList({
     jobs,
@@ -23,7 +23,7 @@ export function JobsList({
     loadingMore: boolean;
     onLoadMore: () => void;
 }) {
-    const { t } = useT();
+    const { t, plural } = useT();
 
     return (
         <div className="flex flex-col gap-3">
@@ -35,6 +35,7 @@ export function JobsList({
                     company={job.company.name}
                     title={job.title}
                     meta={jobMeta(job, t('jobs.remote'))}
+                    collectedLabel={collectedLabel(job, t, plural)}
                     stack={job.stack}
                     stackMatches={job.stackMatches}
                     language={job.language}

@@ -25,6 +25,7 @@ export function JobRow({
     onOpen,
     jobUrl,
     matchScore = null,
+    collectedLabel = null,
 }: {
     selected: boolean;
     onSelectedChange: (selected: boolean) => void;
@@ -44,6 +45,8 @@ export function JobRow({
     jobUrl?: string | null;
     /** Match percentage; shown as a chip when set. */
     matchScore?: number | null;
+    /** How long ago the job was collected ("Collected today"); shown as its own line under `meta`. */
+    collectedLabel?: string | null;
 }) {
     const { t } = useT();
     const checkbox = (
@@ -66,6 +69,11 @@ export function JobRow({
                     <span className="block truncate text-body text-muted">
                         {meta}
                     </span>
+                    {collectedLabel !== null && (
+                        <span className="block truncate text-label-sm text-muted opacity-80">
+                            {collectedLabel}
+                        </span>
+                    )}
                 </span>
                 <span className="flex flex-wrap items-center gap-1.5 md:max-w-[60%] md:justify-end">
                     {matchScore !== null && (

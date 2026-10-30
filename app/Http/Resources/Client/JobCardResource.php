@@ -66,6 +66,7 @@ class JobCardResource extends JsonResource
             'summary' => trim($summary) === '' ? null : $summary,
             'firstSeenAt' => $posting->first_seen_at->toIso8601String(),
             'collectedToday' => PostingDay::isToday($posting->collectionRun?->started_at),
+            'collectedDaysAgo' => PostingDay::daysAgo($posting->collectionRun?->started_at),
             'jobUrl' => $paid ? ApplicationItemResource::safeUrl($posting->applicationUrl()) : null,
             'match' => MatchScore::explain($posting, $criteria),
         ];

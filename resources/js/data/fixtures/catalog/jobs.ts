@@ -25,18 +25,24 @@ const EMPLOYMENT: Record<JobLanguage, { full: string; intern: string }> = {
     pt: { full: 'Tempo integral', intern: 'Estágio' },
 };
 
-type Seen = { firstSeenAt: ISODateTime; collectedToday: boolean };
+type Seen = {
+    firstSeenAt: ISODateTime;
+    collectedToday: boolean;
+    collectedDaysAgo: number;
+};
 
 // Seen minutes ago, today.
 const m = (minutes: number): Seen => ({
     firstSeenAt: minutesAgoToday(minutes),
     collectedToday: true,
+    collectedDaysAgo: 0,
 });
 
 // Seen days ago (1..13), not today.
 const d = (days: number): Seen => ({
     firstSeenAt: daysAgo(days),
     collectedToday: false,
+    collectedDaysAgo: days,
 });
 
 type Extra = { hybridRemote?: boolean; noPublishedAt?: boolean };

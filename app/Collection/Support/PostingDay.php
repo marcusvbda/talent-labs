@@ -16,19 +16,24 @@ final class PostingDay
     }
 
     /**
-     * Start of the oldest day (app timezone) still inside the client pool window
-     * (talent.collection.window_days, today included, at least one day).
-     */
-    public static function windowStartsAt(): CarbonImmutable
-    {
-        return self::todayStartsAt()->subDays(max(1, (int) config('talent.collection.window_days')) - 1);
-    }
-
-    /**
      * Whether a run started today in the app timezone.
      */
     public static function isToday(?CarbonInterface $runStartedAt): bool
     {
         return $runStartedAt !== null && $runStartedAt->greaterThanOrEqualTo(self::todayStartsAt());
+    }
+
+    /**
+     * Whole app-timezone days between the day the run started and today (0 = today).
+     */
+    public static function daysAgo(?CarbonInterface $runStartedAt): int
+    {
+        if ($runStartedAt === null) {
+            return 0;
+        }
+
+        $startedOn = CarbonImmutable::instance($runStartedAt)->setTimezone(config('app.timezone'))->startOfDay();
+
+        return max(0, (int) $startedOn->diffInDays(self::todayStartsAt()));
     }
 }

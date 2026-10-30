@@ -228,6 +228,28 @@ export default function Dashboard() {
                                 value={format.number(
                                     data?.kpis.collected.value ?? 0,
                                 )}
+                                breakdown={
+                                    data
+                                        ? [
+                                              {
+                                                  label: t(
+                                                      'dashboard.stat.collected_today',
+                                                  ),
+                                                  value: format.number(
+                                                      data.kpis.collected.today,
+                                                  ),
+                                              },
+                                              {
+                                                  label: t(
+                                                      'dashboard.stat.collected_week',
+                                                  ),
+                                                  value: format.number(
+                                                      data.kpis.collected.week,
+                                                  ),
+                                              },
+                                          ]
+                                        : undefined
+                                }
                                 delta={
                                     data
                                         ? delta(

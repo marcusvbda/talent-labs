@@ -31,6 +31,8 @@ final class DashboardPresenter
     public function forUser(User $user, string $period): array
     {
         [$start, $end, $previousStart] = self::window($user, $period);
+        [$todayStart] = self::window($user, 'today');
+        [$weekStart] = self::window($user, 'week');
         $today = CarbonImmutable::now(ChartPresenter::timezone($user))->startOfDay();
 
         $sent = $user->applications()->where('status', ApplicationStatus::Sent->value);
@@ -66,6 +68,8 @@ final class DashboardPresenter
                 'collected' => [
                     'value' => self::collected($user, $start, '<=', $end),
                     'previous' => self::collected($user, $previousStart, '<', $start),
+                    'today' => self::collected($user, $todayStart, '<=', $end),
+                    'week' => self::collected($user, $weekStart, '<=', $end),
                 ],
                 'sent' => [
                     'value' => (clone $sent)->where('sent_at', '>=', $start)->where('sent_at', '<=', $end)->count(),

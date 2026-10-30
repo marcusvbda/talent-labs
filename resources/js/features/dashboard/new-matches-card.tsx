@@ -11,9 +11,9 @@ import { useJobs } from '@/data/hooks/use-jobs';
 import { ReviewModal } from '@/features/review/review-modal';
 import { ConfirmSendModal } from '@/features/send/confirm-send-modal';
 import { RandomSendModal } from '@/features/send/random-send-modal';
+import { collectedLabel } from '@/features/jobs/job-meta';
 import { useSelection } from '@/features/send/use-selection';
 import { useT } from '@/i18n/i18n-provider';
-import { useFormat } from '@/lib/format';
 import { jobs } from '@/routes';
 import type { DashboardData, SendMode } from '@/types/contracts';
 import type { PlanKey } from '@/types/plans';
@@ -33,7 +33,6 @@ export function NewMatchesCard({
     remaining: number;
 }) {
     const { t, plural } = useT();
-    const format = useFormat();
     const selection = useSelection(remaining);
     const [confirming, setConfirming] = useState(false);
     const [randomOpen, setRandomOpen] = useState(false);
@@ -110,7 +109,8 @@ export function NewMatchesCard({
                             title={job.title}
                             meta={`${job.company.name} · ${
                                 job.location ?? t('jobs.remote')
-                            } · ${format.relativeTime(job.firstSeenAt)}`}
+                            }`}
+                            collectedLabel={collectedLabel(job, t, plural)}
                             stack={job.stack}
                             stackMatches={job.stackMatches}
                             language={job.language}

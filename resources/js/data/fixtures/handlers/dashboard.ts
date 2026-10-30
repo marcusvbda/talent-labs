@@ -36,7 +36,7 @@ export function buildDashboard(
         return {
             period,
             kpis: {
-                collected: { value: 0, previous: 0 },
+                collected: { value: 0, previous: 0, today: 0, week: 0 },
                 sent: { value: 0, previous: 0 },
                 totalSent: 0,
                 firstSentAt: null,
@@ -76,6 +76,12 @@ export function buildDashboard(
             collected: {
                 value: countIn(seen, currentStart, tomorrow),
                 previous: countIn(seen, previousStart, currentStart),
+                today: countIn(seen, today, tomorrow),
+                week: countIn(
+                    seen,
+                    addDays(today, 1 - PERIOD_DAYS.week),
+                    tomorrow,
+                ),
             },
             sent: {
                 value: countIn(sentStamps, currentStart, tomorrow),
