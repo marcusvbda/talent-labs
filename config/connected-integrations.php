@@ -1,6 +1,7 @@
 <?php
 
 use App\Integrations\Gmail\GmailPlugin;
+use App\Integrations\Microsoft\MicrosoftPlugin;
 use App\Integrations\Smtp\SmtpPlugin;
 use App\Outreach\Support\GmailApiMessageSender;
 use App\Outreach\Support\GraphMessageSender;
@@ -12,6 +13,7 @@ return [
     'plugins' => [
         GmailPlugin::class,
         SmtpPlugin::class,
+        MicrosoftPlugin::class,
     ],
 
     // Email transport per plugin key, resolved by EmailTransportResolver.
@@ -27,6 +29,18 @@ return [
             'email',
             'profile',
             'https://www.googleapis.com/auth/gmail.send',
+        ],
+    ],
+
+    'microsoft' => [
+        // User.Read is required for the /me identity lookup.
+        'scopes' => [
+            'openid',
+            'email',
+            'profile',
+            'offline_access',
+            'https://graph.microsoft.com/Mail.Send',
+            'https://graph.microsoft.com/User.Read',
         ],
     ],
 

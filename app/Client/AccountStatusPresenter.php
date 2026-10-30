@@ -64,7 +64,11 @@ final class AccountStatusPresenter
                         'key' => $key,
                         'kind' => $this->integrations->get($key) instanceof CredentialIntegrationPlugin ? 'credential' : 'oauth',
                     ],
-                    $this->integrations->sendingPluginKeys(),
+                    // Unavailable plugins (e.g. unconfigured Microsoft) are not offered for new connections.
+                    array_values(array_filter(
+                        $this->integrations->sendingPluginKeys(),
+                        fn (string $key): bool => $this->integrations->get($key)->isAvailable(),
+                    )),
                 ),
                 'smtpDefaults' => $account?->plugin_key === 'smtp' ? $this->smtpDefaults($account) : null,
             ],

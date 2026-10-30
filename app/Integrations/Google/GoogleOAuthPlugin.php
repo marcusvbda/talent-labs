@@ -16,6 +16,11 @@ use LogicException;
 
 abstract class GoogleOAuthPlugin implements OAuthIntegrationPlugin
 {
+    public function isAvailable(): bool
+    {
+        return true;
+    }
+
     public function redirectUri(): string
     {
         $configured = config('services.google.redirect');

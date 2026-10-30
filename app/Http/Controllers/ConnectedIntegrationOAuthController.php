@@ -38,6 +38,7 @@ class ConnectedIntegrationOAuthController extends Controller
     {
         $user = $this->user($request);
         $oauthPlugin = $this->plugin($plugin);
+        abort_unless($oauthPlugin->isAvailable(), 404);
 
         $existing = $this->integration($user, $plugin);
         abort_if($existing !== null && $existing->status !== ConnectedIntegrationStatus::Disconnected, 404);

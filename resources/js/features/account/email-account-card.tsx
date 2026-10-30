@@ -83,6 +83,12 @@ export const EmailAccountCard = ({
                         {t('integrations.smtp.sent_notice')}
                     </p>
                 )}
+                {account.providerKey === 'microsoft' &&
+                    account.state !== 'disconnected' && (
+                        <p className="text-body text-muted">
+                            {t('integrations.microsoft.cv_notice')}
+                        </p>
+                    )}
                 {account.state === 'disconnected' && (
                     <ProviderList
                         providers={account.providers}

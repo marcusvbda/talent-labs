@@ -39,6 +39,11 @@ export const ProviderList = ({
                             <p className="text-body text-muted">
                                 {t(`integrations.${provider.key}.description`)}
                             </p>
+                            {provider.key === 'microsoft' && (
+                                <p className="text-body text-muted">
+                                    {t('integrations.microsoft.cv_notice')}
+                                </p>
+                            )}
                         </div>
                         <Button
                             loading={

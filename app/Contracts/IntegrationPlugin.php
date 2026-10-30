@@ -19,5 +19,8 @@ interface IntegrationPlugin
     /** @return list<string> */
     public function capabilities(): array;
 
+    /** Whether the plugin is configured and can be offered to users for new connections. */
+    public function isAvailable(): bool;
+
     public function disconnect(ConnectedIntegration $integration): void;
 }

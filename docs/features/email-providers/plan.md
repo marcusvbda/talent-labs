@@ -48,7 +48,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 12    | SMTP connect endpoint and test                       | laravel-backend  | 3, 11      | P8, P9, P10, P12, P13 | M    | DONE    |
 | 13    | SMTP form and registration                           | inertia-frontend | 9, 12      | P6, P8, P15           | M    | DONE    |
 | 14    | `GraphMessageSender` and CV size check               | laravel-backend  | 4          | P5, P17               | M    | DONE    |
-| 15    | `MicrosoftPlugin`, env and card notice               | laravel-backend  | 9, 10, 14  | P16, P17, P18         | M    | PENDING |
+| 15    | `MicrosoftPlugin`, env and card notice               | laravel-backend  | 9, 10, 14  | P16, P17, P18         | M    | DONE    |
 | 16    | Verification and report                              | laravel-backend  | all        | all                   | S    | PENDING |
 
 ## Owner decisions
@@ -713,7 +713,8 @@ Origin: P17 "`GraphMessageSender`" · P5
 
 ### Phase 15 — `MicrosoftPlugin`, env and card notice
 
-Status: PENDING
+Status: DONE
+Evidence: pint, `composer types:check`, `yarn run check`, `yarn types:check` and `tests/Feature/Outreach` (31) pass; reviewer APPROVED. Tinker (read-only): without credentials `isAvailable()` is false and the provider list is gmail and smtp only; with both set `microsoft` (oauth) is listed; with one set it stays unavailable; the authorization URL carries the six scopes, `code_challenge_method=S256`, `prompt=select_account` and the shared callback; `validateConnection` accepts `Mail.Send` in short, long and lower-case form and rejects a token without it or with an invalid email. `connect` returns 404 when unavailable, `sendingPluginKeys()` stays unfiltered so an existing Microsoft row still renders and disconnects, and `ProductionCheck` fails only when exactly one credential is set. The OAuth controller, state manager and token manager have no Gmail-specific code that breaks Microsoft. `.env.example` got the three `MICROSOFT_*` lines; `.env` untouched. Not verified (owner task, needs an Azure app): connecting a personal and a work account, sending through `OUTREACH_INTERCEPT_TO`, Sent Items, and whether Microsoft ignores `approval_prompt=auto` that league adds (fix if needed: a small `GenericProvider` subclass). Open (non-blocking): if credentials are removed while a Microsoft row exists, a token refresh throws `LogicException` instead of pausing cleanly.
 Role: laravel-backend · Depends on: 9, 10, 14 · Covers: P16, P17, P18 · Size: M
 Origin: P16 "`MicrosoftPlugin`" · P18 "Env" · P17 (card mention)
 

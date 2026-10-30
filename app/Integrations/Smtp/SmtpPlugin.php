@@ -38,6 +38,11 @@ class SmtpPlugin implements CredentialIntegrationPlugin
         return ['email.send'];
     }
 
+    public function isAvailable(): bool
+    {
+        return true;
+    }
+
     public function disconnect(ConnectedIntegration $integration): void
     {
         // Nothing to revoke at the provider.

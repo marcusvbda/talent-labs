@@ -137,6 +137,11 @@ class ProductionCheck extends Command
             $failures['GOOGLE_CLIENT_SECRET'] = 'the Google OAuth client secret is not set.';
         }
 
+        // Microsoft is optional: only a half-configured app is a failure.
+        if (blank(config('services.microsoft.client_id')) !== blank(config('services.microsoft.client_secret'))) {
+            $failures['MICROSOFT_CLIENT_ID / MICROSOFT_CLIENT_SECRET'] = 'only one of the two Microsoft OAuth credentials is set.';
+        }
+
         if (RegistrationMode::isOpen()) {
             if (blank(config('talent.registration.turnstile.site_key'))) {
                 $failures['TURNSTILE_SITE_KEY'] = 'open registration needs Turnstile keys.';
