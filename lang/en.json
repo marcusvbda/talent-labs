@@ -842,6 +842,7 @@
     "account.gmail.connected_flash": "Gmail connected.",
     "account.gmail.failed_flash": "We could not connect Gmail. Please try again.",
     "account.gmail.disconnect_failed": "Could not disconnect",
+    "account.email_provider.disconnect_first": "Disconnect your current email account before connecting another.",
     "account.password.title": "Password",
     "account.password.current": "Current password",
     "account.password.new": "New password",

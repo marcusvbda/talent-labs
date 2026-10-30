@@ -42,6 +42,18 @@ class ConnectedIntegrationOAuthController extends Controller
         $existing = $this->integration($user, $plugin);
         abort_if($existing !== null && $existing->status !== ConnectedIntegrationStatus::Disconnected, 404);
 
+        // Only one sending account at a time; the user must disconnect the current one first.
+        $sending = $user->sendingIntegration;
+
+        if ($sending !== null
+            && $sending->plugin_key !== $plugin
+            && in_array('email.send', $oauthPlugin->capabilities(), true)) {
+            $this->rememberReturn($request);
+
+            return redirect()->to($this->returnUrl($request))
+                ->with('error', __('account.email_provider.disconnect_first'));
+        }
+
         $this->rememberReturn($request);
 
         return $this->startAuthorization($request, $user, $oauthPlugin);

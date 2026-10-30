@@ -24,7 +24,23 @@ class CompleteConnectedIntegration
         $plugin = $this->registry->get($pluginKey);
         $plugin->validateConnection($token);
 
-        $integration = DB::transaction(function () use ($user, $pluginKey, $token): ConnectedIntegration {
+        $integration = DB::transaction(function () use ($user, $pluginKey, $token, $plugin): ConnectedIntegration {
+            // Serialises concurrent callbacks (e.g. two tabs) so the sending check below holds.
+            User::query()->whereKey($user->getKey())->lockForUpdate()->first();
+
+            if (in_array('email.send', $plugin->capabilities(), true)) {
+                $otherSending = ConnectedIntegration::query()
+                    ->whereBelongsTo($user)
+                    ->whereIn('plugin_key', $this->registry->sendingPluginKeys())
+                    ->where('plugin_key', '!=', $pluginKey)
+                    ->where('status', '!=', ConnectedIntegrationStatus::Disconnected)
+                    ->exists();
+
+                if ($otherSending) {
+                    throw new RuntimeException('Another sending account is already connected.');
+                }
+            }
+
             $integration = ConnectedIntegration::query()->firstOrNew([
                 'user_id' => $user->getKey(),
                 'plugin_key' => $pluginKey,

@@ -36,7 +36,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | Provider-agnostic transport and `Message-ID` | laravel-backend | none | P1, P2 | M | DONE |
 | 2 | `sendingIntegration()` replaces `gmailIntegration()` | laravel-backend | 1 | P3 | M | DONE |
-| 3 | Enforce one sending account | laravel-backend | 2 | P3 | S | PENDING |
+| 3 | Enforce one sending account | laravel-backend | 2 | P3 | S | DONE |
 | 4 | Shared error classification | laravel-backend | 1 | P5 | M | PENDING |
 | 5 | Provider-limit pause and auto-resume | laravel-backend | 2, 4 | P5 | M | PENDING |
 | 6 | Neutral wording and notification | laravel-backend | 2, 5 | P4 | M | PENDING |
@@ -197,7 +197,8 @@ Origin: P3 "`User::sendingIntegration()` replaces `gmailIntegration()`"
 
 ### Phase 3 — Enforce one sending account
 
-Status: PENDING
+Status: DONE
+Evidence: pint, `composer types:check` and `SendingDatabaseGuards` (7 tests) pass; reviewer APPROVED. The check is logic-only for now (Gmail is the only sending plugin), so the refusal is not exercisable end to end until SMTP or Microsoft exists.
 Role: laravel-backend · Depends on: 2 · Covers: P3 · Size: S
 Origin: P3 "connecting another provider requires disconnecting the current one"
 
