@@ -67,6 +67,11 @@ export type AccountStatus = {
         state: 'connected' | 'reauthorization_required' | 'disconnected';
         accountEmail: string | null;
     };
+    sendingAccount: {
+        state: 'connected' | 'reauthorization_required' | 'disconnected';
+        accountEmail: string | null;
+        providerKey: string | null;
+    };
     sending: {
         paused: boolean;
         autoPausedReason:

@@ -7,7 +7,7 @@ import { useAccountStatus } from '@/data/hooks/use-account-status';
 import { useBilling } from '@/data/hooks/use-billing';
 import { BillingCard } from '@/features/account/billing-card';
 import { DangerZone } from '@/features/account/danger-zone';
-import { GmailCard } from '@/features/account/gmail-card';
+import { EmailAccountCard } from '@/features/account/email-account-card';
 import { LanguageRegionCard } from '@/features/account/language-region-card';
 import { PasswordCard } from '@/features/account/password-card';
 import { ProfileCard } from '@/features/account/profile-card';
@@ -44,7 +44,7 @@ export default function AccountPage() {
                     />
                 )}
                 {status.data ? (
-                    <GmailCard gmail={status.data.gmail} />
+                    <EmailAccountCard account={status.data.sendingAccount} />
                 ) : (
                     <DataCard
                         title={t('account.gmail.title')}

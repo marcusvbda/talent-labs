@@ -1,24 +1,24 @@
 import { CircleCheck } from 'lucide-react';
 import { DataCard } from '@/components/patterns/data-card';
 import { Button } from '@/components/ui/button';
-import { useConnectGmail } from '@/data/hooks/use-connect-gmail';
+import { useConnectEmail } from '@/data/hooks/use-connect-email';
 import { StepFooter } from '@/features/onboarding/step-footer';
 import { useT } from '@/i18n/i18n-provider';
 import { connect } from '@/routes/integrations/oauth';
 import type { AccountStatus } from '@/types/contracts';
 
-export const StepGmail = ({
-    gmail,
+export const StepEmailAccount = ({
+    account,
     onBack,
     onDone,
 }: {
-    gmail: AccountStatus['gmail'];
+    account: AccountStatus['sendingAccount'];
     onBack: () => void;
     onDone: () => void;
 }) => {
     const { t } = useT();
-    const connectGmail = useConnectGmail();
-    const connected = gmail.state === 'connected';
+    const connectEmail = useConnectEmail();
+    const connected = account.state === 'connected';
     const href = connect('gmail', {
         query: { return: 'onboarding' },
     }).url;
@@ -37,9 +37,9 @@ export const StepGmail = ({
                             className="size-5 shrink-0 text-accent-deep"
                         />
                         <span className="min-w-0 break-words">
-                            {gmail.accountEmail
+                            {account.accountEmail
                                 ? t('onboarding.gmail.connected_as', {
-                                      email: gmail.accountEmail,
+                                      email: account.accountEmail,
                                   })
                                 : t('onboarding.gmail.connected')}
                         </span>
@@ -47,8 +47,8 @@ export const StepGmail = ({
                 ) : (
                     <div>
                         <Button
-                            loading={connectGmail.isPending}
-                            onClick={() => connectGmail.mutate(href)}
+                            loading={connectEmail.isPending}
+                            onClick={() => connectEmail.mutate(href)}
                         >
                             {t('onboarding.gmail.connect')}
                         </Button>

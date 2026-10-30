@@ -1,14 +1,14 @@
 import { TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useConnectGmail } from '@/data/hooks/use-connect-gmail';
+import { useConnectEmail } from '@/data/hooks/use-connect-email';
 import { useT } from '@/i18n/i18n-provider';
 import { dashboard } from '@/routes';
 import { reconnect } from '@/routes/integrations/oauth';
 
-export function GmailBanner() {
+export function EmailAccountBanner({ providerKey }: { providerKey: string }) {
     const { t } = useT();
-    const connectGmail = useConnectGmail();
-    const href = reconnect('gmail', {
+    const connectEmail = useConnectEmail();
+    const href = reconnect(providerKey, {
         query: { redirect: dashboard().url },
     }).url;
 
@@ -27,8 +27,8 @@ export function GmailBanner() {
             </span>
             <Button
                 size="sm"
-                loading={connectGmail.isPending}
-                onClick={() => connectGmail.mutate(href)}
+                loading={connectEmail.isPending}
+                onClick={() => connectEmail.mutate(href)}
             >
                 {t('dashboard.gmail.reconnect')}
             </Button>

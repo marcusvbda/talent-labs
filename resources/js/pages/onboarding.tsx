@@ -8,7 +8,7 @@ import { Stepper } from '@/components/ui/stepper';
 import { toast } from '@/components/ui/toast';
 import { useAccountStatus } from '@/data/hooks/use-account-status';
 import { StepBasics } from '@/features/onboarding/step-basics';
-import { StepGmail } from '@/features/onboarding/step-gmail';
+import { StepEmailAccount } from '@/features/onboarding/step-email-account';
 import { StepPreferences } from '@/features/onboarding/step-preferences';
 import { StepProfile } from '@/features/onboarding/step-profile';
 import { useT } from '@/i18n/i18n-provider';
@@ -65,7 +65,11 @@ const Wizard = ({ status }: { status: AccountStatus }) => {
             />
             {key === 'basics' && <StepBasics onDone={next} />}
             {key === 'gmail' && (
-                <StepGmail gmail={status.gmail} onBack={back} onDone={next} />
+                <StepEmailAccount
+                    account={status.sendingAccount}
+                    onBack={back}
+                    onDone={next}
+                />
             )}
             {key === 'profile' && (
                 <StepProfile

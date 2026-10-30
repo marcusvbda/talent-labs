@@ -6,10 +6,10 @@ import { fromSource } from '@/data/source';
 import { disconnect } from '@/routes/integrations/oauth';
 
 /**
- * Starts the Gmail connection. Against the real API it leaves for the OAuth
- * route `href`; with fixtures it flips the dev-state Gmail to connected.
+ * Starts the email account connection. Against the real API it leaves for the OAuth
+ * route `href`; with fixtures it flips the dev-state account to connected.
  */
-export function useConnectGmail() {
+export function useConnectEmail() {
     const queryClient = useQueryClient();
     const real = async (href: string) => {
         window.location.assign(href);
@@ -26,13 +26,13 @@ export function useConnectGmail() {
 }
 
 /**
- * Disconnects Gmail. Against the real API it calls the OAuth disconnect
- * route; with fixtures it flips the dev-state Gmail to disconnected.
+ * Disconnects the email account. Against the real API it calls the OAuth disconnect
+ * route; with fixtures it flips the dev-state account to disconnected.
  */
-export function useDisconnectGmail() {
+export function useDisconnectEmail(providerKey: string) {
     const queryClient = useQueryClient();
     const real = async () => {
-        const e = disconnect('gmail');
+        const e = disconnect(providerKey);
 
         await apiFetch<void>(e.url, { method: e.method });
     };

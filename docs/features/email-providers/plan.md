@@ -40,7 +40,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 4     | Shared error classification                          | laravel-backend  | 1          | P5                    | M    | DONE    |
 | 5     | Provider-limit pause and auto-resume                 | laravel-backend  | 2, 4       | P5                    | M    | DONE    |
 | 6     | Neutral wording and notification                     | laravel-backend  | 2, 5       | P4                    | M    | DONE    |
-| 7     | `sendingAccount` contract and main screens           | inertia-frontend | 6          | P3, P4                | M    | PENDING |
+| 7     | `sendingAccount` contract and main screens           | inertia-frontend | 6          | P3, P4                | M    | DONE    |
 | 8     | Remove the `gmail` contract key                      | inertia-frontend | 7          | P4                    | M    | PENDING |
 | 9     | Provider list from the registry                      | inertia-frontend | 8          | P6                    | M    | PENDING |
 | 10    | Credential plugin contract and storage               | laravel-backend  | 2          | P7, P11               | M    | PENDING |
@@ -376,7 +376,8 @@ Origin: P4 "Provider-neutral wording everywhere listed in 2"
 
 ### Phase 7 — `sendingAccount` contract and main screens
 
-Status: PENDING
+Status: DONE
+Evidence: `grep` for the old Gmail hook/component names in `resources/js` is empty; pint, `composer types:check`, `yarn run check`, `yarn types:check` and `SendingDatabaseGuards` (7) pass; reviewer APPROVED. Not exercised in a browser. Open (non-blocking): `EmailAccountCard` falls back to `providerKey ?? ''` for the hooks, which is never used at runtime (reconnect and disconnect only show with an account).
 Role: inertia-frontend · Depends on: 6 · Covers: P3, P4 · Size: M
 Origin: P4 "Provider-neutral wording everywhere" · P3 (the account the UI shows)
 

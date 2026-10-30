@@ -53,6 +53,11 @@ final class AccountStatusPresenter
                 'state' => $gmailState,
                 'accountEmail' => $gmailEmail,
             ],
+            'sendingAccount' => [
+                'state' => $gmailState,
+                'accountEmail' => $gmailEmail,
+                'providerKey' => $gmail?->plugin_key,
+            ],
             'sending' => [
                 'paused' => $user->isSendingPaused(),
                 'autoPausedReason' => in_array($user->sending_pause_reason, [SendingPauseReason::ReauthorizationRequired, SendingPauseReason::RepeatedFailures, SendingPauseReason::ProviderLimit], true)

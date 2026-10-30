@@ -25,7 +25,7 @@ import { useLiveSending } from '@/data/hooks/use-live-sending';
 import { ActivityCard } from '@/features/dashboard/activity-card';
 import { ChartCard } from '@/features/dashboard/chart-card';
 import { DashboardGrid } from '@/features/dashboard/dashboard-grid';
-import { GmailBanner } from '@/features/dashboard/gmail-banner';
+import { EmailAccountBanner } from '@/features/dashboard/email-account-banner';
 import {
     LiveSendingCard,
     LiveSendingPlaceholder,
@@ -86,8 +86,10 @@ export default function Dashboard() {
     const heroLoading = !data || !status.data;
     const onboardingComplete = status.data?.onboarding.complete;
     const setupIncomplete = onboardingComplete === false;
-    const gmailExpired =
-        status.data?.gmail.state === 'reauthorization_required';
+    const expiredProviderKey =
+        status.data?.sendingAccount.state === 'reauthorization_required'
+            ? status.data.sendingAccount.providerKey
+            : null;
     const date = format.date(Date.now(), {
         weekday: 'long',
         month: 'short',
@@ -160,7 +162,9 @@ export default function Dashboard() {
                     </>
                 }
             />
-            {gmailExpired && <GmailBanner />}
+            {expiredProviderKey && (
+                <EmailAccountBanner providerKey={expiredProviderKey} />
+            )}
             <DashboardGrid
                 setup={
                     setupIncomplete && status.data ? (
