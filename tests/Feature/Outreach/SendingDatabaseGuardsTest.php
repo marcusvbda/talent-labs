@@ -17,7 +17,8 @@ use App\Models\Source;
 use App\Models\User;
 use App\Outreach\Actions\CanSendApplications;
 use App\Outreach\Actions\QueueApplication;
-use App\Outreach\Contracts\SendsGmailMessages;
+use App\Outreach\Contracts\EmailTransport;
+use App\Outreach\Data\OutboundEmail;
 use App\Outreach\Data\SendEligibility;
 use App\Outreach\Jobs\SendApplicationEmail;
 use App\Services\ConnectedIntegrationTokenManager;
@@ -36,11 +37,11 @@ use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
-final class RecordingGmailSender implements SendsGmailMessages
+final class RecordingGmailSender implements EmailTransport
 {
     public int $calls = 0;
 
-    public function send(ConnectedIntegration $integration, string $rawMime): string
+    public function send(ConnectedIntegration $integration, OutboundEmail $email): string
     {
         $this->calls++;
 
@@ -65,7 +66,8 @@ beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-30 12:00:00'));
 
     $this->gmail = new RecordingGmailSender;
-    $this->app->instance(SendsGmailMessages::class, $this->gmail);
+    $this->app->instance(RecordingGmailSender::class, $this->gmail);
+    config(['connected-integrations.transports.gmail' => RecordingGmailSender::class]);
 
     $this->user = User::factory()->create(['timezone' => 'UTC']);
 });

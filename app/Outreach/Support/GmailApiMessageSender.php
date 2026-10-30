@@ -3,12 +3,13 @@
 namespace App\Outreach\Support;
 
 use App\Models\ConnectedIntegration;
-use App\Outreach\Contracts\SendsGmailMessages;
+use App\Outreach\Contracts\EmailTransport;
+use App\Outreach\Data\OutboundEmail;
 use App\Services\ConnectedIntegrationTokenManager;
 use Illuminate\Support\Facades\Http;
 use UnexpectedValueException;
 
-class GmailApiMessageSender implements SendsGmailMessages
+class GmailApiMessageSender implements EmailTransport
 {
     /**
      * Gmail API media upload endpoint (users.messages.send, uploadType=media):
@@ -23,12 +24,12 @@ class GmailApiMessageSender implements SendsGmailMessages
 
     public function __construct(private ConnectedIntegrationTokenManager $tokens) {}
 
-    public function send(ConnectedIntegration $integration, string $rawMime): string
+    public function send(ConnectedIntegration $integration, OutboundEmail $email): string
     {
         $token = $this->tokens->accessToken($integration->user, $integration->plugin_key);
 
         $id = Http::withToken($token)
-            ->withBody($rawMime, 'message/rfc822')
+            ->withBody($email->rawMime, 'message/rfc822')
             ->connectTimeout(10)
             ->timeout(self::TIMEOUT_SECONDS)
             ->post(self::SEND_URL)

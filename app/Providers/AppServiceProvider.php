@@ -3,8 +3,6 @@
 namespace App\Providers;
 
 use App\Contracts\OAuthIntegrationPlugin;
-use App\Outreach\Contracts\SendsGmailMessages;
-use App\Outreach\Support\GmailApiMessageSender;
 use App\Outreach\Support\OutreachConfig;
 use App\Plans\PlanCatalog;
 use App\Services\ConnectedIntegrationRegistry;
@@ -37,8 +35,6 @@ class AppServiceProvider extends ServiceProvider
                 $pluginClasses,
             ));
         });
-
-        $this->app->bind(SendsGmailMessages::class, GmailApiMessageSender::class);
 
         $this->app->singleton(PlanCatalog::class);
 

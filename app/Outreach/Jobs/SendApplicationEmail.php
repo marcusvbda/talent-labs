@@ -19,9 +19,11 @@ use App\Notifications\Client\ApplicationFailed;
 use App\Notifications\Client\ClientNotification;
 use App\Notifications\Client\SendingAutoPaused;
 use App\Outreach\Actions\CanSendApplications;
-use App\Outreach\Contracts\SendsGmailMessages;
+use App\Outreach\Contracts\EmailTransport;
+use App\Outreach\Data\OutboundEmail;
 use App\Outreach\Support\ApplicationStageRecorder;
 use App\Outreach\Support\ApplicationTemplateRenderer;
+use App\Outreach\Support\EmailTransportResolver;
 use App\Outreach\Support\OutreachConfig;
 use App\Outreach\Support\SendScheduler;
 use App\Plans\PlanCatalog;
@@ -74,7 +76,7 @@ class SendApplicationEmail implements ShouldQueue
     }
 
     public function handle(
-        SendsGmailMessages $sender,
+        EmailTransportResolver $transports,
         ConnectedIntegrationTokenManager $tokens,
         SendScheduler $scheduler,
         ApplicationStageRecorder $recorder,
@@ -85,6 +87,7 @@ class SendApplicationEmail implements ShouldQueue
         }
 
         $checked = null;
+        $transport = null;
         $candidate = Application::query()->find($this->applicationId);
 
         // Only a queued row runs the pre-checks; any other status goes straight to beginAttempt().
@@ -94,6 +97,15 @@ class SendApplicationEmail implements ShouldQueue
             if ($checked === null) {
                 return;
             }
+
+            // Resolved before beginAttempt(): a broken config leaves the row queued, not ambiguous.
+            try {
+                $transport = $transports->for($checked[0]);
+            } catch (Throwable $exception) {
+                $recorder->reset($candidate);
+
+                throw $exception;
+            }
         }
 
         $prepared = DB::transaction(fn (): ?array => $this->beginAttempt($scheduler, $recorder, $plans, $checked));
@@ -102,12 +114,17 @@ class SendApplicationEmail implements ShouldQueue
             return;
         }
 
-        [$application, $integration, $rawMime] = $prepared;
+        [$application, $integration, $email] = $prepared;
+
+        // Unreachable: beginAttempt() only prepares a send from a pre-checked row.
+        if (! $transport instanceof EmailTransport) {
+            throw new LogicException('Send attempt began without a resolved transport.');
+        }
 
         $recorder->record($application, SendStage::Sending, SendSubStep::Delivering);
 
         try {
-            $messageId = $sender->send($integration, $rawMime);
+            $messageId = $transport->send($integration, $email);
         } catch (ConnectionException $exception) {
             // The message may or may not have left: never retry automatically.
             $this->finish($application, ApplicationStatus::Ambiguous, $exception);
@@ -247,7 +264,7 @@ class SendApplicationEmail implements ShouldQueue
      * returns null. Any other error resets the stage and is rethrown: nothing
      * was sent, so the row stays queued for the normal retry.
      *
-     * @return array{0: ConnectedIntegration, 1: string}|null
+     * @return array{0: ConnectedIntegration, 1: OutboundEmail}|null
      */
     private function preCheck(Application $application, ConnectedIntegrationTokenManager $tokens, ApplicationStageRecorder $recorder): ?array
     {
@@ -333,7 +350,7 @@ class SendApplicationEmail implements ShouldQueue
                 }
 
                 $recorder->record($application, SendStage::AttachingCv, SendSubStep::AttachingFile);
-                $rawMime = $this->buildMime($application, $user, $integration, $profile);
+                $email = $this->buildMime($application, $user, $integration, $profile);
                 $recorder->pace();
             }
         } catch (Throwable $exception) {
@@ -353,7 +370,7 @@ class SendApplicationEmail implements ShouldQueue
             return null;
         }
 
-        return [$integration, $rawMime];
+        return [$integration, $email];
     }
 
     /**
@@ -380,14 +397,17 @@ class SendApplicationEmail implements ShouldQueue
         }
     }
 
-    private function buildMime(Application $application, User $user, ConnectedIntegration $integration, ApplicationProfile $profile): string
+    private function buildMime(Application $application, User $user, ConnectedIntegration $integration, ApplicationProfile $profile): OutboundEmail
     {
         // Test mode: with OUTREACH_INTERCEPT_TO set, nothing is delivered to the company.
         $interceptTo = self::interceptTo();
+        $recipient = $interceptTo ?? $application->recipient_email;
+        $from = (string) $integration->account_email;
+        $messageId = Str::uuid().'@'.Str::after($from, '@');
 
         $email = (new Email)
-            ->from(new Address((string) $integration->account_email, $user->name))
-            ->to($interceptTo ?? $application->recipient_email)
+            ->from(new Address($from, $user->name))
+            ->to($recipient)
             ->subject($interceptTo === null
                 ? $application->subject
                 : '[TEST — would go to '.$application->recipient_email.'] '.$application->subject)
@@ -399,13 +419,14 @@ class SendApplicationEmail implements ShouldQueue
                 'application/pdf',
             );
 
+        $email->getHeaders()->addIdHeader('Message-ID', $messageId);
         $email->getHeaders()->addTextHeader(self::HEADER_APPLICATION_ID, (string) $application->id);
 
         if ($interceptTo !== null) {
             $email->getHeaders()->addTextHeader('X-TalentLabs-Intercepted', 'true');
         }
 
-        return $email->toString();
+        return new OutboundEmail($email->toString(), $messageId, $from, (string) $recipient);
     }
 
     /**
@@ -413,8 +434,8 @@ class SendApplicationEmail implements ShouldQueue
      * (overlap, pause, account, today's quota) and marks it sending. The MIME
      * message was built by preCheck(), before any status change.
      *
-     * @param  array{0: ConnectedIntegration, 1: string}|null  $checked
-     * @return array{0: Application, 1: ConnectedIntegration, 2: string}|null
+     * @param  array{0: ConnectedIntegration, 1: OutboundEmail}|null  $checked
+     * @return array{0: Application, 1: ConnectedIntegration, 2: OutboundEmail}|null
      */
     private function beginAttempt(SendScheduler $scheduler, ApplicationStageRecorder $recorder, PlanCatalog $plans, ?array $checked): ?array
     {
@@ -450,7 +471,7 @@ class SendApplicationEmail implements ShouldQueue
             return null;
         }
 
-        [$integration, $rawMime] = $checked;
+        [$integration, $email] = $checked;
 
         // Never overlap another send of the same user.
         $otherSending = Application::query()
@@ -509,7 +530,7 @@ class SendApplicationEmail implements ShouldQueue
         $recorder->record($application, SendStage::Sending, SendSubStep::ConnectingGmail);
         $recorder->pace();
 
-        return [$application, $integration, $rawMime];
+        return [$application, $integration, $email];
     }
 
     /**
