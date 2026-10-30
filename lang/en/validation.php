@@ -184,6 +184,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'captcha' => [
+            'failed' => 'Could not confirm you are human. Please try again.',
+        ],
         'email' => [
             'invite_mismatch' => 'This invitation is bound to a different email address.',
         ],

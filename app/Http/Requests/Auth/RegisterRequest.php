@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Invitations\InvitationTokens;
 use App\Registration\RegistrationMode;
+use App\Registration\TurnstileVerifier;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Foundation\Http\FormRequest;
@@ -74,6 +75,22 @@ class RegisterRequest extends FormRequest
                     && mb_strtolower($invitation->email) !== mb_strtolower($this->string('email')->toString())
                 ) {
                     $validator->errors()->add('email', __('validation.custom.email.invite_mismatch'));
+                }
+            },
+            // Last, and only on an otherwise valid form, so a typo doesn't burn the single-use token.
+            function (Validator $validator): void {
+                if (
+                    ! RegistrationMode::isOpen()
+                    || blank(config('talent.registration.turnstile.secret_key'))
+                    || $validator->errors()->isNotEmpty()
+                ) {
+                    return;
+                }
+
+                $token = $this->input('captcha');
+
+                if (! app(TurnstileVerifier::class)->passes(is_string($token) ? $token : null, $this->ip())) {
+                    $validator->errors()->add('captcha', __('validation.custom.captcha.failed'));
                 }
             },
         ];

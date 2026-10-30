@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Registration\RegistrationMode;
 use Illuminate\Console\Command;
 
 class ProductionCheck extends Command
@@ -134,6 +135,16 @@ class ProductionCheck extends Command
 
         if (blank(config('services.google.client_secret'))) {
             $failures['GOOGLE_CLIENT_SECRET'] = 'the Google OAuth client secret is not set.';
+        }
+
+        if (RegistrationMode::isOpen()) {
+            if (blank(config('talent.registration.turnstile.site_key'))) {
+                $failures['TURNSTILE_SITE_KEY'] = 'open registration needs Turnstile keys.';
+            }
+
+            if (blank(config('talent.registration.turnstile.secret_key'))) {
+                $failures['TURNSTILE_SECRET_KEY'] = 'open registration needs Turnstile keys.';
+            }
         }
 
         return $failures;

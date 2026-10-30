@@ -47,7 +47,7 @@ incomplete until then.
 | 10    | Verification link logs in       | laravel-backend  | 9                 | P16      | S    | DONE    |
 | 11    | Signup without enumeration      | laravel-backend  | 10                | P16      | M    | DONE    |
 | 12    | Turnstile widget and CSP        | inertia-frontend | 9                 | P15      | M    | DONE    |
-| 13    | Turnstile enforcement           | laravel-backend  | 12                | P15      | S    | PENDING |
+| 13    | Turnstile enforcement           | laravel-backend  | 12                | P15      | S    | DONE    |
 | 14    | IP limit and disposable domains | laravel-backend  | 11                | P15      | M    | PENDING |
 | 15    | Final verification and report   | laravel-backend  | 6, 10, 11, 13, 14 | all      | S    | PENDING |
 
@@ -662,7 +662,8 @@ Origin: P15 "captcha on the form (Cloudflare Turnstile, verified server-side ove
 
 ### Phase 13 — The server rejects signups without a valid captcha
 
-Status: PENDING
+Status: DONE
+Evidence: `composer test` (pint, PHPStan, 33/33) passes. `Http::fake` in tinker (one process per case): valid token -> true and the request is a form POST with `secret`, `response`, `remoteip`; `success:false`, blank/null token, `ConnectionException` and a non-JSON 500 -> false. `REGISTRATION_MODE=open php artisan app:production-check` lists `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`; invite mode lists neither. `code-reviewer`: APPROVED. The check runs last in `RegisterRequest::after()` and only on an otherwise valid form. Not exercised against Cloudflare or in a browser; existing tests run with a blank secret, so none cover the open-mode captcha path.
 Role: laravel-backend · Depends on: 12 · Covers: P15 (captcha, server) · Size: S
 Origin: P15 "captcha on the form (Cloudflare Turnstile, verified server-side over HTTP…)".
 

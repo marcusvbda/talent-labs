@@ -178,6 +178,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'captcha' => [
+            'failed' => 'Não foi possível confirmar que você é humano. Tente novamente.',
+        ],
         'email' => [
             'invite_mismatch' => 'Este convite está vinculado a outro endereço de e-mail.',
         ],
