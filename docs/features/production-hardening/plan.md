@@ -56,7 +56,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 12 | Reject admins at client login | laravel-backend | none | P20 | S | DONE |
 | 13 | Required admin MFA | filament-admin | 12 | P14 | M | DONE |
 | 14 | Audits in CI | laravel-backend | none | P17 | S | DONE |
-| 15 | Verification and report | qa-tester | 1-14 | spec x code gap | S | PENDING |
+| 15 | Verification and report | qa-tester | 1-14 | spec x code gap | S | DONE |
 
 ## Owner decisions
 
@@ -706,7 +706,8 @@ Origin: P17 "Add both to CI if CI exists"
 
 ### Phase 15 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: `composer test` (pint, PHPStan, 33 tests) and `yarn types:check` pass; `composer ci:check` stops at `vp check`, which fails only on markdown under `docs/` (six feature docs, unformatted before this feature) and nothing under `resources/js`; no `->poll(`, `wire:poll` or `$pollingInterval` added and no Spanish copy; every write of `is_admin`, `status`, `plan_key` and `plan_source` on `User` goes through `forceFill` and no request data reaches `ConnectedIntegration` tokens (P6); `composer audit` lists livewire/livewire 4.4.6 and symfony/mime 8.1.7 (medium), `yarn audit` 8 advisories (1 critical, 2 high, 4 moderate, 1 low, all build or dev tooling); `app:production-check` locally: 5 failures (APP_ENV, APP_DEBUG, APP_URL, SESSION_SECURE_COOKIE, LOG_LEVEL), 2 warnings, exit 1, no values printed. Spec pending changes folded into the spec body; P2 rows for other features, P18, P19 and P25 stay pending. P1-P17 and P20-P24 pass; P18, P19 and P25 are owner tasks.
 Role: qa-tester · Depends on: 1-14 · Covers: all · Size: S
 Origin: spec x code gap
 
