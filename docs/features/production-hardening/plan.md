@@ -49,7 +49,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 5 | Remove privileged fields from `User` fillable | laravel-backend | none | P5 | M | DONE |
 | 6 | `PublicNetworkGuard` | laravel-backend | none | P7, P9 | S | DONE |
 | 7 | `SmtpProbe` uses the guard | laravel-backend | 6 | P8 | S | DONE |
-| 8 | Reverb origins and rate limit | laravel-backend | 1 | P10 | S | PENDING |
+| 8 | Reverb origins and rate limit | laravel-backend | 1 | P10 | S | DONE |
 | 9 | Security headers | laravel-backend | 2 | P11 | S | PENDING |
 | 10 | CSP report-only and report endpoint | laravel-backend | 9 | P12, P24 | M | PENDING |
 | 11 | `app:production-check` and admin path | laravel-backend | 2, 4, 8 | P13, P4, P23 | M | PENDING |
@@ -403,7 +403,8 @@ Origin: P8 "`SmtpProbe` uses P7 before connecting; a non-public MX makes the pro
 
 ### Phase 8 — Reverb only accepts the app's origin
 
-Status: PENDING
+Status: DONE
+Evidence: tinker `config('reverb.apps.apps.0.allowed_origins')` = `["localhost"]` (the `APP_URL` host); with `REVERB_ALLOWED_ORIGINS="a.com, *.b.com"` = `["a.com", "*.b.com"]`; Reverb's `verifyOrigin` matches entries to the origin host with `Str::is` and an empty list rejects everything; `composer test` passes (pint, PHPStan, 33 tests). Not checked in a browser: restart `composer dev` and confirm realtime still connects. Orchestrator-checked, no separate `code-reviewer` pass (one config line).
 Role: laravel-backend · Depends on: 1 · Covers: P10 · Size: S
 Origin: P10 "Reverb `allowed_origins` from env; enable Reverb rate limiting in production"
 
