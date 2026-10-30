@@ -55,7 +55,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 11 | `app:production-check` and admin path | laravel-backend | 2, 4, 8 | P13, P4, P23 | M | DONE |
 | 12 | Reject admins at client login | laravel-backend | none | P20 | S | DONE |
 | 13 | Required admin MFA | filament-admin | 12 | P14 | M | DONE |
-| 14 | Audits in CI | laravel-backend | none | P17 | S | PENDING |
+| 14 | Audits in CI | laravel-backend | none | P17 | S | DONE |
 | 15 | Verification and report | qa-tester | 1-14 | spec x code gap | S | PENDING |
 
 ## Owner decisions
@@ -676,7 +676,8 @@ Origin: P14 "Turn on Filament's built-in multi-factor authentication, required f
 
 ### Phase 14 — CI runs the dependency audits
 
-Status: PENDING
+Status: DONE
+Evidence: YAML parses (Ruby `YAML.load_file`) with jobs `ci` and `audit`, `audit.continue-on-error` true; `git diff` shows only added lines (the new job), `on:` and the `ci` job untouched. Not run on GitHub: the workflow triggers on `main`, so check the first pull request (D2). Orchestrator-checked, no separate `code-reviewer` pass.
 Role: laravel-backend · Depends on: none · Covers: P17 · Size: S
 Origin: P17 "Add both to CI if CI exists"
 
