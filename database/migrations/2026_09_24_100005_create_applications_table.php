@@ -36,7 +36,8 @@ return new class extends Migration
             $table->timestamp('sent_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['user_id', 'company_id']);
+            $table->unique(['user_id', 'job_posting_id']);
+            $table->index(['user_id', 'company_id']);
             $table->index(['user_id', 'queued_at']);
             $table->index('status');
             $table->index(['user_id', 'status', 'scheduled_for']);

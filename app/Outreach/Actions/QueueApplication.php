@@ -24,7 +24,7 @@ class QueueApplication
 
     public const string REJECT_NO_RECIPIENT = 'No verified recipient for this company.';
 
-    public const string REJECT_ALREADY_APPLIED = 'You already applied to this company.';
+    public const string REJECT_ALREADY_APPLIED = 'You already applied to this job.';
 
     public const string REJECT_NO_PROFILE = "You have no application profile in this job's language.";
 
@@ -87,8 +87,8 @@ class QueueApplication
 
         $company = $posting->company;
 
-        // Checked before the match: an already-contacted company no longer belongs to the pool.
-        if ($company !== null && Application::query()->whereBelongsTo($user)->where('company_id', $company->id)->exists()) {
+        // Checked before the match: an already-applied job no longer belongs to the pool.
+        if (Application::query()->whereBelongsTo($user)->where('job_posting_id', $posting->id)->exists()) {
             return $this->reject(self::REJECT_ALREADY_APPLIED);
         }
 

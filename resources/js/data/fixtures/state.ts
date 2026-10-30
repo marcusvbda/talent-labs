@@ -511,22 +511,6 @@ function queueJobs(jobIds: number[], origin: 'auto' | 'manual'): QueueResult {
             continue;
         }
 
-        const companyTaken = todayRows(data.applications).some(
-            (row) =>
-                row.item.company.id === job.company.id &&
-                ['queued', 'sending', 'sent', 'ambiguous'].includes(
-                    row.item.status,
-                ),
-        );
-
-        if (companyTaken) {
-            result.rejected.push({
-                jobId,
-                reason: 'You already applied to this company today.',
-            });
-            continue;
-        }
-
         if (!active.includes(job.language)) {
             result.rejected.push({
                 jobId,

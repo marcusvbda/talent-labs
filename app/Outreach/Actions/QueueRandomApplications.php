@@ -11,7 +11,7 @@ use App\Outreach\Support\QueueRejectionMessage;
 class QueueRandomApplications
 {
     /**
-     * Candidates fetched per remaining slot, so skipped postings (same company, no recipient...) still leave enough to fill the quota.
+     * Candidates fetched per remaining slot, so skipped postings (no recipient, no profile...) still leave enough to fill the quota.
      */
     private const int CANDIDATE_FACTOR = 3;
 
@@ -45,19 +45,10 @@ class QueueRandomApplications
             ->limit($remaining * self::CANDIDATE_FACTOR)
             ->get();
 
-        /** @var array<int, true> $attemptedCompanies */
-        $attemptedCompanies = [];
-
         foreach ($candidates as $posting) {
             if (count($queued) >= $remaining) {
                 break;
             }
-
-            if (isset($attemptedCompanies[$posting->company_id])) {
-                continue;
-            }
-
-            $attemptedCompanies[$posting->company_id] = true;
 
             $application = $this->queueApplication->handle($user, $posting, ApplicationOrigin::Manual);
 

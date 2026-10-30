@@ -100,7 +100,7 @@ final class MatchingJobPostings
             ->whereNotExists(function ($applications) use ($user): void {
                 $applications->select(DB::raw(1))
                     ->from('applications')
-                    ->whereColumn('applications.company_id', 'job_postings.company_id')
+                    ->whereColumn('applications.job_posting_id', 'job_postings.id')
                     ->where('applications.user_id', $user->id);
             });
 
