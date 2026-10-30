@@ -32,6 +32,8 @@ return new class extends Migration
             $table->string('pm_last_four', 4)->nullable();
             $table->timestamp('trial_ends_at')->nullable();
             $table->string('plan_source', 16)->default('manual');
+            $table->text('app_authentication_secret')->nullable();
+            $table->text('app_authentication_recovery_codes')->nullable();
             $table->timestamps();
         });
 

@@ -11,6 +11,10 @@ use App\Enums\UserStatus;
 use App\Events\Client\Concerns\DispatchesClientEvent;
 use App\Notifications\Client\ResetPassword;
 use Database\Factories\UserFactory;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Translation\HasLocalePreference;
@@ -46,6 +50,8 @@ use Laravel\Cashier\Billable;
  * @property string|null $pm_last_four
  * @property Carbon|null $trial_ends_at
  * @property PlanSource $plan_source
+ * @property string|null $app_authentication_secret
+ * @property array<int, string>|null $app_authentication_recovery_codes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read JobPreference|null $jobPreference
@@ -56,12 +62,14 @@ use Laravel\Cashier\Billable;
  */
 #[Fillable(['name', 'email', 'password', 'locale', 'timezone', 'country', 'region'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements FilamentUser, HasLocalePreference
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasLocalePreference
 {
     use Billable, DispatchesClientEvent;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    use InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery;
 
     protected static function booted(): void
     {

@@ -54,7 +54,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | 10 | CSP report-only and report endpoint | laravel-backend | 9 | P12, P24 | M | DONE |
 | 11 | `app:production-check` and admin path | laravel-backend | 2, 4, 8 | P13, P4, P23 | M | DONE |
 | 12 | Reject admins at client login | laravel-backend | none | P20 | S | DONE |
-| 13 | Required admin MFA | filament-admin | 12 | P14 | M | PENDING |
+| 13 | Required admin MFA | filament-admin | 12 | P14 | M | DONE |
 | 14 | Audits in CI | laravel-backend | none | P17 | S | PENDING |
 | 15 | Verification and report | qa-tester | 1-14 | spec x code gap | S | PENDING |
 
@@ -629,7 +629,8 @@ Origin: P20 "The client `POST /login` rejects admin accounts"
 
 ### Phase 13 — Every admin must use TOTP
 
-Status: PENDING
+Status: DONE
+Evidence: `route:list --path=admin` shows `admin/multi-factor-authentication/set-up` and `admin/profile`; tinker on `User`: both new columns hidden and cast `encrypted` / `encrypted:array`, neither fillable; Inertia shared user lists explicit fields and no API resource exposes the model; `composer test` passes (pint, PHPStan, 33 tests; the test database migrates the new columns). Orchestrator-checked, no separate `code-reviewer` pass. Not verified end to end: the local database lacks the columns until the owner runs `php artisan migrate:fresh --seed` (wipes local data), then set-up page, recovery codes, next-login code and one-time recovery code need a manual walk-through.
 Role: filament-admin · Depends on: 12 · Covers: P14 · Size: M
 Origin: P14 "Turn on Filament's built-in multi-factor authentication, required for every admin. Recovery codes enabled."
 
