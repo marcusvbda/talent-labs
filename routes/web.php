@@ -29,6 +29,7 @@ use App\Http\Controllers\Client\JobsPageController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\SmtpConnectionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
@@ -153,6 +154,13 @@ Route::middleware(['web', 'auth', 'verified'])->prefix('integrations')->name('in
         ->where('plugin', '[a-z0-9-]+')
         ->middleware('throttle:10,1,integrations')
         ->name('disconnect');
+});
+
+// POST only: never collides with the GET /{plugin}/connect OAuth route above.
+Route::middleware(['web', 'auth', 'verified'])->prefix('integrations')->name('integrations.')->group(function (): void {
+    Route::post('/smtp/connect', [SmtpConnectionController::class, 'store'])
+        ->middleware('throttle:5,1,smtp-connect')
+        ->name('smtp.connect');
 });
 
 if (app()->isLocal()) {

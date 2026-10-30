@@ -45,7 +45,7 @@ Implemented: 1 · Partial: 3 · Divergent: 0 · Missing: 15 · Unverifiable: 0
 | 9     | Provider list from the registry                      | inertia-frontend | 8          | P6                    | M    | DONE    |
 | 10    | Credential plugin contract and storage               | laravel-backend  | 2          | P7, P11               | M    | DONE    |
 | 11    | `SmtpMessageSender`                                  | laravel-backend  | 4, 10      | P2, P5, P14           | M    | DONE    |
-| 12    | SMTP connect endpoint and test                       | laravel-backend  | 3, 11      | P8, P9, P10, P12, P13 | M    | PENDING |
+| 12    | SMTP connect endpoint and test                       | laravel-backend  | 3, 11      | P8, P9, P10, P12, P13 | M    | DONE    |
 | 13    | SMTP form and registration                           | inertia-frontend | 9, 12      | P6, P8, P15           | M    | PENDING |
 | 14    | `GraphMessageSender` and CV size check               | laravel-backend  | 4          | P5, P17               | M    | PENDING |
 | 15    | `MicrosoftPlugin`, env and card notice               | laravel-backend  | 9, 10, 14  | P16, P17, P18         | M    | PENDING |
@@ -559,7 +559,8 @@ Origin: P14 "`SmtpMessageSender`: Symfony Mailer `EsmtpTransport` built per send
 
 ### Phase 12 — SMTP connect endpoint and test
 
-Status: PENDING
+Status: DONE
+Evidence: presets checked against official Yahoo, Apple, Fastmail and Zoho help pages on 2026-10-30 (Zoho paid-organization accounts use `smtppro.zoho.com`, so they pick Custom); pint, `composer types:check` and `SendingDatabaseGuards` (7) pass; reviewer APPROVED. Tinker (rolled-back): port 25, other-domain from address, non-email username, blocked host, 587 with `tls`, newline in the display name and an unknown preset are refused; a preset ignores posted host/port/security; private and unresolvable hosts give the same generic `SmtpConnectionFailed`; against a local fake SMTP server the banner and username never reach the exception or the log. Deviations: two `RuntimeException` subclasses (`SmtpConnectionFailed`, `SendingAccountAlreadyConnected`) so database errors are not shown as "disconnect first"; the network test runs outside the transaction and the one-account rule is re-checked under the user-row lock. Not verified (no real mailbox): a real connect with nothing sent, a real 535, and the HTTP layer end to end. For Phase 13: reconnect and reauthorization for SMTP must use `POST /integrations/smtp/connect` (the OAuth `GET` routes 404 for credential plugins); `SmtpPlugin::disconnect()` must stay a no-op; until Phase 13 registers the plugin, a POST creates a row `sendingIntegration` ignores (ship 12 and 13 together). Open (non-blocking): no hostname-format rule on `host`; blocked hosts are exact-match.
 Role: laravel-backend · Depends on: 3, 11 · Covers: P8, P9, P10, P12, P13 · Size: M
 Origin: P8 "Form fields" · P9 "Presets" · P10 "Only ports 465 and 587" · P12 "Connection test" · P13 "from address"
 

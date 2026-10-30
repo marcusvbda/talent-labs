@@ -838,6 +838,8 @@
     "account.gmail.connected_as": "Conectado como :email",
     "integrations.gmail.label": "Gmail",
     "integrations.gmail.description": "Envie candidaturas da sua própria conta do Gmail.",
+    "integrations.smtp.failed": "Não conseguimos entrar neste servidor. Confira os dados e tente novamente.",
+    "integrations.smtp.from_domain": "O endereço de envio deve usar o mesmo domínio do seu usuário.",
     "account.gmail.connect": "Conectar e-mail",
     "account.gmail.reconnect": "Reconectar e-mail",
     "account.gmail.disconnect": "Desconectar",

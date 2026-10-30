@@ -838,6 +838,8 @@
     "account.gmail.connected_as": "Connected as :email",
     "integrations.gmail.label": "Gmail",
     "integrations.gmail.description": "Send applications from your own Gmail account.",
+    "integrations.smtp.failed": "We could not sign in to this server. Check the details and try again.",
+    "integrations.smtp.from_domain": "The from address must use the same domain as your username.",
     "account.gmail.connect": "Connect email",
     "account.gmail.reconnect": "Reconnect email",
     "account.gmail.disconnect": "Disconnect",
