@@ -14,7 +14,7 @@ const VARIANTS: Record<ChipVariant, string> = {
     stack: 'bg-tile text-muted',
     language: 'bg-ink text-white',
     plan: 'bg-accent-soft text-accent-deep',
-    match: 'bg-success-bg text-success-text',
+    match: 'border border-accent-line bg-card text-accent-deep',
     'delta-up': 'bg-success-bg text-success-text',
     'delta-down': 'bg-danger-bg text-danger-text',
 };
