@@ -133,6 +133,6 @@ return [
 
     'system_route_prefix' => 'filament',
 
-    'admin_panel_path' => env('ADMIN_PANEL_PATH')
+    'admin_panel_path' => env('ADMIN_PANEL_PATH'),
 
 ];

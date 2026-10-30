@@ -5,12 +5,15 @@ use App\Enums\ApplicationStatus;
 use App\Enums\ConnectedIntegrationStatus;
 use App\Enums\ContactConfidence;
 use App\Enums\OutreachStatus;
+use App\Enums\SourceAdapter;
 use App\Models\Application;
 use App\Models\ApplicationProfile;
+use App\Models\CollectionRun;
 use App\Models\Company;
 use App\Models\ConnectedIntegration;
 use App\Models\Contact;
 use App\Models\JobPosting;
+use App\Models\Source;
 use App\Models\User;
 use App\Outreach\Actions\CanSendApplications;
 use App\Outreach\Actions\QueueApplication;
@@ -149,13 +152,27 @@ function runSendJob(Application $application, ?CarbonImmutable $expectedSchedule
     app()->call([new SendApplicationEmail($application->id, $expectedScheduledFor), 'handle']);
 }
 
-it('rejects a second queueing for the same company and the DB unique holds', function (): void {
+it('rejects a second queueing for the same job and the DB unique holds', function (): void {
     $this->mock(CanSendApplications::class)
         ->shouldReceive('check')
         ->andReturn(new SendEligibility([], 0, 10));
 
-    $existing = applicationFor($this->user);
-    $posting = (new JobPosting)->forceFill(['company_id' => $existing->company_id]);
+    $company = verifiedCompany();
+    $source = Source::query()->forceCreate(['name' => 'Fake', 'adapter' => SourceAdapter::Remotive]);
+    $run = CollectionRun::query()->forceCreate([]);
+    $posting = JobPosting::query()->forceCreate([
+        'source_id' => $source->id,
+        'collection_run_id' => $run->id,
+        'company_id' => $company->id,
+        'external_id' => 'job-1',
+        'title' => 'Backend Engineer',
+        'company_name' => $company->name,
+        'url' => 'https://example.test/job-1',
+        'raw' => [],
+        'first_seen_at' => now(),
+        'last_seen_at' => now(),
+    ]);
+    $existing = applicationFor($this->user, ['job_posting_id' => $posting->id], $company);
 
     $action = app(QueueApplication::class);
 
@@ -165,7 +182,7 @@ it('rejects a second queueing for the same company and the DB unique holds', fun
 
     Queue::assertNothingPushed();
 
-    expect(fn () => applicationFor($this->user, [], $existing->company))
+    expect(fn () => applicationFor($this->user, ['job_posting_id' => $posting->id], $existing->company))
         ->toThrow(UniqueConstraintViolationException::class);
 });
 

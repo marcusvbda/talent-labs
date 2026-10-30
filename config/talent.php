@@ -190,4 +190,9 @@ return [
 
     // Public contact address shown on the landing page. Empty/unset = hidden.
     'contact_email' => env('TALENT_CONTACT_EMAIL'),
+
+    'security' => [
+        // Comma list of proxy IPs/CIDRs or `*`. Empty/unset = no proxy is trusted.
+        'trusted_proxies' => env('TRUSTED_PROXIES'),
+    ],
 ];

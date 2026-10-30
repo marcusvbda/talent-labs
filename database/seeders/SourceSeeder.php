@@ -40,7 +40,7 @@ class SourceSeeder extends Seeder
         foreach ($sources as $source) {
             Source::firstOrCreate(
                 ['adapter' => $source['adapter'], 'identifier' => $source['identifier']],
-                ['name' => $source['name'], 'settings' => $source['settings'], 'is_active' => $source['is_active'] ?? true],
+                ['name' => $source['name'], 'settings' => $source['settings'], 'is_active' => true],
             );
         }
     }

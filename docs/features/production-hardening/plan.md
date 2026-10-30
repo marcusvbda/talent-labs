@@ -43,7 +43,7 @@ Not code in this feature: P9 (contract for later features, documented in Phase 6
 | Phase | Title | Role | Depends on | Origin | Size | Status |
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | `.env.example` hygiene and production notes | laravel-backend | none | P15, P16 | S | DONE |
-| 2 | Trusted proxies and trusted hosts | laravel-backend | 1 | P1, P22 | S | PENDING |
+| 2 | Trusted proxies and trusted hosts | laravel-backend | 1 | P1, P22 | S | DONE |
 | 3 | Rate limits and separate counters | laravel-backend | 2 | P2, P21 | S | PENDING |
 | 4 | Stripe routes gated by billing availability | laravel-backend | none | P3 | S | PENDING |
 | 5 | Remove privileged fields from `User` fillable | laravel-backend | none | P5 | M | PENDING (needs test authorization, D1) |
@@ -160,7 +160,9 @@ Origin: P15 "Replace the personal address in `.env.example` with a placeholder a
 
 ### Phase 2 — The client IP and host are trustworthy
 
-Status: PENDING
+Status: DONE
+Evidence: IP check passes (`TRUSTED_PROXIES` 10.0.0.1 / list / `*` -> `ip()` = 1.2.3.4; unset -> 10.0.0.1). `composer test` passes (pint, PHPStan, 33 tests) after fixing a baseline that was red at HEAD: pint on `config/filament.php` and `AdminPanelProvider.php`, PHPStan on `SourceSeeder.php`, and the `SendingDatabaseGuardsTest` dedup test rewritten for the per-job unique from 0519d83 (owner authorized fixing whatever the checks needed). `code-reviewer`: APPROVED.
+
 Role: laravel-backend · Depends on: 1 · Covers: P1, P22 · Size: S
 Origin: P1 "Configure trusted proxies from env"; P22 "Enable Laravel's trusted hosts"
 

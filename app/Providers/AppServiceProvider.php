@@ -10,6 +10,7 @@ use App\Plans\PlanCatalog;
 use App\Services\ConnectedIntegrationRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\DevCommands;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +46,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // Set here, not in bootstrap/app.php: that closure runs before config loads.
+        // The middleware accepts `*` or a comma list string as-is.
+        if (filled($trustedProxies = config('talent.security.trusted_proxies'))) {
+            TrustProxies::at($trustedProxies);
+        }
 
         // Fail fast on unsafe sending knobs, in every environment.
         OutreachConfig::validate();
