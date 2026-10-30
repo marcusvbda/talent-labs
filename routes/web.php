@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
@@ -117,6 +118,16 @@ Route::middleware('guest')->group(function (): void {
 });
 
 Route::post('/logout', LogoutController::class)->middleware('auth')->name('logout');
+
+Route::middleware(['auth', 'client'])->prefix('email')->name('verification.')->group(function (): void {
+    Route::get('/verify', [EmailVerificationController::class, 'notice'])->name('notice');
+    Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1,verification-verify'])
+        ->name('verify');
+    Route::post('/verification-notification', [EmailVerificationController::class, 'send'])
+        ->middleware('throttle:6,1,verification-send')
+        ->name('send');
+});
 
 Route::middleware(['web', 'auth'])->prefix('integrations')->name('integrations.oauth.')->group(function (): void {
     // Registered before the {plugin} routes so "oauth" is never captured as a plugin key.

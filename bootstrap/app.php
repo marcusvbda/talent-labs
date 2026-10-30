@@ -13,6 +13,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Support\Facades\Route;
 use Inertia\ExceptionResponse;
 use Inertia\Inertia;
@@ -64,6 +65,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Expired or tampered verification links go back to the notice page instead of a bare 403.
+        $exceptions->render(function (InvalidSignatureException $e, Request $request) {
+            if (! $request->routeIs('verification.verify')) {
+                return null;
+            }
+
+            return redirect()->route('verification.notice')
+                ->with('error', __('auth.verify.link_invalid'));
+        });
 
         // Branded Inertia error pages for the client app; Filament keeps its own.
         Inertia::handleExceptionsUsing(function (ExceptionResponse $response) {

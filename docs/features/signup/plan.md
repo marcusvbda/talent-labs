@@ -36,7 +36,7 @@ incomplete until then.
 | Phase | Title | Role | Depends on | Origin | Size | Status |
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | Verification email | laravel-backend | none | P2, P6 | S | DONE |
-| 2 | Verification routes and page | laravel-backend | 1 | P3, P5 | M | PENDING |
+| 2 | Verification routes and page | laravel-backend | 1 | P3, P5 | M | DONE |
 | 3 | `users:mark-verified` command | laravel-backend | none | P9 | S | DONE |
 | 4 | Admin verification controls | filament-admin | 1 | P7, P8 | S | DONE |
 | 5 | Enforce verification | laravel-backend | 1, 2, 3, 4 | P2, P4 | M | PENDING |
@@ -173,7 +173,8 @@ Origin: P2 "`User` implements `MustVerifyEmail`"; P6 "Verification email: locali
 
 ### Phase 2 — An authenticated user can confirm their email and resend the link
 
-Status: PENDING
+Status: DONE
+Evidence: `route:list --name=verification` shows the three routes with `auth`, `client`, `signed` and prefixed throttles. HTTP smoke run with a throwaway user (deleted): tampered link redirects to the notice with the error flash; valid link verifies and lands on `/onboarding` with "Email confirmed."; a verified user opening `/email/verify` is redirected away. `pint`, `composer types:check`, `yarn types:check`, `composer test` (33/33) pass; `yarn run check` passes for the changed frontend files. `code-reviewer`: APPROVED. Not verified: the page was not rendered (stale `public/build` manifest, needs `yarn dev`/`yarn build`) and the POST `send` route was not exercised.
 Role: laravel-backend · Depends on: 1 · Covers: P3, P5, D6 · Size: M
 Origin: P3 "Routes (Inertia page `auth/verify-email`, en/pt)… After verification: `onboarding` if not completed, else `dashboard`."; P5 "Verify page: shows the address, resend button with a visible cooldown, and a 'wrong address?' path (logout + contact)."
 
