@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\ContactConfidence;
+use App\Enums\ContactSource;
 use App\Enums\ContactStatus;
 use App\Enums\OutreachStatus;
 use App\Models\Company;
@@ -36,7 +37,9 @@ class BackfillOutreachStatus extends Command
         Company::query()
             ->where('outreach_status', OutreachStatus::Pending)
             ->where('contact_status', '!=', ContactStatus::Pending)
-            ->withExists(['contacts as has_verified_contact' => fn (Builder $query) => $query->where('confidence', ContactConfidence::SmtpVerified)])
+            ->withExists(['contacts as has_verified_contact' => fn (Builder $query) => $query
+                ->where('source', ContactSource::AliasProbe)
+                ->where('confidence', ContactConfidence::SmtpVerified)])
             ->chunkById(200, function (Collection $companies) use (&$counts, &$updated): void {
                 foreach ($companies as $company) {
                     /** @var Company $company */

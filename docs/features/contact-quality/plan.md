@@ -38,7 +38,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | Shared published-email extractor | laravel-backend | none | P1, P2, P2a | M | DONE |
 | 2 | Contact schema, sources and derived tiers | laravel-backend | none | P3, P4 | M | DONE |
-| 3 | Alias paths ignore posting contacts | laravel-backend | 2 | P4 | S | PENDING |
+| 3 | Alias paths ignore posting contacts | laravel-backend | 2 | P4 | S | DONE |
 | 4 | Probe and record published emails | laravel-backend | 1, 3 | P5 | M | PENDING |
 | 5 | Storage and AI gates accept tier A | laravel-backend | 4 | P6 | M | PENDING |
 | 6 | Pool, recipient, cap, send checks, snapshot | laravel-backend | 5 | P6, P7, P7a, P8, P9 | M | PENDING |
@@ -189,7 +189,8 @@ Origin: P3 "Contact tiers, per contact"; P4 "Data (forward migrations only)"
 
 ### Phase 3 — Alias discovery ignores posting contacts
 
-Status: PENDING
+Status: DONE
+Evidence: tinker (in a rolled-back transaction) showed a `posting` `careers` contact coexisting with the `alias_probe` row of the same company, the alias `updateOrCreate` leaving the posting row untouched, and `SelectRecipientForCompany` ignoring the posting row; `pint --dirty`, `composer types:check` and the existing suite pass (`--filter=Contact` matches no tests); `code-reviewer` APPROVED, verdict logic identical branch by branch. Left for later: `MatchingJobPostings` contacts `whereExists` has no source filter (rewritten in Phase 6); the Companies table Retry modal says "Existing contacts are removed." though only alias contacts are now.
 Role: laravel-backend · Depends on: 2 · Covers: P4 · Size: S
 Origin: P4 (new contact source must not break alias behaviour)
 

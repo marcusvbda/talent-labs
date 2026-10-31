@@ -3,6 +3,7 @@
 namespace App\Outreach\Actions;
 
 use App\Enums\ContactConfidence;
+use App\Enums\ContactSource;
 use App\Models\Company;
 use App\Models\Contact;
 use App\Outreach\OutreachLimits;
@@ -18,6 +19,7 @@ class SelectRecipientForCompany
         $priority = OutreachLimits::RECIPIENT_PRIORITY;
 
         return $company->contacts()
+            ->where('source', ContactSource::AliasProbe)
             ->where('confidence', ContactConfidence::SmtpVerified)
             ->whereIn('local_part', $priority)
             ->get()

@@ -3,6 +3,7 @@
 namespace App\Contacts\Actions;
 
 use App\Contacts\Jobs\DiscoverContactsForCompany;
+use App\Enums\ContactSource;
 use App\Enums\ContactStatus;
 use App\Enums\DomainStatus;
 use App\Enums\OutreachStatus;
@@ -12,12 +13,13 @@ use Illuminate\Support\Facades\DB;
 class RetryCompanyDiscovery
 {
     /**
-     * Drop the company's contacts, reset it to pending and queue a fresh discovery.
+     * Drop the company's alias contacts, reset it to pending and queue a fresh discovery.
      */
     public function handle(Company $company): void
     {
         DB::transaction(function () use ($company): void {
-            $company->contacts()->delete();
+            // Only probed aliases are rediscovered; published and named contacts survive the retry.
+            $company->contacts()->where('source', ContactSource::AliasProbe)->delete();
 
             $company->domain_status = DomainStatus::Pending;
             $company->contact_status = ContactStatus::Pending;

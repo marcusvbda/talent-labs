@@ -6,7 +6,9 @@ use App\Ai\Jobs\ExtractJobPostingProfileJob;
 use App\Contacts\Support\DnsLookup;
 use App\Contacts\Support\SmtpProbe;
 use App\Contacts\Support\SmtpProbeResult;
+use App\Contacts\Support\SmtpVerdict;
 use App\Enums\ContactConfidence;
+use App\Enums\ContactSource;
 use App\Enums\ContactStatus;
 use App\Enums\DomainStatus;
 use App\Enums\OutreachStatus;
@@ -19,11 +21,6 @@ class DiscoverCompanyContacts
      * Role mailbox local parts tried for every company.
      */
     public const array ALIASES = ['careers', 'jobs', 'hr', 'talent', 'recruiting', 'people'];
-
-    /**
-     * Reply text that marks a rejection as a block/policy decision about us, not about the mailbox.
-     */
-    private const string BLOCK_PATTERN = '/spamhaus|blocked|blacklist|blocklist|policy|reputation|dnsbl|not allowed/i';
 
     public function __construct(
         private DnsLookup $dns,
@@ -90,7 +87,7 @@ class DiscoverCompanyContacts
             }
 
             $company->contacts()->updateOrCreate(
-                ['local_part' => $alias],
+                ['local_part' => $alias, 'source' => ContactSource::AliasProbe],
                 ['email' => $address, 'confidence' => $confidence, 'checked_at' => now()],
             );
 
@@ -125,27 +122,11 @@ class DiscoverCompanyContacts
             return null;
         }
 
-        if ($this->isAccepted($code)) {
+        if (SmtpVerdict::isAccepted($code)) {
             return true;
         }
 
-        if ($code < 500 || $code >= 600) {
-            return null;
-        }
-
-        $text = (string) ($result->replies[$probeAddress] ?? '');
-
-        // Enhanced status first: 5.7.x is a policy decision about us, while 5.1.x and Exchange's 5.4.1
-        // ("Recipient address rejected: Access denied") are plain unknown-mailbox answers.
-        if (preg_match('/^5\.7\.\d+/', $text) === 1) {
-            return null;
-        }
-
-        if (preg_match('/^5\.(?:1\.\d+|4\.1)\b/', $text) === 1) {
-            return false;
-        }
-
-        return preg_match(self::BLOCK_PATTERN, $text) === 1 ? null : false;
+        return SmtpVerdict::rejectsMailbox($code, $result->replies[$probeAddress] ?? null) === true ? false : null;
     }
 
     /**
@@ -185,15 +166,10 @@ class DiscoverCompanyContacts
      */
     private function confidenceFor(bool $isCatchAll, ?int $code): ?ContactConfidence
     {
-        if (! $this->isAccepted($code)) {
+        if (! SmtpVerdict::isAccepted($code)) {
             return null;
         }
 
         return $isCatchAll ? ContactConfidence::CatchAll : ContactConfidence::SmtpVerified;
-    }
-
-    private function isAccepted(?int $code): bool
-    {
-        return $code !== null && $code >= 200 && $code < 300;
     }
 }
