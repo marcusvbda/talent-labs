@@ -167,6 +167,7 @@ export type ApplicationItem = {
     stage: SendStage | null;
     subStep: SubStep | null;
     lastError: string | null; // client-safe sentence, already translated by the backend
+    repliedAt: ISODateTime | null; // client-reported reply; only meaningful when sent
     queuedAt: ISODateTime;
     scheduledFor: ISODateTime | null;
     sentAt: ISODateTime | null;

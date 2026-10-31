@@ -120,6 +120,8 @@ export const endpoints = {
         };
     },
     applicationCounts: (): Endpoint => ApplicationsController.counts(),
+    replyApplication: (id: number): Endpoint =>
+        ApplicationsController.reply(id),
     application: (id: number | string): Endpoint =>
         ApplicationsController.show(typeof id === 'string' ? Number(id) : id),
     preferences: (): Endpoint => PreferencesController.show(),

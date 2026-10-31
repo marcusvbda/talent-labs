@@ -9,50 +9,50 @@ Phase status is updated in place in this file.
 Implemented: 1 · Partial: 2 · Divergent: 0 · Missing: 17 · Unverifiable: 0
 Out of scope by owner decision: P17. The local database is empty, so published-email coverage is unmeasured.
 
-| Requirement | State | Evidence |
-| ----------- | ----- | -------- |
-| P1 Shared extractor, every source | Partial | Only `app/Collection/Adapters/HackerNewsAdapter.php` (`emails()`) |
-| P2 Discard rules | Partial | Only `NON_CONTACT_EMAIL_DOMAINS` in the same adapter |
-| P2a Domain match | Missing | — |
-| P3 Tiers | Missing | `app/Enums/ContactConfidence.php` only |
-| P4 Contact columns | Missing | `2026_09_23_130001_create_contacts_table.php` |
-| P5 Probe published emails | Missing | `SmtpProbe` reusable; verdict logic private in `DiscoverCompanyContacts` |
-| P6 Storage, AI and pool gates | Missing | `FetchJobsFromSource`, `StoreCompanyPostings`, `ExtractJobPostingProfileJob`, `MatchingJobPostings` |
-| P7 Recipient order | Missing | `SelectRecipientForCompany` |
-| P7a Daily cap per tier-A address | Missing | — |
-| P8 Send checks | Missing | `SendApplicationEmail::preCheck()` |
-| P9 Tier snapshot | Missing | `2026_09_24_100005_create_applications_table.php` |
-| P10 Ordering | Missing | `QueueRandomApplications` (`inRandomOrder`), `JobPoolQuery` |
-| P11 Admin source and tier | Missing | `ContactsRelationManager` |
-| P12 Replies and report | Missing | `ApplicationStatus`, no `replied_at` |
-| P13 Backfill | Missing | — |
-| P14 Coverage measurement | Missing | — |
-| P15 Named contacts in production | Missing | Gated by P14 |
-| P16 Never scrape LinkedIn/search engines | Implemented | No such code; kept as a constraint |
-| P18 Privacy and suppression on every tier | Missing | Table does not exist |
-| P18a Suppression table and checks here | Missing | Defined in `landing-and-legal` P13, not built |
+| Requirement                               | State       | Evidence                                                                                            |
+| ----------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------- |
+| P1 Shared extractor, every source         | Partial     | Only `app/Collection/Adapters/HackerNewsAdapter.php` (`emails()`)                                   |
+| P2 Discard rules                          | Partial     | Only `NON_CONTACT_EMAIL_DOMAINS` in the same adapter                                                |
+| P2a Domain match                          | Missing     | —                                                                                                   |
+| P3 Tiers                                  | Missing     | `app/Enums/ContactConfidence.php` only                                                              |
+| P4 Contact columns                        | Missing     | `2026_09_23_130001_create_contacts_table.php`                                                       |
+| P5 Probe published emails                 | Missing     | `SmtpProbe` reusable; verdict logic private in `DiscoverCompanyContacts`                            |
+| P6 Storage, AI and pool gates             | Missing     | `FetchJobsFromSource`, `StoreCompanyPostings`, `ExtractJobPostingProfileJob`, `MatchingJobPostings` |
+| P7 Recipient order                        | Missing     | `SelectRecipientForCompany`                                                                         |
+| P7a Daily cap per tier-A address          | Missing     | —                                                                                                   |
+| P8 Send checks                            | Missing     | `SendApplicationEmail::preCheck()`                                                                  |
+| P9 Tier snapshot                          | Missing     | `2026_09_24_100005_create_applications_table.php`                                                   |
+| P10 Ordering                              | Missing     | `QueueRandomApplications` (`inRandomOrder`), `JobPoolQuery`                                         |
+| P11 Admin source and tier                 | Missing     | `ContactsRelationManager`                                                                           |
+| P12 Replies and report                    | Missing     | `ApplicationStatus`, no `replied_at`                                                                |
+| P13 Backfill                              | Missing     | —                                                                                                   |
+| P14 Coverage measurement                  | Missing     | —                                                                                                   |
+| P15 Named contacts in production          | Missing     | Gated by P14                                                                                        |
+| P16 Never scrape LinkedIn/search engines  | Implemented | No such code; kept as a constraint                                                                  |
+| P18 Privacy and suppression on every tier | Missing     | Table does not exist                                                                                |
+| P18a Suppression table and checks here    | Missing     | Defined in `landing-and-legal` P13, not built                                                       |
 
 ## Status board
 
-| Phase | Title | Role | Depends on | Origin | Size | Status |
-| ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
-| 1 | Shared published-email extractor | laravel-backend | none | P1, P2, P2a | M | DONE |
-| 2 | Contact schema, sources and derived tiers | laravel-backend | none | P3, P4 | M | DONE |
-| 3 | Alias paths ignore posting contacts | laravel-backend | 2 | P4 | S | DONE |
-| 4 | Probe and record published emails | laravel-backend | 1, 3 | P5 | M | DONE |
-| 5 | Storage and AI gates accept tier A | laravel-backend | 4 | P6 | M | DONE |
-| 6 | Pool, recipient, cap, send checks, snapshot | laravel-backend | 5 | P6, P7, P7a, P8, P9 | M | DONE |
-| 7 | Tier ordering | laravel-backend | 6 | P10 | S | DONE |
-| 8 | Admin shows source and tier | filament-admin | 6 | P11 | S | DONE |
-| 9 | Backfill command | laravel-backend | 4 | P13 | S | DONE |
-| 10 | Suppression table and probe skip | laravel-backend | 4 | P18, P18a | M | DONE |
-| 11 | Suppression on queueing and sending | laravel-backend | 6, 10 | P18, P18a | M | DONE |
-| 12 | Reply endpoint and tier report | laravel-backend | 6 | P12 | M | DONE |
-| 13 | "I got a reply" client action | inertia-frontend | 12 | P12 | S | PENDING |
-| 14 | Guarded company page fetcher | laravel-backend | 10 | P14, P16 | M | PENDING |
-| 15 | Named-contact coverage report (stops for the owner) | laravel-backend | 14 | P14, P16, P18 | M | PENDING |
-| 16 | Named contacts in production | laravel-backend | 15 | P15, P18 | M | BLOCKED (D15, D16) |
-| 17 | Verification and report | laravel-backend | 1-15 (16 if unblocked) | spec x code gap | S | PENDING |
+| Phase | Title                                               | Role             | Depends on             | Origin              | Size | Status             |
+| ----- | --------------------------------------------------- | ---------------- | ---------------------- | ------------------- | ---- | ------------------ |
+| 1     | Shared published-email extractor                    | laravel-backend  | none                   | P1, P2, P2a         | M    | DONE               |
+| 2     | Contact schema, sources and derived tiers           | laravel-backend  | none                   | P3, P4              | M    | DONE               |
+| 3     | Alias paths ignore posting contacts                 | laravel-backend  | 2                      | P4                  | S    | DONE               |
+| 4     | Probe and record published emails                   | laravel-backend  | 1, 3                   | P5                  | M    | DONE               |
+| 5     | Storage and AI gates accept tier A                  | laravel-backend  | 4                      | P6                  | M    | DONE               |
+| 6     | Pool, recipient, cap, send checks, snapshot         | laravel-backend  | 5                      | P6, P7, P7a, P8, P9 | M    | DONE               |
+| 7     | Tier ordering                                       | laravel-backend  | 6                      | P10                 | S    | DONE               |
+| 8     | Admin shows source and tier                         | filament-admin   | 6                      | P11                 | S    | DONE               |
+| 9     | Backfill command                                    | laravel-backend  | 4                      | P13                 | S    | DONE               |
+| 10    | Suppression table and probe skip                    | laravel-backend  | 4                      | P18, P18a           | M    | DONE               |
+| 11    | Suppression on queueing and sending                 | laravel-backend  | 6, 10                  | P18, P18a           | M    | DONE               |
+| 12    | Reply endpoint and tier report                      | laravel-backend  | 6                      | P12                 | M    | DONE               |
+| 13    | "I got a reply" client action                       | inertia-frontend | 12                     | P12                 | S    | DONE               |
+| 14    | Guarded company page fetcher                        | laravel-backend  | 10                     | P14, P16            | M    | PENDING            |
+| 15    | Named-contact coverage report (stops for the owner) | laravel-backend  | 14                     | P14, P16, P18       | M    | PENDING            |
+| 16    | Named contacts in production                        | laravel-backend  | 15                     | P15, P18            | M    | BLOCKED (D15, D16) |
+| 17    | Verification and report                             | laravel-backend  | 1-15 (16 if unblocked) | spec x code gap     | S    | PENDING            |
 
 ## Owner decisions
 
@@ -82,22 +82,22 @@ Blocks: Phase 16 · Options: to be decided with the privacy policy (`landing-and
 
 ## Requirement coverage
 
-| Requirement | Phases |
-| ----------- | ------ |
-| P1, P2, P2a | 1 |
-| P3, P4 | 2, 3 |
-| P5 | 4 |
-| P6 | 5, 6 |
-| P7, P7a, P8, P9 | 6 |
-| P10 | 7 |
-| P11 | 8 |
-| P12 | 12, 13 |
-| P13 | 9 |
-| P14 | 14, 15 |
-| P15 | 16 |
-| P16 | Global constraint, 14, 17 |
-| P17 | Out of scope (D12) |
-| P18, P18a | 10, 11, 15, 16 |
+| Requirement     | Phases                    |
+| --------------- | ------------------------- |
+| P1, P2, P2a     | 1                         |
+| P3, P4          | 2, 3                      |
+| P5              | 4                         |
+| P6              | 5, 6                      |
+| P7, P7a, P8, P9 | 6                         |
+| P10             | 7                         |
+| P11             | 8                         |
+| P12             | 12, 13                    |
+| P13             | 9                         |
+| P14             | 14, 15                    |
+| P15             | 16                        |
+| P16             | Global constraint, 14, 17 |
+| P17             | Out of scope (D12)        |
+| P18, P18a       | 10, 11, 15, 16            |
 
 ## Phases
 
@@ -321,7 +321,7 @@ Origin: P6 (pool); P7 recipient order; P7a daily cap; P8 send checks; P9 snapsho
 - `MatchingJobPostings::forUser`: replace the `companies.outreach_status` where and the contacts `whereExists` with one group:
     - (`companies.outreach_status = verified` and an `alias_probe`/`smtp_verified` contact in `RECIPIENT_PRIORITY` of the company, or a `named`/`smtp_verified` contact), **or**
     - a contact with `contacts.job_posting_id = job_postings.id`, `source = posting`, `confidence <> rejected`.
-    Update the doc comment accordingly (its "has not applied to that company" sentence is stale: the code checks the posting; don't change that behaviour).
+      Update the doc comment accordingly (its "has not applied to that company" sentence is stale: the code checks the posting; don't change that behaviour).
 - `SendApplicationEmail::preCheck`:
     - `CheckingCompany` fails when the company is not verified **and** the contact isn't tier A of this application's posting. Message unchanged.
     - `ConfirmingRecipient` fails when `$contact` is null, or its `company_id` differs, or it is neither (tier A with `job_posting_id === $application->job_posting_id`) nor (`source` is `alias_probe`/`named` with `smtp_verified`). Message unchanged. Every other check stays.
@@ -546,7 +546,8 @@ Origin: P12 "a client action 'I got a reply' on sent applications (replied_at), 
 
 ### Phase 13 — Clients can say "I got a reply"
 
-Status: PENDING
+Status: DONE
+Evidence: `ApplicationItem` gained `repliedAt` and every fixture literal carries it; the new `use-mark-replied.ts` mutation posts `{ replied }` through the Wayfinder route `ApplicationsController.reply` (wrapped in `endpoints.replyApplication`), writes the response into the detail cache and invalidates `keys.applications.all()`, with a fixture path that keeps the first timestamp and returns 422 when the application isn't sent; `application-detail-sheet.tsx` shows a `ReplySection` after the CV only for `sent` applications (action button, or the recorded date plus Undo, loading while saving, `reply_error` on failure); EN and PT strings added as specified; `yarn types:check` passes and `yarn run check` passes on every changed file; `code-reviewer` APPROVED in round 1. Notes: nothing about tier, source or recipient appears; I did not drive a browser, so check `/applications` by eye (mark, reload, undo, EN and PT, and no button on failed, queued or ambiguous applications; also with `VITE_USE_FIXTURES`); the fixture handler lives inside the hook like the sibling mutation hooks; a 422 also shows `reply_error`; the hook has a redundant `as ApplicationDetail` cast (non-blocking). `yarn check` in a shell runs Yarn's own integrity check, so use `yarn run check`.
 Role: inertia-frontend · Depends on: 12 · Covers: P12 · Size: S
 Origin: P12
 

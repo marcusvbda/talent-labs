@@ -210,6 +210,7 @@ const historySeeds = (): ApplicationSeed[] => {
                         stage: 'sent',
                         subStep: null,
                         lastError: null,
+                        repliedAt: null,
                         queuedAt: queuedAt.toISOString(),
                         scheduledFor: null,
                         sentAt: sentAt.toISOString(),
@@ -270,6 +271,7 @@ const todaySeeds = (): ApplicationSeed[] => {
                 stage: 'attaching_cv',
                 subStep: null,
                 lastError: ERR_CV,
+                repliedAt: null,
                 sentAt: null,
                 jobUrl: null,
             };
@@ -280,6 +282,7 @@ const todaySeeds = (): ApplicationSeed[] => {
                 stage: 'sending',
                 subStep: null,
                 lastError: i === 11 ? ERR_UNCONFIRMED : ERR_REJECTED,
+                repliedAt: null,
                 sentAt: null,
                 jobUrl: null,
             };
@@ -290,6 +293,7 @@ const todaySeeds = (): ApplicationSeed[] => {
                 stage: 'sent',
                 subStep: null,
                 lastError: null,
+                repliedAt: null,
                 sentAt: minutesAgoToday(minutesBack),
                 jobUrl: fixtureJobUrl(refOf(job), job.id, job.title),
             };
@@ -313,6 +317,7 @@ const todaySeeds = (): ApplicationSeed[] => {
                 stage: null,
                 subStep: null,
                 lastError: null,
+                repliedAt: null,
                 queuedAt: minutesAgoToday(12 - i * 0.8),
                 scheduledFor: new Date(scheduled).toISOString(),
                 sentAt: null,

@@ -6,8 +6,10 @@ import { ErrorState } from '@/components/ui/error-state';
 import { Sheet } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useApplication } from '@/data/hooks/use-application';
+import { useMarkReplied } from '@/data/hooks/use-mark-replied';
 import { JOB_URL_TOKEN } from '@/features/review/body-editor';
 import { useT } from '@/i18n/i18n-provider';
+import { formatDate } from '@/lib/format';
 import type { ApplicationItem } from '@/types/contracts';
 
 // Read-only body: the job link stays a token, shown as a chip.
@@ -25,6 +27,45 @@ const SnapshotBody = ({ body }: { body: string }) => {
                 </Fragment>
             ))}
         </p>
+    );
+};
+
+const ReplySection = ({
+    id,
+    repliedAt,
+}: {
+    id: number;
+    repliedAt: string | null;
+}) => {
+    const { t, locale } = useT();
+    const mutation = useMarkReplied();
+
+    return (
+        <section className="flex flex-col gap-2">
+            {repliedAt && (
+                <p className="text-body text-ink">
+                    {t('applications.detail.replied_on', {
+                        date: formatDate(locale, repliedAt),
+                    })}
+                </p>
+            )}
+            <Button
+                variant="secondary-tile"
+                loading={mutation.isPending}
+                onClick={() =>
+                    mutation.mutate({ id, replied: repliedAt === null })
+                }
+            >
+                {repliedAt === null
+                    ? t('applications.detail.reply_action')
+                    : t('applications.detail.reply_undo')}
+            </Button>
+            {mutation.isError && (
+                <p role="alert" className="text-body text-muted">
+                    {t('applications.detail.reply_error')}
+                </p>
+            )}
+        </section>
     );
 };
 
@@ -103,6 +144,9 @@ const DetailBody = ({ item }: { item: ApplicationItem }) => {
                                 {data.cvFileName}
                             </p>
                         </section>
+                    )}
+                    {data.status === 'sent' && (
+                        <ReplySection id={data.id} repliedAt={data.repliedAt} />
                     )}
                 </>
             )}

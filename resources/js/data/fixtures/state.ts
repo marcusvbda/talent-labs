@@ -547,6 +547,7 @@ function queueJobs(jobIds: number[], origin: 'auto' | 'manual'): QueueResult {
             stage: null,
             subStep: null,
             lastError: null,
+            repliedAt: null,
             queuedAt: new Date().toISOString(),
             scheduledFor: new Date(slot).toISOString(),
             sentAt: null,
