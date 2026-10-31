@@ -84,7 +84,7 @@ class JobPostingInfolist
                     ->label('Run'),
 
                 Section::make('Source contacts')
-                    ->description('Contacts exposed by the source. Not used as application recipients.')
+                    ->description('Contacts exposed by the source. Emails published in the posting can be application recipients (tier A).')
                     ->columnSpanFull()
                     ->visible(fn (?JobPosting $record): bool => filled($record?->source_contacts))
                     ->schema([

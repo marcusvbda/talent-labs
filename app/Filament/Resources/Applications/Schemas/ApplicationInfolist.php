@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Applications\Schemas;
 
+use App\Enums\ContactSource;
+use App\Enums\ContactTier;
 use App\Filament\Resources\JobPostings\JobPostingResource;
 use App\Models\Application;
 use Filament\Infolists\Components\TextEntry;
@@ -28,6 +30,16 @@ class ApplicationInfolist
 
                 TextEntry::make('recipient_email')
                     ->label('Recipient'),
+
+                TextEntry::make('recipient_tier')
+                    ->label('Recipient tier')
+                    ->formatStateUsing(fn (?string $state): ?string => $state !== null ? (ContactTier::tryFrom($state)?->getLabel() ?? $state) : null)
+                    ->placeholder('—'),
+
+                TextEntry::make('recipient_source')
+                    ->label('Recipient source')
+                    ->formatStateUsing(fn (?string $state): ?string => $state !== null ? (ContactSource::tryFrom($state)?->getLabel() ?? $state) : null)
+                    ->placeholder('—'),
 
                 TextEntry::make('status')
                     ->badge(),

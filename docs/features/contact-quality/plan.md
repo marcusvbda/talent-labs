@@ -43,7 +43,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 5 | Storage and AI gates accept tier A | laravel-backend | 4 | P6 | M | DONE |
 | 6 | Pool, recipient, cap, send checks, snapshot | laravel-backend | 5 | P6, P7, P7a, P8, P9 | M | DONE |
 | 7 | Tier ordering | laravel-backend | 6 | P10 | S | DONE |
-| 8 | Admin shows source and tier | filament-admin | 6 | P11 | S | PENDING |
+| 8 | Admin shows source and tier | filament-admin | 6 | P11 | S | DONE |
 | 9 | Backfill command | laravel-backend | 4 | P13 | S | PENDING |
 | 10 | Suppression table and probe skip | laravel-backend | 4 | P18, P18a | M | PENDING |
 | 11 | Suppression on queueing and sending | laravel-backend | 6, 10 | P18, P18a | M | PENDING |
@@ -381,7 +381,8 @@ Origin: P10 "random sending takes tier A, then B, then C, then match score"; D9
 
 ### Phase 8 — Admin shows source and tier
 
-Status: PENDING
+Status: DONE
+Evidence: `ContactsRelationManager` gained `source` and `tier` badges (`—` when null), a linked `Posting` column, hidden-by-default `person_name`/`person_title`, `Local part`, an eager-loaded `jobPosting` and the unchanged `->socket(...)`; `JobPostingInfolist` has the new section description; `ApplicationInfolist` and `ApplicationsTable` show the recipient tier (and source in the infolist) from the snapshot; no `->poll()` added; `pint --dirty` and `composer types:check` (0 errors) pass; `--filter=Filament` matches no tests. `code-reviewer` round 1 found one blocking issue (the infolist `—` lived only inside `formatStateUsing`, which Filament doesn't call for a blank state); fixed with `->placeholder('—')` on both entries, confirmed against `TextEntry::render` (the placeholder renders for a blank state), checks re-run green. Notes: the screens were not rendered in a browser, so check `/admin` once by eye; the `ContactSource` badge has no colour because the enum has no `HasColor`.
 Role: filament-admin · Depends on: 6 · Covers: P11 · Size: S
 Origin: P11 "Admin company/contact screens always show source and tier"
 

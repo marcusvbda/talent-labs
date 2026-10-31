@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Applications\Tables;
 
 use App\Enums\ApplicationOrigin;
 use App\Enums\ApplicationStatus;
+use App\Enums\ContactTier;
 use App\Models\Application;
 use App\Outreach\OutreachLimits;
 use Filament\Actions\ViewAction;
@@ -42,6 +43,14 @@ class ApplicationsTable
                     ->state(fn (Application $record): string => $record->recipientKind())
                     ->badge()
                     ->color(fn (string $state): string => $state === 'generic' ? 'gray' : 'info'),
+
+                TextColumn::make('recipient_tier')
+                    ->label('Recipient tier')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): ?string => $state !== null ? ContactTier::tryFrom($state)?->getLabel() : null)
+                    ->color(fn (?string $state): ?string => $state !== null ? ContactTier::tryFrom($state)?->getColor() : null)
+                    ->placeholder('—')
+                    ->toggleable(),
 
                 TextColumn::make('status')
                     ->badge(),
