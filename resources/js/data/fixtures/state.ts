@@ -82,11 +82,13 @@ const PLAN_CONFIG: Record<PlanKey, { dailyLimit: number; mode: SendMode }> = {
     free: { dailyLimit: 10, mode: 'random' },
     starter: { dailyLimit: 50, mode: 'select' },
     pro: { dailyLimit: 100, mode: 'review' },
+    max: { dailyLimit: 100, mode: 'review' },
 };
 const PLAN_NAMES: Record<PlanKey, string> = {
     free: 'Free',
     starter: 'Starter',
     pro: 'Pro',
+    max: 'Max',
 };
 
 export type StoredApplication = { item: ApplicationItem; jobId: number };

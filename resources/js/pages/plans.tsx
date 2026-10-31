@@ -18,14 +18,14 @@ import { AppGrid, AppLayout } from '@/layouts/app-layout';
 import type { RegionKey } from '@/types/contracts';
 import type { PlanKey } from '@/types/plans';
 
-const CELL = 'min-w-0 lg:col-span-4';
+const CELL = 'min-w-0 lg:col-span-6 xl:col-span-3';
 
 const PlansSkeleton = () => {
     const { t } = useT();
 
     return (
         <AppGrid>
-            {[0, 1, 2].map((index) => (
+            {[0, 1, 2, 3].map((index) => (
                 <div
                     key={index}
                     role="status"

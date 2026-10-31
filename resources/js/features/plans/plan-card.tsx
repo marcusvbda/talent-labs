@@ -14,6 +14,7 @@ const FEATURES: Record<PlanKey, string[]> = {
     free: ['gmail', 'matching', 'random'],
     starter: ['gmail', 'matching', 'choose_jobs'],
     pro: ['gmail', 'matching', 'review_emails'],
+    max: ['gmail', 'matching', 'review_emails', 'ai_letter'],
 };
 
 export const PlanCard = ({

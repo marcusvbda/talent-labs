@@ -34,7 +34,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | Phase | Title                                | Role             | Depends on | Origin               | Size | Status  |
 | ----- | ------------------------------------ | ---------------- | ---------- | -------------------- | ---- | ------- |
 | 1     | Plan capabilities                    | laravel-backend  | none       | P2                   | S    | DONE    |
-| 2     | Frontend accepts the Max plan        | inertia-frontend | none       | P5                   | M    | PENDING |
+| 2     | Frontend accepts the Max plan        | inertia-frontend | none       | P5                   | M    | DONE    |
 | 3     | Max plan enabled                     | laravel-backend  | 1, 2       | P1, P3, P4, P5       | S    | PENDING |
 | 4     | Length limits and manual maximum     | laravel-backend  | none       | P11, P13             | S    | PENDING |
 | 5     | AI usage per user and letter cache   | laravel-backend  | none       | P18, P20             | S    | PENDING |
@@ -124,7 +124,8 @@ Origin: P2 "`Plan` gains capabilities read from the catalog config: `aiWriting` 
 
 ### Phase 2 — The frontend can display a fourth plan
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn run check` and `yarn types:check` pass; code-reviewer APPROVED (contract matched exactly, EN and PT keys present). The 4-card render at desktop and phone widths was not opened in a browser; check it manually on `/plans` with `VITE_USE_FIXTURES`.
 Role: inertia-frontend · Depends on: none · Covers: P5 · Size: M
 Origin: P5 "Client plans page (`PlansResource`) and billing checkout support the new plan."
 

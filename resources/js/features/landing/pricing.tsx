@@ -73,7 +73,7 @@ export function Pricing({
                     />
                 </Reveal>
             </div>
-            <div className="mt-8 grid gap-gap lg:grid-cols-3 lg:gap-4 xl:gap-gap">
+            <div className="mt-8 grid gap-gap lg:grid-cols-2 lg:gap-4 xl:grid-cols-4 xl:gap-gap">
                 {plans.map((plan) => (
                     <LandingPlanCard
                         key={plan.key}

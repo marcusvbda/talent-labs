@@ -12,6 +12,7 @@ const FEATURES: Record<PlanKey, string[]> = {
     free: ['auto'],
     starter: ['auto', 'select'],
     pro: ['auto', 'select', 'review'],
+    max: ['auto', 'select', 'review', 'ai_letter'],
 };
 
 export const LandingPlanCard = ({

@@ -18,7 +18,7 @@ import { jobs } from '@/routes';
 import type { DashboardData, SendMode } from '@/types/contracts';
 import type { PlanKey } from '@/types/plans';
 
-const SELECTION_PLANS: PlanKey[] = ['starter', 'pro'];
+const SELECTION_PLANS: PlanKey[] = ['starter', 'pro', 'max'];
 const PAGE_SIZE = 4;
 
 export function NewMatchesCard({
