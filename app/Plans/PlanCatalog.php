@@ -98,7 +98,7 @@ final class PlanCatalog
      */
     private function catalog(): array
     {
-        /** @var array<string, array{name: string, mode: string, daily_limit: int}> $entries */
+        /** @var array<string, array{name: string, mode: string, daily_limit: int, ai_writing?: bool, ai_monthly_quota?: int}> $entries */
         $entries = config('talent.plans.catalog', []);
 
         $plans = [];
@@ -115,6 +115,8 @@ final class PlanCatalog
                 name: $entry['name'],
                 mode: $entry['mode'],
                 dailyLimit: (int) $entry['daily_limit'],
+                aiWriting: (bool) ($entry['ai_writing'] ?? false),
+                aiMonthlyQuota: (int) ($entry['ai_monthly_quota'] ?? 0),
             );
         }
 

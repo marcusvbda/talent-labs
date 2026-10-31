@@ -158,9 +158,9 @@ return [
     'plans' => [
         'default' => env('PLAN_DEFAULT', 'free'),
         'catalog' => [
-            'free' => ['name' => 'Free', 'mode' => 'random', 'daily_limit' => (int) env('PLAN_FREE_DAILY_LIMIT', 10)],
-            'starter' => ['name' => 'Starter', 'mode' => 'select', 'daily_limit' => (int) env('PLAN_STARTER_DAILY_LIMIT', 50)],
-            'pro' => ['name' => 'Pro', 'mode' => 'review', 'daily_limit' => (int) env('PLAN_PRO_DAILY_LIMIT', 100)],
+            'free' => ['name' => 'Free', 'mode' => 'random', 'daily_limit' => (int) env('PLAN_FREE_DAILY_LIMIT', 10), 'ai_writing' => false, 'ai_monthly_quota' => 0],
+            'starter' => ['name' => 'Starter', 'mode' => 'select', 'daily_limit' => (int) env('PLAN_STARTER_DAILY_LIMIT', 50), 'ai_writing' => false, 'ai_monthly_quota' => 0],
+            'pro' => ['name' => 'Pro', 'mode' => 'review', 'daily_limit' => (int) env('PLAN_PRO_DAILY_LIMIT', 100), 'ai_writing' => false, 'ai_monthly_quota' => 0],
         ],
         // Displayed prices, in minor units per region. 0 = free in that region (no Checkout).
         'prices' => [

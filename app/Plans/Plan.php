@@ -14,6 +14,8 @@ final readonly class Plan
         public string $name,
         public string $mode,
         public int $dailyLimit,
+        public bool $aiWriting = false,
+        public int $aiMonthlyQuota = 0,
     ) {}
 
     /**
