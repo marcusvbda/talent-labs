@@ -734,6 +734,7 @@
     "review.job_link.hint": "The link to the job is added automatically when the email is sent.",
     "review.locked": "This application is already queued.",
     "review.failed": "We could not queue this application. Please try again.",
+    "reply.not_sent": "Only sent applications can be marked as replied.",
     "review.mode.denied": "Your plan sends without review.",
     "review.subject.variables": "The subject can't contain variables.",
     "review.body.variables": "The message can only use the job link variable.",

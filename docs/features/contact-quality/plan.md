@@ -47,7 +47,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 9 | Backfill command | laravel-backend | 4 | P13 | S | DONE |
 | 10 | Suppression table and probe skip | laravel-backend | 4 | P18, P18a | M | DONE |
 | 11 | Suppression on queueing and sending | laravel-backend | 6, 10 | P18, P18a | M | DONE |
-| 12 | Reply endpoint and tier report | laravel-backend | 6 | P12 | M | PENDING |
+| 12 | Reply endpoint and tier report | laravel-backend | 6 | P12 | M | DONE |
 | 13 | "I got a reply" client action | inertia-frontend | 12 | P12 | S | PENDING |
 | 14 | Guarded company page fetcher | laravel-backend | 10 | P14, P16 | M | PENDING |
 | 15 | Named-contact coverage report (stops for the owner) | laravel-backend | 14 | P14, P16, P18 | M | PENDING |
@@ -512,7 +512,8 @@ Origin: P18, P18a
 
 ### Phase 12 — Replies can be recorded and reported
 
-Status: PENDING
+Status: DONE
+Evidence: the migration ran forward; through the HTTP kernel in a rolled-back transaction, `POST /applications/{id}/reply` marked a client's own sent application (200, `repliedAt` set, re-marking kept the first timestamp) and unmarked it (`replied_at` null), another client's got 403, a queued one 422, a missing `replied` 422, and the response keys carry no recipient, tier or source; `reports:tier-performance` and `--json` showed only a zero total on the real data, `--days=0` is rejected, and with a sent tier-A application marked replied plus one sent application without a tier it showed A 1/1 100.0%, unknown 1/0 0.0%, Total 2/1 50.0%; `pint --dirty`, `composer types:check` (0 errors), `--filter=Applications` (2 tests) and `--filter=Outreach` (31 tests) pass. `code-reviewer` APPROVED in round 1. Notes: added the key `reply.not_sent` to `lang/en.json` and `lang/pt.json` for the 422 message (not in the contract; the message is client-facing and the product is EN/PT); the Wayfinder output (`resources/js/routes`, `actions`) is git-ignored, so `wayfinder:generate` was not committed; the realtime refresh comes from the existing `Application::saved` hook; the form request validates before the gate, so a foreign application with an invalid body returns 422 rather than 403.
 Role: laravel-backend · Depends on: 6 · Covers: P12 · Size: M
 Origin: P12 "a client action 'I got a reply' on sent applications (replied_at), and a read-only report reports:tier-performance"
 

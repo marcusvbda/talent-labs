@@ -42,6 +42,7 @@ class ApplicationItemResource extends JsonResource
             'queuedAt' => $application->queued_at?->toIso8601String(),
             'scheduledFor' => $application->scheduled_for?->toIso8601String(),
             'sentAt' => $application->sent_at?->toIso8601String(),
+            'repliedAt' => $application->replied_at?->toIso8601String(),
             'jobUrl' => $application->status === ApplicationStatus::Sent
                 ? self::safeUrl($application->jobPosting?->applicationUrl())
                 : null,

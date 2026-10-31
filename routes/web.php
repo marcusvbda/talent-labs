@@ -65,6 +65,7 @@ Route::middleware(['auth', 'client', 'verified', 'throttle:120,1,internal'])
         Route::post('/applications/reviewed/batch', [ReviewController::class, 'reviewedBatch'])->name('applications.reviewed.batch');
         Route::get('/applications/counts', [ApplicationsController::class, 'counts'])->name('applications.counts');
         Route::get('/applications/{application}', [ApplicationsController::class, 'show'])->name('applications.show');
+        Route::post('/applications/{application}/reply', [ApplicationsController::class, 'reply'])->name('applications.reply');
         Route::get('/sending', [SendingController::class, 'show'])->name('sending.show');
         Route::post('/sending/pause', [SendingController::class, 'pause'])->name('sending.pause');
         Route::post('/sending/resume', [SendingController::class, 'resume'])->name('sending.resume');

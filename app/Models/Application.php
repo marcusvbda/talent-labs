@@ -41,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable|null $queued_at
  * @property CarbonImmutable|null $scheduled_for
  * @property CarbonImmutable|null $sent_at
+ * @property CarbonImmutable|null $replied_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read User $user
@@ -94,6 +95,7 @@ class Application extends Model
             'queued_at' => 'datetime',
             'scheduled_for' => 'datetime',
             'sent_at' => 'datetime',
+            'replied_at' => 'datetime',
         ];
     }
 

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Client\Internal;
 use App\Client\AccountStatusPresenter;
 use App\Client\ApplicationsPayload;
 use App\Enums\ApplicationOrigin;
+use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ApplicationFiltersRequest;
+use App\Http\Requests\Client\MarkApplicationRepliedRequest;
 use App\Http\Requests\Client\QueueApplicationsRequest;
 use App\Http\Requests\Client\QueueRandomApplicationsRequest;
 use App\Http\Resources\Client\ApplicationDetailResource;
@@ -121,6 +123,26 @@ class ApplicationsController extends Controller
     public function show(Request $request, Application $application): ApplicationDetailResource
     {
         Gate::authorize('view', $application);
+
+        $application->load(['company', 'jobPosting.profile', 'applicationProfile']);
+
+        return new ApplicationDetailResource($application);
+    }
+
+    /**
+     * Marks or unmarks a sent application as replied (client-reported). Re-marking keeps the first timestamp.
+     */
+    public function reply(MarkApplicationRepliedRequest $request, Application $application): ApplicationDetailResource
+    {
+        Gate::authorize('view', $application);
+
+        abort_unless($application->status === ApplicationStatus::Sent, 422, __('reply.not_sent'));
+
+        $replied = $request->boolean('replied');
+
+        $application->forceFill([
+            'replied_at' => $replied ? ($application->replied_at ?? now()) : null,
+        ])->save();
 
         $application->load(['company', 'jobPosting.profile', 'applicationProfile']);
 

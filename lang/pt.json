@@ -734,6 +734,7 @@
     "review.job_link.hint": "O link da vaga é adicionado automaticamente quando o e-mail é enviado.",
     "review.locked": "Esta candidatura já está na fila.",
     "review.failed": "Não foi possível enfileirar esta candidatura. Tente novamente.",
+    "reply.not_sent": "Apenas candidaturas enviadas podem ser marcadas como respondidas.",
     "review.mode.denied": "Seu plano envia sem revisão.",
     "review.subject.variables": "O assunto não pode conter variáveis.",
     "review.body.variables": "A mensagem só pode usar a variável do link da vaga.",
