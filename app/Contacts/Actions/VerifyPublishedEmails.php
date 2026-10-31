@@ -3,6 +3,7 @@
 namespace App\Contacts\Actions;
 
 use App\Contacts\Support\DnsLookup;
+use App\Contacts\Support\OutreachSuppressionList;
 use App\Contacts\Support\SmtpProbe;
 use App\Contacts\Support\SmtpProbeResult;
 use App\Contacts\Support\SmtpVerdict;
@@ -27,11 +28,12 @@ class VerifyPublishedEmails
     public function __construct(
         private DnsLookup $dns,
         private SmtpProbe $smtp,
+        private OutreachSuppressionList $suppressions,
     ) {}
 
     /**
      * Verdict for each email published in a posting of the company: a stored verdict within the TTL,
-     * otherwise one handshake-only session per email domain.
+     * otherwise one handshake-only session per email domain. Suppressed emails are left out.
      *
      * @param  list<string>  $emails
      * @return array<string, ContactConfidence>
@@ -41,6 +43,9 @@ class VerifyPublishedEmails
         $startedAt = microtime(true);
 
         $emails = array_values(array_unique(array_filter($emails, fn (string $email): bool => str_contains($email, '@'))));
+
+        // Suppressed addresses or domains get no probe and no verdict, so they never become sendable.
+        $emails = array_values(array_filter($emails, fn (string $email): bool => ! $this->suppressions->covers($email)));
 
         if ($emails === []) {
             return [];

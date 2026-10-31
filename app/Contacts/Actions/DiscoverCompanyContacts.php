@@ -4,6 +4,7 @@ namespace App\Contacts\Actions;
 
 use App\Ai\Jobs\ExtractJobPostingProfileJob;
 use App\Contacts\Support\DnsLookup;
+use App\Contacts\Support\OutreachSuppressionList;
 use App\Contacts\Support\SmtpProbe;
 use App\Contacts\Support\SmtpProbeResult;
 use App\Contacts\Support\SmtpVerdict;
@@ -25,6 +26,7 @@ class DiscoverCompanyContacts
     public function __construct(
         private DnsLookup $dns,
         private SmtpProbe $smtp,
+        private OutreachSuppressionList $suppressions,
     ) {}
 
     /**
@@ -52,6 +54,13 @@ class DiscoverCompanyContacts
         }
 
         if ($company->contact_status !== ContactStatus::Pending) {
+            return;
+        }
+
+        if ($this->suppressions->coversDomain($domain)) {
+            // Suppressed company: never probed; stays inconclusive until it gives up.
+            $this->markInconclusive($company);
+
             return;
         }
 

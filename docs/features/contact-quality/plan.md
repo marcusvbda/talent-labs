@@ -45,7 +45,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 7 | Tier ordering | laravel-backend | 6 | P10 | S | DONE |
 | 8 | Admin shows source and tier | filament-admin | 6 | P11 | S | DONE |
 | 9 | Backfill command | laravel-backend | 4 | P13 | S | DONE |
-| 10 | Suppression table and probe skip | laravel-backend | 4 | P18, P18a | M | PENDING |
+| 10 | Suppression table and probe skip | laravel-backend | 4 | P18, P18a | M | DONE |
 | 11 | Suppression on queueing and sending | laravel-backend | 6, 10 | P18, P18a | M | PENDING |
 | 12 | Reply endpoint and tier report | laravel-backend | 6 | P12 | M | PENDING |
 | 13 | "I got a reply" client action | inertia-frontend | 12 | P12 | S | PENDING |
@@ -442,7 +442,8 @@ Origin: P13 "Backfill for stored postings: contacts:extract-published {--limit=}
 
 ### Phase 10 — Suppression list exists and stops probing
 
-Status: PENDING
+Status: DONE
+Evidence: `php artisan migrate` ran the new migration; in a rolled-back transaction with fake `DnsLookup` and `SmtpProbe`, no row and an unconfirmed domain row left discovery at 1 probe and the published-email check at 2; a confirmed domain row left discovery at 0 probes and the published-email check at 1 (only the other domain); adding a confirmed email row left it at 0 and an empty result; a row with both `domain` and `email` was rejected by the check constraint and a duplicate domain by the unique index; `pint --dirty`, `composer types:check` (0 errors) and `--filter=Outreach` (31 tests) pass; `--filter=Contact` matches no tests. `code-reviewer` APPROVED in round 1. Notes: no Filament resource or opt-out form exists yet (`landing-and-legal` P12, P13), so rows are added by hand and only take effect with `confirmed_at` set; the model lowercases and trims on write but does not reduce a subdomain to its registrable domain, so a row saved as `www.acme.com` never matches: the future admin/opt-out UI must store the registrable domain; a suppressed company stays pending until the usual 7-day give-up; the list does one small indexed query per check, uncached.
 Role: laravel-backend · Depends on: 4 · Covers: P18, P18a · Size: M
 Origin: P18 "applies to every tier and stops probing too"; P18a
 
