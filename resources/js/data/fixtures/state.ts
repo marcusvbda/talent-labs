@@ -84,6 +84,7 @@ const PLAN_CONFIG: Record<PlanKey, { dailyLimit: number; mode: SendMode }> = {
     pro: { dailyLimit: 100, mode: 'review' },
     max: { dailyLimit: 100, mode: 'review' },
 };
+const AI_WRITING_LIMIT = 500;
 const PLAN_NAMES: Record<PlanKey, string> = {
     free: 'Free',
     starter: 'Starter',
@@ -107,6 +108,7 @@ type FixtureData = {
     currentStage: SendStage | null;
     currentSubStep: SubStep | null;
     failNextSend: boolean;
+    aiWritingUsed: number; // non-cached AI cover letters generated
     waitStartedAt: string | null; // when the current wait for the queue head began
     // NOTE: the window is only a LABEL. The simulated engine does not enforce
     // it.
@@ -162,6 +164,7 @@ const initial: FixtureData = {
     currentStage: null,
     currentSubStep: null,
     failNextSend: false,
+    aiWritingUsed: 0,
     waitStartedAt: null,
     window: {
         start: '09:00',
@@ -355,6 +358,10 @@ const accountStatus = (): AccountStatus => {
         unreadNotifications: data.notifications.filter(
             (row) => row.readAt === null,
         ).length,
+        aiWriting:
+            dev.plan === 'max'
+                ? { used: data.aiWritingUsed, limit: AI_WRITING_LIMIT }
+                : null,
     };
 };
 
@@ -654,6 +661,10 @@ function queueRandom(): QueueResult {
     return result;
 }
 
+function bumpAiWritingUsed(): void {
+    store.set((s) => ({ ...s, aiWritingUsed: s.aiWritingUsed + 1 }));
+}
+
 export const fixtureState = {
     ...store,
     account,
@@ -668,4 +679,5 @@ export const fixtureState = {
     queuedItems: queuedRows,
     patchApplication,
     addNotification,
+    bumpAiWritingUsed,
 };

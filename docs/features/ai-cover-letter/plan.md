@@ -41,7 +41,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | 6     | Cover letter agent and validator     | laravel-backend  | 4          | P6-P9, P12, P14, P22 | M    | DONE    |
 | 7     | Letter job, quota, fallback, event   | laravel-backend  | 1, 5, 6    | P10, P15, P17-P20    | M    | DONE    |
 | 8     | Draft AI state and generate endpoint | laravel-backend  | 7          | P10, P16-P19         | M    | DONE    |
-| 9     | Frontend contract, hook and realtime | inertia-frontend | 8          | P17, P21             | S    | PENDING |
+| 9     | Frontend contract, hook and realtime | inertia-frontend | 8          | P17, P21             | S    | DONE    |
 | 10    | Review screen shows the AI letter    | inertia-frontend | 9          | P16, P17, P19, P21   | M    | PENDING |
 | 11    | Profile hint and quota usage         | inertia-frontend | 9          | P10, P19             | S    | PENDING |
 | 12    | Verification and report              | laravel-backend  | 1-11       | spec x code gap      | S    | PENDING |
@@ -388,7 +388,8 @@ Origin: P16 (D15), P17, P18, P19
 
 ### Phase 9 — The frontend knows the new contract
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn run check` and `yarn types:check` pass (after `php artisan wayfinder:generate`, since `resources/js/actions` is git-ignored); no component changed, so existing screens behave the same. code-reviewer APPROVED; its fixture robustness notes were applied (the fixture generate handler answers `off` and does not emit when the test plan is not `max`). The fixture flow (writing, then `cover_letter.updated` after about 1.5 s) was not exercised in a browser; phase 10 uses it.
 Role: inertia-frontend · Depends on: 8 · Covers: P17, P21 · Size: S
 Origin: P17, P21
 

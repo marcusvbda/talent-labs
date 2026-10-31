@@ -2,8 +2,10 @@ import { ApiError } from '@/data/api';
 import { toJobCard } from '@/data/fixtures/handlers/cards';
 import { linksText } from '@/data/fixtures/handlers/profiles';
 import { renderTemplate } from '@/data/fixtures/handlers/templates';
+import { getDevState } from '@/data/fixtures/dev-state';
 import { fixtureState } from '@/data/fixtures/state';
-import type { ReviewDraft } from '@/types/contracts';
+import { devEmitter } from '@/data/realtime/dev-emitter';
+import type { CoverLetterResult, ReviewDraft } from '@/types/contracts';
 
 const CLIENT_NAME = 'Ana Silva';
 
@@ -51,6 +53,7 @@ export function buildDrafts(jobIds: number[]): ReviewDraft[] {
             body: renderTemplate(profile.emailBody, vars),
             cvFileName: profile.cv?.fileName ?? '',
             recipientLabel: `${job.company.name} careers team`,
+            ai: getDevState().plan === 'max' ? { state: 'idle' } : null,
         });
     }
 
@@ -83,4 +86,63 @@ export function validateReviewed(subject: string, body: string): void {
     if (Object.keys(errors).length > 0) {
         throw new ApiError(422, 'Invalid draft', errors);
     }
+}
+
+const AI_LETTERS = {
+    en: [
+        'I enjoy building reliable products with small, focused teams, and your open role matches the work I do best.',
+        'Your team caught my attention because of the product you ship; I would bring steady delivery and clear communication.',
+    ],
+    pt: [
+        'Gosto de construir produtos confiáveis com equipes pequenas e focadas, e a vaga se encaixa no que faço de melhor.',
+        'O produto da sua equipe chamou minha atenção; eu levaria entregas constantes e comunicação clara.',
+    ],
+};
+
+const AI_DELAY_MS = 1500;
+
+// Returns "writing" at once; the letter lands later as `cover_letter.updated`.
+export function generateCoverLetter(
+    jobId: number,
+    regenerate: boolean,
+): CoverLetterResult {
+    if (getDevState().plan !== 'max') {
+        return { state: 'off', body: null };
+    }
+
+    const [draft] = buildDrafts([jobId]);
+    const profile = fixtureState
+        .get()
+        .profiles.find((row) => row.language === draft.language && row.active);
+    const sample = AI_LETTERS[draft.language][regenerate ? 1 : 0];
+    const manual = profile?.coverLetter ?? '';
+    const body =
+        manual !== '' && draft.body.includes(manual)
+            ? draft.body.replace(manual, sample)
+            : `${draft.body}\n\n${sample}`;
+
+    setTimeout(() => {
+        // The test plan may have changed while the letter was being written.
+        if (getDevState().plan !== 'max') {
+            return;
+        }
+
+        fixtureState.bumpAiWritingUsed();
+
+        const quota = fixtureState.accountStatus().aiWriting;
+
+        if (quota === null) {
+            return;
+        }
+
+        devEmitter.emit('cover_letter.updated', {
+            jobId,
+            state: 'ready',
+            reason: null,
+            body,
+            aiQuota: quota,
+        });
+    }, AI_DELAY_MS);
+
+    return { state: 'writing', body: null };
 }

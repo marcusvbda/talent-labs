@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import {
     accountUpdated,
     applicationProgressed,
+    coverLetterUpdated,
     jobsCollected,
     notificationCreated,
     notifyToast,
@@ -29,6 +30,7 @@ export function useRealtimeCache(): void {
             notificationCreated(payload, qc);
             notifyToast(payload.notification, t);
         },
+        'cover_letter.updated': coverLetterUpdated,
         'jobs.collected': jobsCollected,
     });
 }

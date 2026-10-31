@@ -151,6 +151,15 @@ export function notificationCreated(
     );
 }
 
+export function coverLetterUpdated(
+    { aiQuota }: UserChannelEvents['cover_letter.updated'],
+    qc: QueryClient,
+): void {
+    qc.setQueryData<AccountStatus>(keys.account.status(), (data) =>
+        data?.aiWriting ? { ...data, aiWriting: aiQuota } : data,
+    );
+}
+
 // Types that also surface as a toast when they arrive over the channel.
 const TOAST_TONES: Partial<Record<NotificationType, 'error' | 'info'>> = {
     gmail_reauthorization_required: 'error',

@@ -97,6 +97,7 @@ export type AccountStatus = {
     country: string | null; // ISO 3166-1 alpha-2
     timezone: string | null; // IANA
     unreadNotifications: number;
+    aiWriting: { used: number; limit: number } | null;
 };
 
 export type JobCard = {
@@ -246,6 +247,11 @@ export type ReviewDraft = {
     body: string; // rendered, but `{{ job_url }}` kept as a token shown as a chip
     cvFileName: string;
     recipientLabel: string; // e.g. "Klarwerk careers team" — never the address
+    ai: { state: 'idle' | 'ready' | 'quota' | 'off' } | null; // null: plan without AI writing
+};
+export type CoverLetterResult = {
+    state: 'writing' | 'ready' | 'quota' | 'off';
+    body: string | null;
 };
 export type QueueResult = {
     queued: {

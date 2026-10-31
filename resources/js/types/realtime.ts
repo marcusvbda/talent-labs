@@ -11,6 +11,13 @@ export type UserChannelEvents = {
     'sending.updated': { sending: LiveSending };
     'account.updated': { status: AccountStatus };
     'notification.created': { notification: NotificationItem };
+    'cover_letter.updated': {
+        jobId: number;
+        state: 'ready' | 'manual';
+        reason: 'quota' | 'failed' | null;
+        body: string | null;
+        aiQuota: { used: number; limit: number };
+    };
 };
 // Public channel `jobs`, event '.jobs.collected'
 export type JobsChannelEvents = {

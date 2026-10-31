@@ -13,6 +13,7 @@ import PreferencesController from '@/actions/App/Http/Controllers/Client/Interna
 import ProfileCvController from '@/actions/App/Http/Controllers/Client/Internal/ProfileCvController';
 import ProfilePreviewController from '@/actions/App/Http/Controllers/Client/Internal/ProfilePreviewController';
 import ProfilesController from '@/actions/App/Http/Controllers/Client/Internal/ProfilesController';
+import ReviewCoverLetterController from '@/actions/App/Http/Controllers/Client/Internal/ReviewCoverLetterController';
 import ReviewController from '@/actions/App/Http/Controllers/Client/Internal/ReviewController';
 import SendingController from '@/actions/App/Http/Controllers/Client/Internal/SendingController';
 import type {
@@ -104,6 +105,7 @@ export const endpoints = {
     queueApplications: (): Endpoint => ApplicationsController.store(),
     queueRandom: (): Endpoint => ApplicationsController.random(),
     reviewDrafts: (): Endpoint => ReviewController.drafts(),
+    generateCoverLetter: (): Endpoint => ReviewCoverLetterController(),
     queueReviewed: (): Endpoint => ReviewController.reviewed(),
     queueReviewedBatch: (): Endpoint => ReviewController.reviewedBatch(),
     applications: (filters: ApplicationFilters = {}): Endpoint => {
