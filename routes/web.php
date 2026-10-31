@@ -24,6 +24,7 @@ use App\Http\Controllers\Client\Internal\ProfileCvController;
 use App\Http\Controllers\Client\Internal\ProfilePreviewController;
 use App\Http\Controllers\Client\Internal\ProfilesController;
 use App\Http\Controllers\Client\Internal\ReviewController;
+use App\Http\Controllers\Client\Internal\ReviewCoverLetterController;
 use App\Http\Controllers\Client\Internal\SendingController;
 use App\Http\Controllers\Client\JobsPageController;
 use App\Http\Controllers\ConnectedIntegrationOAuthController;
@@ -61,6 +62,7 @@ Route::middleware(['auth', 'client', 'verified', 'throttle:120,1,internal'])
         Route::post('/applications', [ApplicationsController::class, 'store'])->name('applications.store');
         Route::post('/applications/random', [ApplicationsController::class, 'random'])->name('applications.random');
         Route::post('/applications/drafts', [ReviewController::class, 'drafts'])->name('applications.drafts');
+        Route::post('/applications/drafts/cover-letter', ReviewCoverLetterController::class)->middleware('throttle:30,1,review-cover-letter')->name('applications.drafts.cover-letter');
         Route::post('/applications/reviewed', [ReviewController::class, 'reviewed'])->name('applications.reviewed');
         Route::post('/applications/reviewed/batch', [ReviewController::class, 'reviewedBatch'])->name('applications.reviewed.batch');
         Route::get('/applications/counts', [ApplicationsController::class, 'counts'])->name('applications.counts');

@@ -2,6 +2,7 @@
 
 namespace App\Client;
 
+use App\Ai\Support\CoverLetterQuota;
 use App\Contracts\CredentialIntegrationPlugin;
 use App\Enums\ConnectedIntegrationStatus;
 use App\Enums\SendingPauseReason;
@@ -53,6 +54,7 @@ final class AccountStatusPresenter
                 'dailyLimit' => $plan->dailyLimit,
             ],
             'quota' => $this->quota($user),
+            'aiWriting' => $plan->aiWriting ? ['used' => CoverLetterQuota::used($user), 'limit' => CoverLetterQuota::limit($user)] : null,
             'sendingAccount' => [
                 'state' => $accountState,
                 'accountEmail' => $accountEmail,

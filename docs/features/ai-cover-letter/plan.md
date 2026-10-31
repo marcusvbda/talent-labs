@@ -40,7 +40,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | 5     | AI usage per user and letter cache   | laravel-backend  | none       | P18, P20             | S    | DONE    |
 | 6     | Cover letter agent and validator     | laravel-backend  | 4          | P6-P9, P12, P14, P22 | M    | DONE    |
 | 7     | Letter job, quota, fallback, event   | laravel-backend  | 1, 5, 6    | P10, P15, P17-P20    | M    | DONE    |
-| 8     | Draft AI state and generate endpoint | laravel-backend  | 7          | P10, P16-P19         | M    | PENDING |
+| 8     | Draft AI state and generate endpoint | laravel-backend  | 7          | P10, P16-P19         | M    | DONE    |
 | 9     | Frontend contract, hook and realtime | inertia-frontend | 8          | P17, P21             | S    | PENDING |
 | 10    | Review screen shows the AI letter    | inertia-frontend | 9          | P16, P17, P19, P21   | M    | PENDING |
 | 11    | Profile hint and quota usage         | inertia-frontend | 9          | P10, P19             | S    | PENDING |
@@ -344,7 +344,9 @@ Origin: P15, P17, P18, P19, P20
 
 ### Phase 8 — Drafts report their AI state and the client can ask for a letter
 
-Status: PENDING
+Status: DONE
+Evidence: `pint`, `composer types:check` (0 errors) and `php artisan test --compact --filter=Outreach` (31 passed) pass. Driven over HTTP in a rolled-back transaction with `Queue::fake` (user switched between Pro and Max): Pro drafts have `ai` null and generate returns 403 with no dispatch; Max drafts are `idle`, generate returns `writing` with exactly 1 dispatch; a cached letter makes the draft `ready` with the letter in `body`, and generate returns `ready` with a cache-hit usage row and no dispatch; regenerate with a cached letter dispatches 1; at the quota limit drafts are `quota` (a cached letter stays `ready`), generate returns `quota` with no dispatch; a job outside the pool returns `off`; an empty manual letter or a body without the slot gives `off`; a non-integer `jobId` returns 422; `drafts` dispatches nothing; `aiWriting` in the account status is `{used, limit}` for Max and null for Pro. code-reviewer APPROVED.
+Notes: the generated Wayfinder files (`resources/js/actions`, `routes`) are git-ignored; phase 9 must run `php artisan wayfinder:generate` before type checking. Non-blocking: profile resolution now exists in `drafts`, the job and the new controller, and the cache-hit usage row is written in the controller and the job; a shared helper would be a later cleanup.
 Role: laravel-backend · Depends on: 7 · Covers: P10, P16, P17, P18, P19 · Size: M
 Origin: P16 (D15), P17, P18, P19
 
