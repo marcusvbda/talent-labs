@@ -35,7 +35,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | ----- | ------------------------------------ | ---------------- | ---------- | -------------------- | ---- | ------- |
 | 1     | Plan capabilities                    | laravel-backend  | none       | P2                   | S    | DONE    |
 | 2     | Frontend accepts the Max plan        | inertia-frontend | none       | P5                   | M    | DONE    |
-| 3     | Max plan enabled                     | laravel-backend  | 1, 2       | P1, P3, P4, P5       | S    | PENDING |
+| 3     | Max plan enabled                     | laravel-backend  | 1, 2       | P1, P3, P4, P5       | S    | DONE    |
 | 4     | Length limits and manual maximum     | laravel-backend  | none       | P11, P13             | S    | PENDING |
 | 5     | AI usage per user and letter cache   | laravel-backend  | none       | P18, P20             | S    | PENDING |
 | 6     | Cover letter agent and validator     | laravel-backend  | 4          | P6-P9, P12, P14, P22 | M    | PENDING |
@@ -163,7 +163,8 @@ Origin: P5 "Client plans page (`PlansResource`) and billing checkout support the
 
 ### Phase 3 — The Max plan exists
 
-Status: PENDING
+Status: DONE
+Evidence: `pint` passed; `composer types:check` 0 errors; `php artisan test --compact --filter=Outreach` 31 passed; tinker: catalog has 4 plans, `max` is review / 100 per day / `aiWriting` true / quota 500, prices br 9000, eu 2900, row 3000, Stripe ids null (checkout refuses `unavailable` through the existing guard); code-reviewer APPROVED. Admin selects use `PlanKey::class`, so they list Max without changes (not opened in a browser).
 Role: laravel-backend · Depends on: 1, 2 · Covers: P1, P3, P4, P5 · Size: S
 Origin: P1, P3, P4, P5 (D6, D7)
 

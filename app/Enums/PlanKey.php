@@ -9,6 +9,7 @@ enum PlanKey: string implements HasLabel
     case Free = 'free';
     case Starter = 'starter';
     case Pro = 'pro';
+    case Max = 'max';
 
     public function getLabel(): string
     {
@@ -16,6 +17,7 @@ enum PlanKey: string implements HasLabel
             self::Free => 'Free',
             self::Starter => 'Starter',
             self::Pro => 'Pro',
+            self::Max => 'Max',
         };
     }
 }

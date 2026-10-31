@@ -19,7 +19,7 @@ final readonly class Plan
     ) {}
 
     /**
-     * Starter and Pro browse and pick postings; Free only sends at random.
+     * Starter, Pro and Max browse and pick postings; Free only sends at random.
      */
     public function canChooseJobs(): bool
     {

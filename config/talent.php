@@ -161,6 +161,7 @@ return [
             'free' => ['name' => 'Free', 'mode' => 'random', 'daily_limit' => (int) env('PLAN_FREE_DAILY_LIMIT', 10), 'ai_writing' => false, 'ai_monthly_quota' => 0],
             'starter' => ['name' => 'Starter', 'mode' => 'select', 'daily_limit' => (int) env('PLAN_STARTER_DAILY_LIMIT', 50), 'ai_writing' => false, 'ai_monthly_quota' => 0],
             'pro' => ['name' => 'Pro', 'mode' => 'review', 'daily_limit' => (int) env('PLAN_PRO_DAILY_LIMIT', 100), 'ai_writing' => false, 'ai_monthly_quota' => 0],
+            'max' => ['name' => 'Max', 'mode' => 'review', 'daily_limit' => (int) env('PLAN_MAX_DAILY_LIMIT', 100), 'ai_writing' => true, 'ai_monthly_quota' => (int) env('PLAN_MAX_AI_MONTHLY_QUOTA', 500)],
         ],
         // Displayed prices, in minor units per region. 0 = free in that region (no Checkout).
         'prices' => [
@@ -179,6 +180,11 @@ return [
                 'eu' => (int) env('PRICE_PRO_EUR', 1900),
                 'row' => (int) env('PRICE_PRO_USD', 2000),
             ],
+            'max' => [
+                'br' => (int) env('PRICE_MAX_BRL', 9000),
+                'eu' => (int) env('PRICE_MAX_EUR', 2900),
+                'row' => (int) env('PRICE_MAX_USD', 3000),
+            ],
         ],
         // Charged prices: Stripe Price IDs per plan and region. Keep them equal to `prices`.
         'stripe_prices' => [
@@ -191,6 +197,11 @@ return [
                 'br' => env('STRIPE_PRICE_PRO_BRL'),
                 'eu' => env('STRIPE_PRICE_PRO_EUR'),
                 'row' => env('STRIPE_PRICE_PRO_USD'),
+            ],
+            'max' => [
+                'br' => env('STRIPE_PRICE_MAX_BRL'),
+                'eu' => env('STRIPE_PRICE_MAX_EUR'),
+                'row' => env('STRIPE_PRICE_MAX_USD'),
             ],
         ],
         'highlighted' => env('PLAN_HIGHLIGHTED', 'starter'),

@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Validator;
 class ReviewController extends Controller
 {
     /**
-     * `ReviewDraft[]` in request order (Pro plan). Postings outside the pool or without an
+     * `ReviewDraft[]` in request order (review plans). Postings outside the pool or without an
      * active, complete profile in their language are omitted.
      */
     public function drafts(ReviewDraftsRequest $request): JsonResponse
@@ -92,7 +92,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Queue several reviewed emails in the given order (Pro plan). Returns the `QueueResult` contract.
+     * Queue several reviewed emails in the given order (review plans). Returns the `QueueResult` contract.
      */
     public function reviewedBatch(QueueReviewedBatchRequest $request, QueueApplication $queueApplication, AccountStatusPresenter $presenter): JsonResponse
     {
