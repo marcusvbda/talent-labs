@@ -281,4 +281,13 @@ return [
         // Comma list of security header names the proxy already sets (case-insensitive); the app skips them.
         'headers_skip' => env('SECURITY_HEADERS_SKIP', ''),
     ],
+
+    'ai' => [
+        'cover_letter' => [
+            'provider' => env('AI_COVER_LETTER_PROVIDER', 'openai'),
+            'model' => env('AI_COVER_LETTER_MODEL', 'gpt-5-mini'),
+            // Empty = provider default.
+            'reasoning_effort' => env('AI_COVER_LETTER_REASONING_EFFORT', 'minimal'),
+        ],
+    ],
 ];

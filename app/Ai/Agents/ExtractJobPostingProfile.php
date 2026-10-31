@@ -43,7 +43,7 @@ class ExtractJobPostingProfile implements Agent, HasProviderOptions, HasStructur
     {
         $this->posting->loadMissing('company');
 
-        $description = $this->descriptionText() ?? '';
+        $description = $this->escapedPlainText($this->posting->description_html ?? $this->posting->description_text) ?? '';
 
         return $this->compactContext([
             'title' => $this->posting->title,
@@ -83,22 +83,6 @@ class ExtractJobPostingProfile implements Agent, HasProviderOptions, HasStructur
             'language' => $schema->string()->enum(self::LANGUAGES)->required(),
             'summary' => $schema->string()->max(300)->nullable()->required(),
         ];
-    }
-
-    /**
-     * Some sources deliver the description as entity-escaped HTML
-     * (`&lt;p&gt;...`), so the first pass only decodes it back into markup;
-     * a second pass strips that markup.
-     */
-    private function descriptionText(): ?string
-    {
-        $text = $this->plainText($this->posting->description_html ?? $this->posting->description_text);
-
-        if ($text !== null && preg_match('#</?[a-z][a-z0-9]*\b[^>]*>#i', $text) === 1) {
-            return $this->plainText($text);
-        }
-
-        return $text;
     }
 
     /**

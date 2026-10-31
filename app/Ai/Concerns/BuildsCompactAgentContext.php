@@ -44,4 +44,20 @@ trait BuildsCompactAgentContext
 
         return trim(preg_replace('/\s+/', ' ', $text)) ?: null;
     }
+
+    /**
+     * Some sources deliver the description as entity-escaped HTML
+     * (`&lt;p&gt;...`), so the first pass only decodes it back into markup;
+     * a second pass strips that markup.
+     */
+    protected function escapedPlainText(?string $html): ?string
+    {
+        $text = $this->plainText($html);
+
+        if ($text !== null && preg_match('#</?[a-z][a-z0-9]*\b[^>]*>#i', $text) === 1) {
+            return $this->plainText($text);
+        }
+
+        return $text;
+    }
 }

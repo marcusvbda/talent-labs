@@ -38,7 +38,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | 3     | Max plan enabled                     | laravel-backend  | 1, 2       | P1, P3, P4, P5       | S    | DONE    |
 | 4     | Length limits and manual maximum     | laravel-backend  | none       | P11, P13             | S    | DONE    |
 | 5     | AI usage per user and letter cache   | laravel-backend  | none       | P18, P20             | S    | DONE    |
-| 6     | Cover letter agent and validator     | laravel-backend  | 4          | P6-P9, P12, P14, P22 | M    | PENDING |
+| 6     | Cover letter agent and validator     | laravel-backend  | 4          | P6-P9, P12, P14, P22 | M    | DONE    |
 | 7     | Letter job, quota, fallback, event   | laravel-backend  | 1, 5, 6    | P10, P15, P17-P20    | M    | PENDING |
 | 8     | Draft AI state and generate endpoint | laravel-backend  | 7          | P10, P16-P19         | M    | PENDING |
 | 9     | Frontend contract, hook and realtime | inertia-frontend | 8          | P17, P21             | S    | PENDING |
@@ -262,7 +262,9 @@ Origin: P20 "`ai_usage_records.user_id` (nullable, forward migration)"; P18 cach
 
 ### Phase 6 — The agent writes a letter that passes validation
 
-Status: PENDING
+Status: DONE
+Evidence: `pint`, `composer types:check` (0 errors) and `php artisan test --compact --filter=Outreach` (31 passed) pass. In tinker with in-memory models: `context()` holds the marker, no `http`, no `@`, and a long description is cut to exactly 4000 characters; with malformed link entries and null relations it does not throw. The validator rejects empty, 801 characters, `{{`, `[[`, an email, a URL, `acme.com` and a wrong language, and accepts clean EN and PT letters (800 accepted). code-reviewer: one correction round (the link labels now guard malformed entries like `linksText()`), then APPROVED. The description-decoding helper moved from `ExtractJobPostingProfile` into `BuildsCompactAgentContext` with identical behaviour.
+Open, non-blocking (follow the contract literally): the posting profile fields `normalized_title`, `seniority`, `stack` and `summary` reach the prompt without redaction; and `manual_cover_letter` is rendered with the real links before redaction, so a bare domain without a path (for example `johndoe.dev`) written through `{{ links }}` inside the manual letter would not be redacted.
 Role: laravel-backend · Depends on: 4 · Covers: P6, P7, P8, P9, P12, P14, P22 · Size: M
 Origin: P6-P9, P12, P14, P22 (D8, D14)
 
