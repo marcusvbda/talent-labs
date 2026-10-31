@@ -8,9 +8,11 @@ use App\Collection\Data\JobPostingData;
 use App\Collection\Data\SourceContactData;
 use App\Collection\Support\PostingRestrictions;
 use App\Collection\Support\PostingTitle;
+use App\Collection\Support\PublishedEmailExtractor;
 use App\Collection\Support\RoleClassifier;
 use App\Contacts\Actions\ResolveCompanyForPosting;
 use App\Contacts\Actions\RunCompanyDiscovery;
+use App\Enums\SourceContactKind;
 use App\Enums\SourceRunStatus;
 use App\Models\JobPosting;
 use App\Models\SourceRun;
@@ -213,9 +215,7 @@ class FetchJobsFromSource implements ShouldQueue
             'url' => $item->url,
             'apply_url' => $item->applyUrl,
             'company_website' => $item->companyWebsite,
-            'source_contacts' => $item->sourceContacts === []
-                ? null
-                : json_encode(array_map(fn (SourceContactData $c): array => $c->toArray(), $item->sourceContacts)),
+            'source_contacts' => $this->sourceContacts($item),
             'description_html' => $item->descriptionHtml,
             'description_text' => $item->descriptionText,
             'published_at' => $item->publishedAt?->setTimezone(config('app.timezone')),
@@ -226,6 +226,33 @@ class FetchJobsFromSource implements ShouldQueue
             'created_at' => $now,
             'updated_at' => $now,
         ];
+    }
+
+    /**
+     * The adapter's contacts plus the emails the posting publishes that the adapter didn't return,
+     * JSON-encoded; null when there are none, so the upsert keeps the stored contacts.
+     */
+    private function sourceContacts(JobPostingData $item): ?string
+    {
+        $contacts = $item->sourceContacts;
+        $known = [];
+
+        foreach ($contacts as $contact) {
+            if ($contact->email !== null) {
+                $known[] = mb_strtolower($contact->email);
+            }
+        }
+
+        foreach (PublishedEmailExtractor::extract($item->descriptionHtml, $item->descriptionText, $item->applyUrl) as $email) {
+            if (! in_array($email, $known, true)) {
+                $contacts[] = new SourceContactData(SourceContactKind::Email, email: $email);
+                $known[] = $email;
+            }
+        }
+
+        return $contacts === []
+            ? null
+            : json_encode(array_map(fn (SourceContactData $c): array => $c->toArray(), $contacts), JSON_THROW_ON_ERROR);
     }
 
     /**
