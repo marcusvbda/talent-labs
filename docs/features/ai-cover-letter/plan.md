@@ -39,7 +39,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | 4     | Length limits and manual maximum     | laravel-backend  | none       | P11, P13             | S    | DONE    |
 | 5     | AI usage per user and letter cache   | laravel-backend  | none       | P18, P20             | S    | DONE    |
 | 6     | Cover letter agent and validator     | laravel-backend  | 4          | P6-P9, P12, P14, P22 | M    | DONE    |
-| 7     | Letter job, quota, fallback, event   | laravel-backend  | 1, 5, 6    | P10, P15, P17-P20    | M    | PENDING |
+| 7     | Letter job, quota, fallback, event   | laravel-backend  | 1, 5, 6    | P10, P15, P17-P20    | M    | DONE    |
 | 8     | Draft AI state and generate endpoint | laravel-backend  | 7          | P10, P16-P19         | M    | PENDING |
 | 9     | Frontend contract, hook and realtime | inertia-frontend | 8          | P17, P21             | S    | PENDING |
 | 10    | Review screen shows the AI letter    | inertia-frontend | 9          | P16, P17, P19, P21   | M    | PENDING |
@@ -301,7 +301,9 @@ Origin: P6-P9, P12, P14, P22 (D8, D14)
 
 ### Phase 7 — A queued job writes the letter, within quota, with a fallback
 
-Status: PENDING
+Status: DONE
+Evidence: `pint`, `composer types:check` (0 errors) and `php artisan test --compact --filter=Outreach` (31 passed) pass. Run against the dev database inside a rolled-back transaction (user switched to Max, `GenerateCoverLetter::fake`): valid output gives `ready` and one Completed row with `user_id`; a second run without regenerate makes no agent call and records a `cache_hit` row; regenerate calls the agent and overwrites the cache; invalid twice gives 2 Failed rows, `manual`/`failed` and no quota use; invalid then valid gives 2 rows and 1 quota unit; at the limit it sends `manual`/`quota` with no call and no rows; a provider exception never escapes (2 Failed rows, `manual`/`failed`); an existing application sends no event, makes no call and records no row. The body holds the letter and none of the posting's URLs (only the client's own profile links). No `Log::`/`report(` in the new AI code. The `ai` queue already has a dev worker. code-reviewer APPROVED.
+Notes: the job also requires `isComplete()` on the profile, like `ReviewController::drafts`. `ShouldBeUnique` relies on the database cache store's atomic locks (not exercised here).
 Role: laravel-backend · Depends on: 1, 5, 6 · Covers: P10, P15, P17, P18, P19, P20 · Size: M
 Origin: P15, P17, P18, P19, P20
 

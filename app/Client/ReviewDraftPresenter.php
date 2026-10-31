@@ -22,6 +22,36 @@ final class ReviewDraftPresenter
      */
     public static function forUser(User $user, JobPosting $posting, ApplicationProfile $profile): array
     {
+        return [
+            'job' => new JobCardResource($posting),
+            'language' => $profile->language,
+            'subject' => ApplicationTemplateRenderer::render((string) $profile->email_subject, self::variables($user, $posting, $profile)),
+            'body' => self::bodyFor($user, $posting, $profile, null),
+            'cvFileName' => $profile->cv_original_name,
+            'recipientLabel' => __('review.recipient_label', ['company' => $posting->company->name ?? '']),
+        ];
+    }
+
+    /**
+     * The client-safe draft body. A given `$letter` (the AI cover letter) replaces only
+     * the `cover_letter` slot; everything else is rendered as in forUser().
+     */
+    public static function bodyFor(User $user, JobPosting $posting, ApplicationProfile $profile, ?string $letter): string
+    {
+        $variables = self::variables($user, $posting, $profile);
+
+        if ($letter !== null) {
+            $variables['cover_letter'] = $letter;
+        }
+
+        return ApplicationTemplateRenderer::render((string) $profile->email_body, $variables);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function variables(User $user, JobPosting $posting, ApplicationProfile $profile): array
+    {
         $posting->loadMissing('collectionRun');
 
         $variables = ApplicationTemplateRenderer::variablesFor($user, $posting, $profile);
@@ -31,13 +61,6 @@ final class ReviewDraftPresenter
         $variables['job_title'] = ClientSafeText::redact($variables['job_title']);
         $variables['job_location'] = ClientSafeText::redact($variables['job_location']);
 
-        return [
-            'job' => new JobCardResource($posting),
-            'language' => $profile->language,
-            'subject' => ApplicationTemplateRenderer::render((string) $profile->email_subject, $variables),
-            'body' => ApplicationTemplateRenderer::render((string) $profile->email_body, $variables),
-            'cvFileName' => $profile->cv_original_name,
-            'recipientLabel' => __('review.recipient_label', ['company' => $posting->company->name ?? '']),
-        ];
+        return $variables;
     }
 }
