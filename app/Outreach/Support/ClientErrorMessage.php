@@ -24,6 +24,7 @@ final class ClientErrorMessage
         'CV is too large for this email provider.' => 'applications.error.cv_too_large_provider',
         'Email content is invalid.' => 'applications.error.content',
         'Recipient is not a verified contact' => 'applications.error.recipient',
+        'Recipient asked not to receive applications.' => 'applications.error.suppressed',
         'Company is no longer verified' => 'applications.error.company',
         'Client account is not active.' => 'applications.error.account',
         'Worker stopped mid-send.' => 'applications.error.unconfirmed',

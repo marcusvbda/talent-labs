@@ -2,10 +2,13 @@
 
 namespace App\Outreach\Actions;
 
+use App\Contacts\Support\OutreachSuppressionList;
 use App\Enums\ApplicationOrigin;
 use App\Enums\ApplicationStatus;
+use App\Enums\ContactSource;
 use App\Events\Client\SendingUpdated;
 use App\Models\Application;
+use App\Models\Company;
 use App\Models\JobPosting;
 use App\Models\User;
 use App\Notifications\Client\ClientNotification;
@@ -23,6 +26,8 @@ class QueueApplication
     public const string REJECT_NO_MATCH = 'This job no longer matches your preferences.';
 
     public const string REJECT_NO_RECIPIENT = 'No verified recipient for this company.';
+
+    public const string REJECT_SUPPRESSED = 'This company asked not to receive applications.';
 
     public const string REJECT_ALREADY_APPLIED = 'You already applied to this job.';
 
@@ -42,6 +47,7 @@ class QueueApplication
         private SelectRecipientForPosting $recipients,
         private SendScheduler $scheduler,
         private PlanCatalog $plans,
+        private OutreachSuppressionList $suppressions,
     ) {}
 
     /**
@@ -95,7 +101,9 @@ class QueueApplication
         $contact = $company === null ? null : $this->recipients->handle($posting);
 
         if ($company === null || $contact === null) {
-            return $this->reject(self::REJECT_NO_RECIPIENT);
+            return $this->reject($company !== null && $this->isSuppressed($company, $posting)
+                ? self::REJECT_SUPPRESSED
+                : self::REJECT_NO_RECIPIENT);
         }
 
         $profile = $user->applicationProfiles()
@@ -142,6 +150,21 @@ class QueueApplication
             ->afterCommit();
 
         return $application;
+    }
+
+    /**
+     * Whether the suppression list covers the company's domain or any email published in the posting.
+     */
+    private function isSuppressed(Company $company, JobPosting $posting): bool
+    {
+        if (filled($company->domain) && $this->suppressions->coversDomain((string) $company->domain)) {
+            return true;
+        }
+
+        return $posting->contacts()
+            ->where('source', ContactSource::Posting)
+            ->pluck('email')
+            ->contains(fn (string $email): bool => $this->suppressions->covers($email));
     }
 
     /**

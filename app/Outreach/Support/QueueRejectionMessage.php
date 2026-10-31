@@ -16,6 +16,7 @@ final class QueueRejectionMessage
     private const EXACT = [
         QueueApplication::REJECT_NO_MATCH => 'queue.reject.no_match',
         QueueApplication::REJECT_NO_RECIPIENT => 'queue.reject.no_recipient',
+        QueueApplication::REJECT_SUPPRESSED => 'queue.reject.suppressed',
         QueueApplication::REJECT_ALREADY_APPLIED => 'queue.reject.already_applied',
         QueueApplication::REJECT_NO_PROFILE => 'queue.reject.no_profile',
     ];

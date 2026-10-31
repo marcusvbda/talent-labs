@@ -2,6 +2,7 @@
 
 namespace App\Outreach\Jobs;
 
+use App\Contacts\Support\OutreachSuppressionList;
 use App\Contracts\OAuthIntegrationPlugin;
 use App\Enums\ApplicationStatus;
 use App\Enums\ConnectedIntegrationStatus;
@@ -289,6 +290,18 @@ class SendApplicationEmail implements ShouldQueue
      */
     private function preCheck(Application $application, ConnectedIntegrationTokenManager $tokens, ApplicationStageRecorder $recorder, EmailTransportResolver $transports): ?array
     {
+        // A suppressed recipient is never contacted: cancelled, so it costs no quota and no failure.
+        if (app(OutreachSuppressionList::class)->covers((string) $application->recipient_email)) {
+            $application->forceFill([
+                'status' => ApplicationStatus::Cancelled,
+                'last_error' => 'Recipient asked not to receive applications.',
+            ])->save();
+            $recorder->reset($application);
+            $this->afterTerminal($application);
+
+            return null;
+        }
+
         $application->load(['company', 'contact', 'user.sendingIntegration', 'applicationProfile']);
         $user = $application->user;
         $contact = $application->contact;
@@ -617,7 +630,7 @@ class SendApplicationEmail implements ShouldQueue
     }
 
     /**
-     * Effects of a terminal status (sent, failed, ambiguous): notify a failure,
+     * Effects of a terminal status (sent, failed, ambiguous, cancelled): notify a failure,
      * auto-pause on an email reauthorization or on repeated failures, and refresh
      * the live sending panel.
      */

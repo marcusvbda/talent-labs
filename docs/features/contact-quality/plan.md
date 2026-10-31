@@ -46,7 +46,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 8 | Admin shows source and tier | filament-admin | 6 | P11 | S | DONE |
 | 9 | Backfill command | laravel-backend | 4 | P13 | S | DONE |
 | 10 | Suppression table and probe skip | laravel-backend | 4 | P18, P18a | M | DONE |
-| 11 | Suppression on queueing and sending | laravel-backend | 6, 10 | P18, P18a | M | PENDING |
+| 11 | Suppression on queueing and sending | laravel-backend | 6, 10 | P18, P18a | M | DONE |
 | 12 | Reply endpoint and tier report | laravel-backend | 6 | P12 | M | PENDING |
 | 13 | "I got a reply" client action | inertia-frontend | 12 | P12 | S | PENDING |
 | 14 | Guarded company page fetcher | laravel-backend | 10 | P14, P16 | M | PENDING |
@@ -477,7 +477,8 @@ Origin: P18 "applies to every tier and stops probing too"; P18a
 
 ### Phase 11 — Suppressed recipients are not queued or sent
 
-Status: PENDING
+Status: DONE
+Evidence: in a rolled-back transaction with Queue, Notification and Storage faked and `intercept_to` set, an application queued to a tier-A address before any suppression; an unconfirmed row didn't affect the selector and a confirmed one made it return null; `QueueApplication` then rejected with `REJECT_SUPPRESSED`, shown as "This company asked not to receive applications." in EN and "Esta empresa pediu para não receber candidaturas." in PT, and a suppressed company domain with no tier-A contact gave the same rejection while no suppression and no recipient still gave `REJECT_NO_RECIPIENT`; `preCheck` on a queued application to the suppressed address returned null with a strict mock transport that throws on any call, leaving the row `cancelled` with the expected `last_error`, no stage, and 0 counted towards quota; `pint --dirty`, `composer types:check` (0 errors) and `--filter=Outreach` (31 tests) pass. `code-reviewer` APPROVED in round 1. Notes: tier B now takes the first non-suppressed named contact by id; at tier C a suppressed top-priority alias returns null instead of trying a lower one; the queue-time check counts every tier-A email including rejected ones, so a posting can show the suppressed message when the real cause is no recipient (only on a reject that was happening anyway); `afterTerminal` on a cancelled row also runs the repeated-failures check, which could in a rare case re-trigger the auto-pause (the contract asked for `afterTerminal`).
 Role: laravel-backend · Depends on: 6, 10 · Covers: P18, P18a · Size: M
 Origin: P18, P18a
 

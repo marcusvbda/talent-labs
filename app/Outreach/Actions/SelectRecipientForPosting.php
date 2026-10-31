@@ -2,6 +2,7 @@
 
 namespace App\Outreach\Actions;
 
+use App\Contacts\Support\OutreachSuppressionList;
 use App\Enums\ContactConfidence;
 use App\Enums\ContactSource;
 use App\Models\Application;
@@ -10,7 +11,10 @@ use App\Models\JobPosting;
 
 class SelectRecipientForPosting
 {
-    public function __construct(private SelectRecipientForCompany $companyRecipients) {}
+    public function __construct(
+        private SelectRecipientForCompany $companyRecipients,
+        private OutreachSuppressionList $suppressions,
+    ) {}
 
     /**
      * Tier A first: an email published in this posting (never another posting's), not
@@ -18,6 +22,8 @@ class SelectRecipientForPosting
      * clients (talent.outreach.tier_a_daily_cap). When the company is verified, tier B
      * (first smtp_verified named contact by id) and then tier C (SelectRecipientForCompany).
      * The cap is not locked across clients, so it may be exceeded by a few under concurrency.
+     * In every tier, an address covered by the suppression list is skipped; a covered
+     * tier-C result means no recipient.
      */
     public function handle(JobPosting $posting): ?Contact
     {
@@ -30,6 +36,10 @@ class SelectRecipientForPosting
             ->get();
 
         foreach ($published as $contact) {
+            if ($this->suppressions->covers($contact->email)) {
+                continue;
+            }
+
             $sentToday = Application::query()
                 ->countedToday()
                 ->where('recipient_email', $contact->email)
@@ -50,8 +60,15 @@ class SelectRecipientForPosting
             ->where('source', ContactSource::Named)
             ->where('confidence', ContactConfidence::SmtpVerified)
             ->orderBy('id')
-            ->first();
+            ->get()
+            ->first(fn (Contact $contact): bool => ! $this->suppressions->covers($contact->email));
 
-        return $named ?? $this->companyRecipients->handle($company);
+        if ($named !== null) {
+            return $named;
+        }
+
+        $alias = $this->companyRecipients->handle($company);
+
+        return $alias !== null && ! $this->suppressions->covers($alias->email) ? $alias : null;
     }
 }
