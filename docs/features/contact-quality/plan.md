@@ -50,7 +50,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 12    | Reply endpoint and tier report                      | laravel-backend  | 6                      | P12                 | M    | DONE               |
 | 13    | "I got a reply" client action                       | inertia-frontend | 12                     | P12                 | S    | DONE               |
 | 14    | Guarded company page fetcher                        | laravel-backend  | 10                     | P14, P16            | M    | DONE               |
-| 15    | Named-contact coverage report (stops for the owner) | laravel-backend  | 14                     | P14, P16, P18       | M    | PENDING            |
+| 15    | Named-contact coverage report (stops for the owner) | laravel-backend  | 14                     | P14, P16, P18       | M    | DONE               |
 | 16    | Named contacts in production                        | laravel-backend  | 15                     | P15, P18            | M    | BLOCKED (D15, D16) |
 | 17    | Verification and report                             | laravel-backend  | 1-15 (16 if unblocked) | spec x code gap     | S    | PENDING            |
 
@@ -618,7 +618,8 @@ Origin: P14 "company's /about, /team, /company pages (fetched through PublicNetw
 
 ### Phase 15 — Named-contact coverage report
 
-Status: PENDING
+Status: DONE
+Evidence: `reports:named-contact-coverage --sample=0`, `abc` and `-3` are each rejected with exit 1; the dev database has 97 verified companies with a domain, so the report was never run against the real network: it ran only in a rolled-back transaction with fake `SmtpProbe`, `CompanyPageFetcher`, DNS lookup and agent and stray HTTP blocked. `--sample=20 --json` with both price options left `contacts` and `applications` unchanged, added 25 `ai_usage_records` rows (one per agent call, `company_people_extraction`, null `job_posting_id`) and its JSON held no `@` and no names; the sample spread across sources; with every SMTP session failing, inconclusive was 100% and the port 25 warning printed; with no eligible company it reported zeros without error; `pint --dirty` and `composer types:check` (0 errors) pass. `code-reviewer` APPROVED in round 1; its note about direct indexing of `source_contacts` entries was left as is, because the model's array shape guarantees `kind` and `name` (PHPStan rejects a `??` there). Notes: the real path (OpenAI, port 25 and live company pages) has not been run: **run it on a machine with the real collected data and outbound port 25 and review the numbers before deciding D15**; at most 3 names, 12 candidates and one SMTP session per company; agent results are not cached, so no names are stored; founder and hiring-manager names from `source_contacts` count without a title check; titles such as "Assistant to the CEO" can be false positives and honorifics such as "Dr." are treated as name words (wasted probes only); an agent call is made even for catch-all companies, since it feeds "% plausible name"; the inconclusive percentage is relative to probed companies and the others to sampled companies. Phase 16 stays blocked until D15 and D16 are answered.
 Role: laravel-backend · Depends on: 14 · Covers: P14, P16, P18 · Size: M
 Origin: P14 "reports:named-contact-coverage {--sample=50} … Stop and show the report to the owner"
 
