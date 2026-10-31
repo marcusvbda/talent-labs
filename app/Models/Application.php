@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $contact_id
  * @property int|null $application_profile_id
  * @property string $recipient_email
+ * @property string|null $recipient_tier
+ * @property string|null $recipient_source
  * @property string $subject
  * @property string $body
  * @property ApplicationOrigin $origin
@@ -47,7 +49,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Contact|null $contact
  * @property-read ApplicationProfile|null $applicationProfile
  */
-#[Fillable(['user_id', 'company_id', 'job_posting_id', 'contact_id', 'application_profile_id', 'recipient_email', 'subject', 'body', 'origin', 'language', 'status', 'attempts', 'provider_message_id', 'last_error', 'queued_at', 'scheduled_for', 'sent_at'])]
+#[Fillable(['user_id', 'company_id', 'job_posting_id', 'contact_id', 'application_profile_id', 'recipient_email', 'recipient_tier', 'recipient_source', 'subject', 'body', 'origin', 'language', 'status', 'attempts', 'provider_message_id', 'last_error', 'queued_at', 'scheduled_for', 'sent_at'])]
 class Application extends Model
 {
     use BroadcastsRealtime;

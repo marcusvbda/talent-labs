@@ -6,6 +6,8 @@ use App\Contracts\OAuthIntegrationPlugin;
 use App\Enums\ApplicationStatus;
 use App\Enums\ConnectedIntegrationStatus;
 use App\Enums\ContactConfidence;
+use App\Enums\ContactSource;
+use App\Enums\ContactTier;
 use App\Enums\OutreachStatus;
 use App\Enums\SendingPauseReason;
 use App\Enums\SendStage;
@@ -295,14 +297,23 @@ class SendApplicationEmail implements ShouldQueue
         $cvPath = (string) $profile?->cv_path;
         $reauthorization = false;
 
+        // A published email (tier A) of this application's posting is sendable at any company status.
+        $isPostingTierA = $contact !== null
+            && $contact->tier() === ContactTier::A
+            && $contact->job_posting_id === $application->job_posting_id;
+
         /** @var list<array{0: SendSubStep, 1: Closure(): ?string}> $checks */
         $checks = [
             [SendSubStep::CheckingCompany, fn (): ?string => $application->company->outreach_status !== OutreachStatus::Verified
+                && ! $isPostingTierA
                 ? 'Company is no longer verified for outreach.'
                 : null],
             [SendSubStep::ConfirmingRecipient, fn (): ?string => $contact === null
                 || $contact->company_id !== $application->company_id
-                || $contact->confidence !== ContactConfidence::SmtpVerified
+                || ! ($isPostingTierA || (
+                    in_array($contact->source, [ContactSource::AliasProbe, ContactSource::Named], true)
+                    && $contact->confidence === ContactConfidence::SmtpVerified
+                ))
                 ? 'Recipient is not a verified contact of this company.'
                 : null],
             [SendSubStep::CheckingGmail, function () use ($integration, $user, $tokens, &$reauthorization): ?string {

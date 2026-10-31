@@ -42,6 +42,8 @@ return [
             'weekdays_only' => (bool) env('OUTREACH_WINDOW_WEEKDAYS_ONLY', false),
         ],
         'auto_pause_after_failures' => (int) env('OUTREACH_AUTO_PAUSE_AFTER_FAILURES', 3),
+        // Applications per day (all clients) to one tier-A (published) address before falling back to B/C.
+        'tier_a_daily_cap' => (int) env('OUTREACH_TIER_A_DAILY_CAP', 5),
 
         // Job-board/thread hosts that are never the company's own page or ATS.
         // `name.*` matches any registrable domain starting with `name.`.

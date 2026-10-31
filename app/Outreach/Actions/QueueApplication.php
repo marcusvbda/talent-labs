@@ -39,7 +39,7 @@ class QueueApplication
 
     public function __construct(
         private CanSendApplications $eligibility,
-        private SelectRecipientForCompany $recipients,
+        private SelectRecipientForPosting $recipients,
         private SendScheduler $scheduler,
         private PlanCatalog $plans,
     ) {}
@@ -92,7 +92,7 @@ class QueueApplication
             return $this->reject(self::REJECT_ALREADY_APPLIED);
         }
 
-        $contact = $company === null ? null : $this->recipients->handle($company);
+        $contact = $company === null ? null : $this->recipients->handle($posting);
 
         if ($company === null || $contact === null) {
             return $this->reject(self::REJECT_NO_RECIPIENT);
@@ -122,6 +122,8 @@ class QueueApplication
             'application_profile_id' => $profile->id,
             'language' => $profile->language->value,
             'recipient_email' => $contact->email,
+            'recipient_tier' => $contact->tier()?->value,
+            'recipient_source' => $contact->source->value,
             'subject' => $subject !== null
                 ? ApplicationTemplateRenderer::render($subject, $reviewedVariables)
                 : ApplicationTemplateRenderer::render((string) $profile->email_subject, $variables),

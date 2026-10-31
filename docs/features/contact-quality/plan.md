@@ -41,7 +41,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 3 | Alias paths ignore posting contacts | laravel-backend | 2 | P4 | S | DONE |
 | 4 | Probe and record published emails | laravel-backend | 1, 3 | P5 | M | DONE |
 | 5 | Storage and AI gates accept tier A | laravel-backend | 4 | P6 | M | DONE |
-| 6 | Pool, recipient, cap, send checks, snapshot | laravel-backend | 5 | P6, P7, P7a, P8, P9 | M | PENDING |
+| 6 | Pool, recipient, cap, send checks, snapshot | laravel-backend | 5 | P6, P7, P7a, P8, P9 | M | DONE |
 | 7 | Tier ordering | laravel-backend | 6 | P10 | S | PENDING |
 | 8 | Admin shows source and tier | filament-admin | 6 | P11 | S | PENDING |
 | 9 | Backfill command | laravel-backend | 4 | P13 | S | PENDING |
@@ -298,7 +298,8 @@ Origin: P6 "Storage and AI gates accept a posting when its company is verified f
 
 ### Phase 6 — Clients can apply through tier A
 
-Status: PENDING
+Status: DONE
+Evidence: migration ran; in a rolled-back transaction against the dev database, a posting at a `not_verifiable` company with a catch-all tier-A contact entered `MatchingJobPostings::forUser`, `QueueApplication` wrote `recipient_tier = a` and `recipient_source = posting`, and `preCheck` passed `CheckingCompany` and `ConfirmingRecipient` (it then stopped at `checking_gmail`, because the fake integration token cannot refresh); a posting with only another posting's tier-A contact, or only a `Rejected` one, was not in the pool and never selected; with 5 applications today to the address, an unverified company got `REJECT_NO_RECIPIENT` and a verified one fell back to the tier-C alias; `pint --dirty`, `composer types:check` (0 errors) and `--filter=Outreach` (31 tests) pass. `code-reviewer` APPROVED in round 1 with no blocking findings. Notes: the cap check isn't locked across clients (as the contract says); a verified company with only a `named` contact now enters the pool, and the alias branch of the pool filter now requires `source = alias_probe`; a capped tier-A posting at an unverified company stays in the pool and is rejected at queue time (Phase 7 adds `sendableToday` for random sending); emails are lowercased at extraction, so the exact-match cap query is safe.
 Role: laravel-backend · Depends on: 5 · Covers: P6, P7, P7a, P8, P9 · Size: M
 Origin: P6 (pool); P7 recipient order; P7a daily cap; P8 send checks; P9 snapshot
 

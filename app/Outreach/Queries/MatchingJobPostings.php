@@ -4,6 +4,7 @@ namespace App\Outreach\Queries;
 
 use App\Collection\Support\PostingRestrictions;
 use App\Enums\ContactConfidence;
+use App\Enums\ContactSource;
 use App\Enums\OutreachStatus;
 use App\Enums\ProfileStatus;
 use App\Enums\RemoteMode;
@@ -28,16 +29,18 @@ final class MatchingJobPostings
     /**
      * The single source of truth for which postings a client sees and may apply to.
      *
-     * The base pool is every posting this client can still send an application for: its
-     * company is verified, its AI profile is done, the company has a recipient we can
-     * write to (an smtp_verified contact in the priority list) and this client has not
-     * applied to that company yet. Only postings whose role family is one of the target
+     * The base pool is every posting this client can still send an application for: its AI
+     * profile is done, it has a recipient we can write to and this client has not applied to
+     * that posting yet. A recipient is either an email published in this posting that the
+     * probe did not reject (tier A, any company status), or, for a company verified for
+     * outreach, an smtp_verified named contact (tier B) or an smtp_verified role alias in
+     * the priority list (tier C). Only postings whose role family is one of the target
      * families (talent.collection.target_role_families) are in the pool, so a company verified
      * through a dev posting never surfaces its non-target (e.g. sales) postings. Postings marked
      * not eligible (ineligible_reason, e.g. multi-role posts) never enter the pool. Postings are
      * left out unless their language has an active, complete application profile for this
      * user (skippable with $withLanguageRule = false). There is no age limit: a posting stays in the
-     * pool, however old, until this client applies to its company.
+     * pool, however old, until this client applies to it.
      *
      * Preferences narrow the pool: terms inside one field are ORed, fields are ANDed, and an
      * empty field applies no filter (no preferences at all = the whole pool). Titles,
@@ -85,17 +88,34 @@ final class MatchingJobPostings
             ->join('job_posting_profiles', 'job_posting_profiles.job_posting_id', '=', 'job_postings.id')
             ->join('companies', 'companies.id', '=', 'job_postings.company_id')
             ->join('collection_runs as first_run', 'first_run.id', '=', 'job_postings.collection_run_id')
-            ->where('companies.outreach_status', OutreachStatus::Verified->value)
             ->where('job_posting_profiles.status', ProfileStatus::Done->value)
             ->when($withLanguageRule, fn (Builder $query) => $query->whereIn('job_posting_profiles.language', ApplicationProfile::activeCompleteLanguagesFor($user)))
             ->whereIn('job_postings.role_family', config('talent.collection.target_role_families'))
             ->whereNull('job_postings.ineligible_reason')
-            ->whereExists(function ($contacts): void {
-                $contacts->select(DB::raw(1))
-                    ->from('contacts')
-                    ->whereColumn('contacts.company_id', 'job_postings.company_id')
-                    ->where('contacts.confidence', ContactConfidence::SmtpVerified->value)
-                    ->whereIn('contacts.local_part', OutreachLimits::RECIPIENT_PRIORITY);
+            ->where(function (Builder $recipient): void {
+                $recipient
+                    ->where(function (Builder $verified): void {
+                        $verified->where('companies.outreach_status', OutreachStatus::Verified->value)
+                            ->whereExists(function ($contacts): void {
+                                $contacts->select(DB::raw(1))
+                                    ->from('contacts')
+                                    ->whereColumn('contacts.company_id', 'job_postings.company_id')
+                                    ->where('contacts.confidence', ContactConfidence::SmtpVerified->value)
+                                    ->where(function ($tiers): void {
+                                        $tiers->where(function ($alias): void {
+                                            $alias->where('contacts.source', ContactSource::AliasProbe->value)
+                                                ->whereIn('contacts.local_part', OutreachLimits::RECIPIENT_PRIORITY);
+                                        })->orWhere('contacts.source', ContactSource::Named->value);
+                                    });
+                            });
+                    })
+                    ->orWhereExists(function ($contacts): void {
+                        $contacts->select(DB::raw(1))
+                            ->from('contacts')
+                            ->whereColumn('contacts.job_posting_id', 'job_postings.id')
+                            ->where('contacts.source', ContactSource::Posting->value)
+                            ->where('contacts.confidence', '<>', ContactConfidence::Rejected->value);
+                    });
             })
             ->whereNotExists(function ($applications) use ($user): void {
                 $applications->select(DB::raw(1))
