@@ -49,7 +49,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 11    | Suppression on queueing and sending                 | laravel-backend  | 6, 10                  | P18, P18a           | M    | DONE               |
 | 12    | Reply endpoint and tier report                      | laravel-backend  | 6                      | P12                 | M    | DONE               |
 | 13    | "I got a reply" client action                       | inertia-frontend | 12                     | P12                 | S    | DONE               |
-| 14    | Guarded company page fetcher                        | laravel-backend  | 10                     | P14, P16            | M    | PENDING            |
+| 14    | Guarded company page fetcher                        | laravel-backend  | 10                     | P14, P16            | M    | DONE               |
 | 15    | Named-contact coverage report (stops for the owner) | laravel-backend  | 14                     | P14, P16, P18       | M    | PENDING            |
 | 16    | Named contacts in production                        | laravel-backend  | 15                     | P15, P18            | M    | BLOCKED (D15, D16) |
 | 17    | Verification and report                             | laravel-backend  | 1-15 (16 if unblocked) | spec x code gap     | S    | PENDING            |
@@ -582,7 +582,8 @@ Origin: P12
 
 ### Phase 14 — Company pages can be fetched safely
 
-Status: PENDING
+Status: DONE
+Evidence: with `Http::fake`, `Http::preventStrayRequests()` and a fake guard returning chosen addresses (no real network): hosts resolving to `127.0.0.1` and `169.254.169.254` were never requested; a redirect to another domain, a third hop and an `http://` redirect were not followed; `Disallow: /about` skipped that path and the fetch used the `talent-labs` group over `*` when present; a 503 on robots.txt blocked everything; 600 KB bodies, a length-less 640 KB body and a gzip response were skipped; text is capped at 8000 characters; requests spaced about 1s apart and carried the required user agent; a suppressed domain returned `[]` with 0 requests; inputs such as `evil.com:443/admin`, `evil.com:443?x=1`, `a@evil.com:443` and `good.test/x` returned `[]` with 0 requests; an 80 KB `Disallow: /*a*a*…` robots.txt did not throw and blocked everything; a separate loopback test aborted a streamed 4 MB body at about the cap (curl errors 63 and 42), so memory stays bounded; `pint --dirty` and `composer types:check` (0 errors) pass. `code-reviewer` found 3 blocking issues in round 1 (unvalidated `$domain` building other URLs, a body cap that didn't bound memory for chunked or compressed bodies, and a robots regex that could throw or fail open), fixed in correction round 1 together with the proxy bypass, the throttle timestamp and the BOM/`talent-labs` group; the re-review APPROVED. Notes: the guard lives at `app/Support/PublicNetworkGuard.php`; only the first guard address is pinned; breaching the robots rule caps (256 characters, 500 rules) disallows the whole file; IDN hosts must be passed as punycode; the 1-second spacing holds per fetcher instance, so the caller (Phase 15) should resolve one instance or bind it as a singleton; a redirect target's path is not re-checked against robots; `toText` returns an empty string silently if PCRE hits its backtrack limit.
 Role: laravel-backend · Depends on: 10 · Covers: P14, P16 · Size: M
 Origin: P14 "company's /about, /team, /company pages (fetched through PublicNetworkGuard, robots.txt respected, 1 request/s per domain, short timeouts)"
 
