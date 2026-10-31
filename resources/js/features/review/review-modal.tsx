@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CompanyLogo } from '@/components/patterns/company-logo';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
@@ -8,12 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
+import { useAccountStatus } from '@/data/hooks/use-account-status';
+import { useGenerateCoverLetter } from '@/data/hooks/use-generate-cover-letter';
 import { useQueueReviewedBatch } from '@/data/hooks/use-queue-reviewed-batch';
 import { useQueueReviewed } from '@/data/hooks/use-queue-reviewed';
 import { useReviewDrafts } from '@/data/hooks/use-review-drafts';
+import { useUserChannel } from '@/data/realtime/use-user-channel';
 import { useT } from '@/i18n/i18n-provider';
 import { cn } from '@/lib/utils';
 import type { JobCard, ReviewDraft } from '@/types/contracts';
+import { AiLetterBar, type AiLetterState } from './ai-letter-bar';
 import { BodyEditor } from './body-editor';
 
 const SUBJECT_MAX = 200;
@@ -21,6 +25,30 @@ const BODY_MAX = 5000;
 
 type Outcome = 'queued' | 'skipped';
 type Edit = { subject: string; body: string };
+type AiSession = {
+    state: AiLetterState;
+    reason: 'quota' | 'failed' | null;
+    aiBody: string | null;
+    baseBody: string;
+};
+type CoverLetterUpdated = {
+    jobId: number;
+    state: 'ready' | 'manual';
+    reason: 'quota' | 'failed' | null;
+    body: string | null;
+};
+
+const WRITING_TIMEOUT_MS = 90_000;
+
+const seedAi = (draft: ReviewDraft): AiSession | null =>
+    draft.ai
+        ? {
+              state: draft.ai.state,
+              reason: null,
+              aiBody: null,
+              baseBody: draft.body,
+          }
+        : null;
 
 const ReviewSkeleton = () => {
     const { t } = useT();
@@ -119,12 +147,158 @@ const ReviewSession = ({
     >([]);
     const batch = useQueueReviewedBatch();
     const { mutate: loadDrafts } = load;
+    const generate = useGenerateCoverLetter();
+    const aiWriting = useAccountStatus().data?.aiWriting ?? null;
+    const [aiState, setAiState] = useState<Record<number, AiSession>>({});
+    const requested = useRef(new Set<number>());
+    const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+    const latest = useRef<{
+        drafts: ReviewDraft[];
+        edits: Record<number, Edit>;
+        outcomes: Record<number, Outcome>;
+        aiState: Record<number, AiSession>;
+        run: (jobId: number, regenerate: boolean) => void;
+    } | null>(null);
 
     useEffect(() => {
         loadDrafts({ jobIds });
     }, [jobIds, loadDrafts]);
 
     const drafts = load.data ?? [];
+    const aiOf = (item: ReviewDraft): AiSession | null =>
+        aiState[item.job.id] ?? seedAi(item);
+    const baseOf = (item: ReviewDraft) => aiOf(item)?.baseBody ?? item.body;
+    const bodyOf = (item: ReviewDraft) =>
+        edits[item.job.id]?.body ?? baseOf(item);
+
+    const patchAi = (jobId: number, patch: Partial<AiSession>) =>
+        setAiState((all) => {
+            const item = latest.current?.drafts.find(
+                (row) => row.job.id === jobId,
+            );
+            const prev = all[jobId] ?? (item ? seedAi(item) : null);
+
+            return prev ? { ...all, [jobId]: { ...prev, ...patch } } : all;
+        });
+
+    const arrive = (jobId: number, body: string) => {
+        const now = latest.current;
+        const item = now?.drafts.find((row) => row.job.id === jobId);
+
+        if (!now || !item || now.outcomes[jobId] === 'queued') {
+            return;
+        }
+
+        const prev = now.aiState[jobId] ?? seedAi(item);
+        const edit = now.edits[jobId];
+        const edited = !!edit && edit.body !== (prev?.baseBody ?? item.body);
+
+        if (edited) {
+            patchAi(jobId, { state: 'ready', reason: null, aiBody: body });
+
+            return;
+        }
+
+        patchAi(jobId, {
+            state: 'ready',
+            reason: null,
+            aiBody: body,
+            baseBody: body,
+        });
+
+        if (edit) {
+            setEdits((all) =>
+                all[jobId] ? { ...all, [jobId]: { ...all[jobId], body } } : all,
+            );
+        }
+    };
+
+    const run = (jobId: number, regenerate: boolean) => {
+        patchAi(jobId, { state: 'writing', reason: null });
+        clearTimeout(timers.current.get(jobId));
+        timers.current.set(
+            jobId,
+            setTimeout(
+                () =>
+                    setAiState((all) =>
+                        all[jobId]?.state === 'writing'
+                            ? {
+                                  ...all,
+                                  [jobId]: {
+                                      ...all[jobId],
+                                      state: 'manual',
+                                      reason: 'failed',
+                                  },
+                              }
+                            : all,
+                    ),
+                WRITING_TIMEOUT_MS,
+            ),
+        );
+
+        generate
+            .mutateAsync({ jobId, regenerate })
+            .then((result) => {
+                if (result.state === 'ready' && result.body !== null) {
+                    arrive(jobId, result.body);
+                } else if (result.state === 'quota') {
+                    patchAi(jobId, { state: 'quota' });
+                } else if (result.state === 'off') {
+                    patchAi(jobId, { state: 'off' });
+                }
+            })
+            .catch(() => {
+                // A failed call must not undo a letter that already arrived.
+                if (latest.current?.aiState[jobId]?.state === 'writing') {
+                    patchAi(jobId, { state: 'manual', reason: 'failed' });
+                }
+            });
+    };
+
+    useEffect(() => {
+        latest.current = { drafts, edits, outcomes, aiState, run };
+    });
+
+    useEffect(() => {
+        const pending = timers.current;
+
+        return () => pending.forEach((timer) => clearTimeout(timer));
+    }, []);
+
+    useUserChannel({
+        'cover_letter.updated': (payload: CoverLetterUpdated) => {
+            if (
+                !latest.current?.drafts.some(
+                    (row) => row.job.id === payload.jobId,
+                )
+            ) {
+                return;
+            }
+
+            if (payload.state === 'manual') {
+                patchAi(payload.jobId, {
+                    state: 'manual',
+                    reason: payload.reason,
+                });
+            } else if (payload.body !== null) {
+                arrive(payload.jobId, payload.body);
+            }
+        },
+    });
+
+    useEffect(() => {
+        [index, index + 1].forEach((position) => {
+            const item = drafts[position];
+
+            if (
+                item?.ai?.state === 'idle' &&
+                !requested.current.has(item.job.id)
+            ) {
+                requested.current.add(item.job.id);
+                latest.current?.run(item.job.id, false);
+            }
+        });
+    }, [drafts, index]);
     const draft = drafts[index];
     const finished = load.isSuccess && index >= drafts.length;
     const values = Object.values(outcomes);
@@ -132,7 +306,10 @@ const ReviewSession = ({
     const skippedCount = values.filter((value) => value === 'skipped').length;
 
     const current: Edit | undefined = draft
-        ? (edits[draft.job.id] ?? { subject: draft.subject, body: draft.body })
+        ? (edits[draft.job.id] ?? {
+              subject: draft.subject,
+              body: baseOf(draft),
+          })
         : undefined;
     const locked = draft ? outcomes[draft.job.id] === 'queued' : false;
     const subjectLength = current?.subject.trim().length ?? 0;
@@ -149,12 +326,12 @@ const ReviewSession = ({
     const batchInvalid = undecided.some((item) => {
         const edit = edits[item.job.id];
 
-        if (!edit) {
+        if (!edit && !aiState[item.job.id]) {
             return false;
         }
 
-        const s = edit.subject.trim().length;
-        const b = edit.body.trim().length;
+        const s = (edit?.subject ?? item.subject).trim().length;
+        const b = bodyOf(item).trim().length;
 
         return s < 1 || s > SUBJECT_MAX || b < 1 || b > BODY_MAX;
     });
@@ -169,6 +346,24 @@ const ReviewSession = ({
         if (draft && current) {
             queue.reset();
             setEdits({ ...edits, [draft.job.id]: { ...current, ...patch } });
+        }
+    };
+
+    const ai = draft ? aiOf(draft) : null;
+    const edited =
+        !!draft &&
+        !!edits[draft.job.id] &&
+        edits[draft.job.id].body !== baseOf(draft);
+    const quotaReached = !!aiWriting && aiWriting.used >= aiWriting.limit;
+
+    const useAiVersion = () => {
+        if (draft && current && ai?.aiBody) {
+            queue.reset();
+            setEdits({
+                ...edits,
+                [draft.job.id]: { ...current, body: ai.aiBody },
+            });
+            patchAi(draft.job.id, { baseBody: ai.aiBody });
         }
     };
 
@@ -221,7 +416,7 @@ const ReviewSession = ({
                 drafts: undecided.map((item) => {
                     const edit = edits[item.job.id] ?? {
                         subject: item.subject,
-                        body: item.body,
+                        body: baseOf(item),
                     };
 
                     return {
@@ -425,6 +620,21 @@ const ReviewSession = ({
                                 />
                             )}
                         </Field>
+                        {ai && (
+                            <AiLetterBar
+                                state={ai.state}
+                                reason={ai.reason}
+                                edited={edited}
+                                hasAiBody={ai.aiBody !== null}
+                                regenerateDisabled={
+                                    quotaReached ||
+                                    ai.state === 'writing' ||
+                                    locked
+                                }
+                                onRegenerate={() => run(draft.job.id, true)}
+                                onUse={useAiVersion}
+                            />
+                        )}
                     </div>
                 </div>
             </div>

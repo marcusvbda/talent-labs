@@ -42,7 +42,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | 7     | Letter job, quota, fallback, event   | laravel-backend  | 1, 5, 6    | P10, P15, P17-P20    | M    | DONE    |
 | 8     | Draft AI state and generate endpoint | laravel-backend  | 7          | P10, P16-P19         | M    | DONE    |
 | 9     | Frontend contract, hook and realtime | inertia-frontend | 8          | P17, P21             | S    | DONE    |
-| 10    | Review screen shows the AI letter    | inertia-frontend | 9          | P16, P17, P19, P21   | M    | PENDING |
+| 10    | Review screen shows the AI letter    | inertia-frontend | 9          | P16, P17, P19, P21   | M    | DONE    |
 | 11    | Profile hint and quota usage         | inertia-frontend | 9          | P10, P19             | S    | PENDING |
 | 12    | Verification and report              | laravel-backend  | 1-11       | spec x code gap      | S    | PENDING |
 
@@ -419,7 +419,9 @@ Origin: P17, P21
 
 ### Phase 10 — The review screen shows, regenerates and protects the letter
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn run check` and `yarn types:check` pass; EN and PT copy for the 7 `review.ai.*` keys present; code-reviewer APPROVED after a line-by-line read of the state logic (trigger for the current and next draft only, once each; arrival rule keeps edits and offers "Use AI version"; 90 s fallback; Approve and Approve all use the displayed body; a draft with `ai` null is unchanged). One reviewer note was applied (a failed generate call no longer overwrites a letter that already arrived).
+Not verified at runtime: the flow was not exercised in a browser (the dev app runs in real mode, and fixtures mode needs a separate Vite build flag); the owner should check it with `VITE_USE_FIXTURES=true` and plan `max`. Open, cosmetic: after Approve on a draft that is still `writing`, the locked draft keeps showing "Writing your letter…" until the 90 s timer flips it.
 Role: inertia-frontend · Depends on: 9 · Covers: P16, P17, P19, P21 · Size: M
 Origin: P16 (D15), P17, P19, P21 (D16, D17)
 
