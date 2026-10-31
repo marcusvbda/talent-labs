@@ -2,6 +2,7 @@
 
 namespace App\Contacts\Jobs;
 
+use App\Ai\Jobs\ExtractJobPostingProfileJob;
 use App\Collection\Support\PublishedEmailExtractor;
 use App\Contacts\Actions\RecordPublishedContacts;
 use App\Contacts\Actions\VerifyPublishedEmails;
@@ -114,6 +115,13 @@ class SyncPublishedContacts implements ShouldBeUnique, ShouldQueue
             }
 
             $record->handle($company, $posting, $verdicts);
+
+            if (
+                $posting->hasSendableTierA()
+                && JobPosting::query()->whereKey($posting->id)->needingProfile()->exists()
+            ) {
+                ExtractJobPostingProfileJob::dispatch($posting->id);
+            }
 
             // Contacts surface on the company pages: announce the change once.
             try {

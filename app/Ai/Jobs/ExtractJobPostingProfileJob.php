@@ -58,7 +58,12 @@ class ExtractJobPostingProfileJob implements ShouldBeUnique, ShouldQueue
     {
         $posting = JobPosting::query()->with(['company', 'profile'])->find($this->jobPostingId);
 
-        if ($posting === null || $posting->company?->outreach_status !== OutreachStatus::Verified) {
+        if ($posting === null) {
+            return;
+        }
+
+        // A sendable published email makes the posting worth profiling even at an unverified company.
+        if ($posting->company?->outreach_status !== OutreachStatus::Verified && ! $posting->hasSendableTierA()) {
             return;
         }
 

@@ -40,7 +40,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 2 | Contact schema, sources and derived tiers | laravel-backend | none | P3, P4 | M | DONE |
 | 3 | Alias paths ignore posting contacts | laravel-backend | 2 | P4 | S | DONE |
 | 4 | Probe and record published emails | laravel-backend | 1, 3 | P5 | M | DONE |
-| 5 | Storage and AI gates accept tier A | laravel-backend | 4 | P6 | M | PENDING |
+| 5 | Storage and AI gates accept tier A | laravel-backend | 4 | P6 | M | DONE |
 | 6 | Pool, recipient, cap, send checks, snapshot | laravel-backend | 5 | P6, P7, P7a, P8, P9 | M | PENDING |
 | 7 | Tier ordering | laravel-backend | 6 | P10 | S | PENDING |
 | 8 | Admin shows source and tier | filament-admin | 6 | P11 | S | PENDING |
@@ -259,7 +259,8 @@ Origin: P5 "A published email is probed with the existing SmtpProbe when possibl
 
 ### Phase 5 — A sendable published email opens the storage and AI gates
 
-Status: PENDING
+Status: DONE
+Evidence: with a fake `SmtpProbe` and `DnsLookup` (rolled-back transaction, no network, no AI provider), a new posting with a published email at an unverified company was stored with a tier-A contact and a queued profile job; the posting whose only email was `Rejected` was not stored and a verdict row with null `job_posting_id` exists; a posting without emails was not stored; `SyncPublishedContacts` queued the profile job for tier A and not for a rejected-only email; the profile job gate passed with a tier-A contact and returned early without; `pint --dirty`, `composer types:check` and the existing suite pass (33 tests; `--filter=Collection` matches no tests). `code-reviewer` found one race in round 1 (the profile job queued by `StoreNewPostings` could run before the contact existed and return at the gate); fixed by re-queuing it from `StorePublishedPostings` after recording, re-review APPROVED. Notes: `SyncPublishedContacts::dispatchForPostings` stays in `StoreCompanyPostings` (verified path) and receives every returned id, not only new ones (harmless: skips postings with a contact, job is unique); `StorePublishedPostings` does not re-check whether the company became verified while it waited on the lock; a very narrow window remains where a profile job overlapping the contact insert holds the unique lock and the re-queue is dropped.
 Role: laravel-backend · Depends on: 4 · Covers: P6 · Size: M
 Origin: P6 "Storage and AI gates accept a posting when its company is verified for sending or the posting has at least one sendable tier-A email"
 

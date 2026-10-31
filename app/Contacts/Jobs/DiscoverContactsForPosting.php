@@ -50,7 +50,7 @@ class DiscoverContactsForPosting implements ShouldQueue
                     $runDiscovery->handle($company);
                 }
             } elseif (
-                $company->outreach_status === OutreachStatus::Verified
+                ($company->outreach_status === OutreachStatus::Verified || $posting->hasSendableTierA())
                 && JobPosting::query()->whereKey($posting->id)->needingProfile()->exists()
             ) {
                 ExtractJobPostingProfileJob::dispatch($posting->id);

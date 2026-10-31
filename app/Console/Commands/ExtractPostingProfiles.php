@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Ai\Jobs\ExtractJobPostingProfileJob;
+use App\Enums\ContactConfidence;
+use App\Enums\ContactSource;
 use App\Enums\OutreachStatus;
 use App\Models\JobPosting;
 use Illuminate\Console\Command;
@@ -23,7 +25,7 @@ class ExtractPostingProfiles extends Command
      *
      * @var string
      */
-    protected $description = 'Queue AI profile extraction for postings of verified companies';
+    protected $description = 'Queue AI profile extraction for postings of verified companies or with a sendable published email';
 
     public function handle(): int
     {
@@ -36,7 +38,11 @@ class ExtractPostingProfiles extends Command
         }
 
         $query = JobPosting::query()
-            ->whereHas('company', fn (Builder $company) => $company->where('outreach_status', OutreachStatus::Verified));
+            ->where(fn (Builder $eligible) => $eligible
+                ->whereHas('company', fn (Builder $company) => $company->where('outreach_status', OutreachStatus::Verified))
+                ->orWhereHas('contacts', fn (Builder $contact) => $contact
+                    ->where('source', ContactSource::Posting)
+                    ->where('confidence', '!=', ContactConfidence::Rejected)));
 
         if ($this->option('missing-language')) {
             $query->whereHas('profile', fn (Builder $profile) => $profile->whereNull('language'));

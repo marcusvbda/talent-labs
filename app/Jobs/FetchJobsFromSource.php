@@ -117,7 +117,7 @@ class FetchJobsFromSource implements ShouldQueue
             $resolveCompany = app(ResolveCompanyForPosting::class);
             $discovery = app(RunCompanyDiscovery::class);
 
-            // A new posting is stored only once its company is verified for sending.
+            // A new posting is stored once its company is verified for sending, or on a sendable published email.
             foreach ($newByCompany as $group) {
                 $company = $resolveCompany->forName($group[0]['row']['company_name']);
                 $rows = array_column($group, 'row');
@@ -133,6 +133,13 @@ class FetchJobsFromSource implements ShouldQueue
                 }
 
                 if ($company->isClosedForSending() || $discovery->isCoolingDown($company)) {
+                    // Only postings publishing an email may still be stored, on that email.
+                    $published = array_values(array_filter($rows, fn (array $row): bool => StorePublishedPostings::emailsOfRow($row) !== []));
+
+                    if ($published !== []) {
+                        $deferred[] = new StorePublishedPostings($sourceRun->id, $company->id, $published);
+                    }
+
                     continue;
                 }
 
