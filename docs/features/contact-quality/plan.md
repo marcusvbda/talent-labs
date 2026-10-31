@@ -44,7 +44,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 6 | Pool, recipient, cap, send checks, snapshot | laravel-backend | 5 | P6, P7, P7a, P8, P9 | M | DONE |
 | 7 | Tier ordering | laravel-backend | 6 | P10 | S | DONE |
 | 8 | Admin shows source and tier | filament-admin | 6 | P11 | S | DONE |
-| 9 | Backfill command | laravel-backend | 4 | P13 | S | PENDING |
+| 9 | Backfill command | laravel-backend | 4 | P13 | S | DONE |
 | 10 | Suppression table and probe skip | laravel-backend | 4 | P18, P18a | M | PENDING |
 | 11 | Suppression on queueing and sending | laravel-backend | 6, 10 | P18, P18a | M | PENDING |
 | 12 | Reply endpoint and tier report | laravel-backend | 6 | P12 | M | PENDING |
@@ -412,7 +412,8 @@ Origin: P11 "Admin company/contact screens always show source and tier"
 
 ### Phase 9 — Stored postings can be backfilled
 
-Status: PENDING
+Status: DONE
+Evidence: on the dev data a dry run scanned 267 postings (67 with emails, 0 new) and left a hash of `job_postings` unchanged; `--limit=abc` fails with exit 1; in a rolled-back transaction with `source_contacts` cleared and the posting contacts removed, a dry run reported 54 postings with emails and 57 new emails, and `--force --limit=1` queued exactly one `SyncPublishedContacts`, wrote the email entry in the collection path's shape and left `collection_run_id`, `first_seen_at` and `company_id` untouched; after the rollback the hash matched; `pint --dirty` and `composer types:check` (0 errors) pass. `code-reviewer` round 1 found one blocking issue (stored emails were compared case-sensitively, so a stored `Jobs@Acme.com` would be re-added and re-queued every run); fixed by lowercasing the stored list before the diff, checks re-run green. Notes: only emails passing `matchesCompany` are stored or counted (the collection path stores all and filters later), so emails whose company domain becomes known later are not backfilled by this command; under `--force` the table counts stop at the limit; the realtime payload is empty (no ids) because a backfill has no source run; no role-family filter, as the contract doesn't ask for one; scheduling was not added.
 Role: laravel-backend · Depends on: 4 · Covers: P13 · Size: S
 Origin: P13 "Backfill for stored postings: contacts:extract-published {--limit=} {--force}"
 
