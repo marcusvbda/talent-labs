@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('collection:tick')->everyMinute()->withoutOverlapping()->onOneServer();
+Schedule::command('contacts:prune-named')->daily()->withoutOverlapping()->onOneServer();

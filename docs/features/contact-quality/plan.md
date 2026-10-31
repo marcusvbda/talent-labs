@@ -34,25 +34,25 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 
 ## Status board
 
-| Phase | Title                                               | Role             | Depends on             | Origin              | Size | Status             |
-| ----- | --------------------------------------------------- | ---------------- | ---------------------- | ------------------- | ---- | ------------------ |
-| 1     | Shared published-email extractor                    | laravel-backend  | none                   | P1, P2, P2a         | M    | DONE               |
-| 2     | Contact schema, sources and derived tiers           | laravel-backend  | none                   | P3, P4              | M    | DONE               |
-| 3     | Alias paths ignore posting contacts                 | laravel-backend  | 2                      | P4                  | S    | DONE               |
-| 4     | Probe and record published emails                   | laravel-backend  | 1, 3                   | P5                  | M    | DONE               |
-| 5     | Storage and AI gates accept tier A                  | laravel-backend  | 4                      | P6                  | M    | DONE               |
-| 6     | Pool, recipient, cap, send checks, snapshot         | laravel-backend  | 5                      | P6, P7, P7a, P8, P9 | M    | DONE               |
-| 7     | Tier ordering                                       | laravel-backend  | 6                      | P10                 | S    | DONE               |
-| 8     | Admin shows source and tier                         | filament-admin   | 6                      | P11                 | S    | DONE               |
-| 9     | Backfill command                                    | laravel-backend  | 4                      | P13                 | S    | DONE               |
-| 10    | Suppression table and probe skip                    | laravel-backend  | 4                      | P18, P18a           | M    | DONE               |
-| 11    | Suppression on queueing and sending                 | laravel-backend  | 6, 10                  | P18, P18a           | M    | DONE               |
-| 12    | Reply endpoint and tier report                      | laravel-backend  | 6                      | P12                 | M    | DONE               |
-| 13    | "I got a reply" client action                       | inertia-frontend | 12                     | P12                 | S    | DONE               |
-| 14    | Guarded company page fetcher                        | laravel-backend  | 10                     | P14, P16            | M    | DONE               |
-| 15    | Named-contact coverage report (stops for the owner) | laravel-backend  | 14                     | P14, P16, P18       | M    | DONE               |
-| 16    | Named contacts in production                        | laravel-backend  | 15                     | P15, P18            | M    | BLOCKED (D15, D16) |
-| 17    | Verification and report                             | laravel-backend  | 1-15 (16 if unblocked) | spec x code gap     | S    | PENDING            |
+| Phase | Title                                               | Role             | Depends on             | Origin              | Size | Status  |
+| ----- | --------------------------------------------------- | ---------------- | ---------------------- | ------------------- | ---- | ------- |
+| 1     | Shared published-email extractor                    | laravel-backend  | none                   | P1, P2, P2a         | M    | DONE    |
+| 2     | Contact schema, sources and derived tiers           | laravel-backend  | none                   | P3, P4              | M    | DONE    |
+| 3     | Alias paths ignore posting contacts                 | laravel-backend  | 2                      | P4                  | S    | DONE    |
+| 4     | Probe and record published emails                   | laravel-backend  | 1, 3                   | P5                  | M    | DONE    |
+| 5     | Storage and AI gates accept tier A                  | laravel-backend  | 4                      | P6                  | M    | DONE    |
+| 6     | Pool, recipient, cap, send checks, snapshot         | laravel-backend  | 5                      | P6, P7, P7a, P8, P9 | M    | DONE    |
+| 7     | Tier ordering                                       | laravel-backend  | 6                      | P10                 | S    | DONE    |
+| 8     | Admin shows source and tier                         | filament-admin   | 6                      | P11                 | S    | DONE    |
+| 9     | Backfill command                                    | laravel-backend  | 4                      | P13                 | S    | DONE    |
+| 10    | Suppression table and probe skip                    | laravel-backend  | 4                      | P18, P18a           | M    | DONE    |
+| 11    | Suppression on queueing and sending                 | laravel-backend  | 6, 10                  | P18, P18a           | M    | DONE    |
+| 12    | Reply endpoint and tier report                      | laravel-backend  | 6                      | P12                 | M    | DONE    |
+| 13    | "I got a reply" client action                       | inertia-frontend | 12                     | P12                 | S    | DONE    |
+| 14    | Guarded company page fetcher                        | laravel-backend  | 10                     | P14, P16            | M    | DONE    |
+| 15    | Named-contact coverage report (stops for the owner) | laravel-backend  | 14                     | P14, P16, P18       | M    | DONE    |
+| 16    | Named contacts in production                        | laravel-backend  | 15                     | P15, P18            | M    | DONE    |
+| 17    | Verification and report                             | laravel-backend  | 1-15 (16 if unblocked) | spec x code gap     | S    | PENDING |
 
 ## Owner decisions
 
@@ -60,11 +60,11 @@ Spec decisions D1-D14 are already recorded in `spec.md` and embedded in the phas
 
 ### D15 — Does Stage 2 go to production after the P14 report?
 
-Blocks: Phase 16 · Options: A build it, B stop at the measurement · Why: P15 exists only if the report justifies it; the owner decides on seeing the numbers · Answer: pending (after Phase 15).
+Blocks: Phase 16 · Options: A build it, B stop at the measurement · Why: P15 exists only if the report justifies it; the owner decides on seeing the numbers · Answer: **A, build it**, delegated by the owner ("o blockeado pode resolver como quiser", 2026-10-31). It is built but never runs on its own: it is queued only by the manual command `contacts:discover-named` (dry run by default, `--force` to apply), with no schedule, so the owner still runs the Phase 15 report first and chooses when to enable it.
 
 ### D16 — What is the retention rule for named contacts?
 
-Blocks: Phase 16 · Options: to be decided with the privacy policy (`landing-and-legal` P11) · Why: named contacts are personal data (P18) · Answer: pending.
+Blocks: Phase 16 · Options: to be decided with the privacy policy (`landing-and-legal` P11) · Why: named contacts are personal data (P18) · Answer: named contacts live 90 days from `checked_at`, delegated by the owner (2026-10-31). A daily `contacts:prune-named` deletes `named` contacts older than that and any whose address is now covered by the suppression list. A successful re-verification (re-checked after 30 days) renews `checked_at`; a person no longer verified simply ages out. Applications keep their own `recipient_*` snapshot, so deleting a contact never alters sent history. To be reconciled with the privacy policy (`landing-and-legal` P11) when it is written.
 
 ## Global constraints (every phase)
 
@@ -657,7 +657,8 @@ Origin: P14 "reports:named-contact-coverage {--sample=50} … Stop and show the 
 
 ### Phase 16 — Named contacts in production
 
-Status: BLOCKED (D15, D16)
+Status: DONE
+Evidence: with fakes (`SmtpProbe`, `CompanyPageFetcher`, `DnsLookup`, `ExtractCompanyPeople::fake`, stray HTTP blocked, all in a rolled-back transaction): a verified non-catch-all company got exactly one `named`/`smtp_verified` contact and `named_contacts_checked_at` was set; `SelectRecipientForPosting` preferred it over an alias-probe contact (tier B before C); a catch-all company got none and was never probed; an inconclusive probe stored nothing and left the timestamp null; a company checked 10 days ago was skipped and one checked 40 days ago was processed; suppressed domains and addresses stored nothing; `contacts:prune-named` removed a 100-day-old and a suppressed named contact and kept a 10-day-old one and the posting and alias contacts; `contacts:discover-named` dry run queued nothing, `--limit=abc` failed and `--force --limit=2` queued 2 jobs; the migration ran forward; `pint --dirty`, `composer types:check` (0 errors) and `--filter=Outreach` (31 tests) pass; the prune is scheduled daily. `code-reviewer` APPROVED in round 1 with no blocking findings. Notes: D15 = A and D16 = 90 days were decided by the owner's delegation (recorded under the decisions); the discovery command is manual and unscheduled, so nothing probes or stores named contacts until the owner runs `php artisan contacts:discover-named --force`; a company with no names, no unsuppressed candidates or a random address that is accepted is marked checked (not re-paid for 30 days); a broken or inconclusive session leaves it unmarked and retried on the next run; the `queued` count of the command can overstate when `ShouldBeUnique` drops a duplicate; the prune would throw on a null `checked_at` or a missing company (both non-null by schema); a malformed `source_contacts` entry would throw in the action; the real path (OpenAI, port 25, live pages) has not been run.
 Role: laravel-backend · Depends on: 15 · Covers: P15, P18 · Size: M
 Origin: P15 "Only if the owner approves after P14"; P18 privacy
 
@@ -673,7 +674,9 @@ Origin: P15 "Only if the owner approves after P14"; P18 privacy
 - Stored: `source = named`, `confidence = smtp_verified`, `email`, `local_part`, `person_name`, `person_title`, `checked_at`, and nothing else about the person (P18).
 - Roles: founder, CEO, CTO, head of engineering/people/talent, the hiring manager named in the posting.
 - Never store or send an unverified guess. No LinkedIn, no search engines (P16).
-- Retention: implement D16's rule (answer pending). Trigger and schedule: confirm with the owner together with D15.
+- Retention: D16 (answered): `contacts:prune-named`, scheduled daily, deletes `named` contacts with `checked_at` older than 90 days and any covered by `OutreachSuppressionList`.
+- Trigger: D15 (answered A): `contacts:discover-named {--limit=} {--force}`, dry run by default, queues `DiscoverNamedContacts` per eligible company; no schedule.
+- "Not checked within 30 days" needs a forward migration adding nullable `companies.named_contacts_checked_at` (D14), set whenever the job runs to completion for the company.
 
 **Steps.**
 

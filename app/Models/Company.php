@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable|null $domain_checked_at
  * @property ContactStatus $contact_status
  * @property CarbonImmutable|null $contact_checked_at
+ * @property CarbonImmutable|null $named_contacts_checked_at
  * @property bool|null $is_catch_all
  * @property OutreachStatus $outreach_status
  * @property CarbonImmutable|null $created_at
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Collection<int, Contact> $contacts
  * @property-read Collection<int, JobPosting> $jobPostings
  */
-#[Fillable(['name', 'normalized_name', 'domain', 'domain_status', 'domain_checked_at', 'contact_status', 'contact_checked_at', 'is_catch_all', 'outreach_status'])]
+#[Fillable(['name', 'normalized_name', 'domain', 'domain_status', 'domain_checked_at', 'contact_status', 'contact_checked_at', 'named_contacts_checked_at', 'is_catch_all', 'outreach_status'])]
 class Company extends Model
 {
     use BroadcastsRealtime;
@@ -63,6 +64,7 @@ class Company extends Model
             'outreach_status' => OutreachStatus::class,
             'domain_checked_at' => 'datetime',
             'contact_checked_at' => 'datetime',
+            'named_contacts_checked_at' => 'datetime',
         ];
     }
 
