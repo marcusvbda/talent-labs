@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Client;
 
+use App\Outreach\OutreachLimits;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,7 +23,7 @@ class PreviewProfileRequest extends FormRequest
         return [
             'subject' => ['nullable', 'string', 'max:200'],
             'body' => ['nullable', 'string', 'max:5000'],
-            'coverLetter' => ['nullable', 'string', 'max:6000'],
+            'coverLetter' => ['nullable', 'string', 'max:'.OutreachLimits::COVER_LETTER_MAX_CHARS],
             'links' => ['nullable', 'array', 'max:10'],
             'links.*' => ['array:label,url'],
             'links.*.label' => ['nullable', 'string', 'max:60'],

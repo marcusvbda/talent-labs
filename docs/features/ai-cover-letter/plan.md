@@ -36,7 +36,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | 1     | Plan capabilities                    | laravel-backend  | none       | P2                   | S    | DONE    |
 | 2     | Frontend accepts the Max plan        | inertia-frontend | none       | P5                   | M    | DONE    |
 | 3     | Max plan enabled                     | laravel-backend  | 1, 2       | P1, P3, P4, P5       | S    | DONE    |
-| 4     | Length limits and manual maximum     | laravel-backend  | none       | P11, P13             | S    | PENDING |
+| 4     | Length limits and manual maximum     | laravel-backend  | none       | P11, P13             | S    | DONE    |
 | 5     | AI usage per user and letter cache   | laravel-backend  | none       | P18, P20             | S    | PENDING |
 | 6     | Cover letter agent and validator     | laravel-backend  | 4          | P6-P9, P12, P14, P22 | M    | PENDING |
 | 7     | Letter job, quota, fallback, event   | laravel-backend  | 1, 5, 6    | P10, P15, P17-P20    | M    | PENDING |
@@ -200,7 +200,8 @@ Origin: P1, P3, P4, P5 (D6, D7)
 
 ### Phase 4 — Cover letters have one length limit
 
-Status: PENDING
+Status: DONE
+Evidence: `pint`, `composer types:check` (0 errors), `php artisan test --compact --filter=Outreach` (31 passed), `yarn run check` and `yarn types:check` pass; validator check: 800 characters accepted, 801 rejected on `coverLetter`, `UpdateApplicationProfileRequest` rule is `max:800`; code-reviewer APPROVED. Non-blocking: seeded cover letters in `database/seeders/data/client/state.php` (1275 and 1130 characters) are over the limit and fail validation only if saved again (D10, left as is).
 Role: laravel-backend · Depends on: none · Covers: P11, P12, P13 · Size: S
 Origin: P11, P13 (D9, D10)
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Client;
 
 use App\Outreach\Actions\CanSendApplications;
+use App\Outreach\OutreachLimits;
 use App\Outreach\Support\ApplicationTemplateRenderer;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -29,7 +30,7 @@ class UpdateApplicationProfileRequest extends FormRequest
             'coverLetter' => [
                 'nullable',
                 'string',
-                'max:6000',
+                'max:'.OutreachLimits::COVER_LETTER_MAX_CHARS,
                 $this->knownVariables(),
                 function (string $attribute, mixed $value, Closure $fail): void {
                     if (is_string($value) && ApplicationTemplateRenderer::containsCoverLetterVariable($value)) {

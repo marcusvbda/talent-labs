@@ -13,7 +13,7 @@ import type {
 const LANGUAGES: JobLanguage[] = ['en', 'pt'];
 const MAX_SUBJECT = 200;
 const MAX_BODY = 5000;
-const MAX_COVER_LETTER = 6000;
+const MAX_COVER_LETTER = 800;
 
 const MAX_CV_BYTES = 5 * 1024 * 1024;
 
