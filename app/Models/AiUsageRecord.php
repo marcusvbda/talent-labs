@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $agent
  * @property string $model
  * @property int|null $job_posting_id
+ * @property int|null $user_id
  * @property int $input_tokens
  * @property int $output_tokens
  * @property bool $cache_hit
@@ -21,8 +22,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read JobPosting|null $jobPosting
+ * @property-read User|null $user
  */
-#[Fillable(['agent', 'model', 'job_posting_id', 'input_tokens', 'output_tokens', 'cache_hit', 'duration_ms', 'status'])]
+#[Fillable(['agent', 'model', 'job_posting_id', 'user_id', 'input_tokens', 'output_tokens', 'cache_hit', 'duration_ms', 'status'])]
 class AiUsageRecord extends Model
 {
     /**
@@ -44,5 +46,13 @@ class AiUsageRecord extends Model
     public function jobPosting(): BelongsTo
     {
         return $this->belongsTo(JobPosting::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

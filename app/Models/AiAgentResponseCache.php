@@ -12,10 +12,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $model
  * @property string $request_hash
  * @property array<string, mixed> $response
+ * @property int|null $user_id
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['agent', 'model', 'request_hash', 'response'])]
+#[Fillable(['agent', 'model', 'request_hash', 'response', 'user_id'])]
 class AiAgentResponseCache extends Model
 {
     /**
@@ -50,7 +51,7 @@ class AiAgentResponseCache extends Model
      *
      * @param  array<string, mixed>  $response
      */
-    public static function remember(string $agent, string $model, string $fingerprint, array $response): void
+    public static function remember(string $agent, string $model, string $fingerprint, array $response, ?int $userId = null): void
     {
         static::query()->firstOrCreate([
             'agent' => $agent,
@@ -58,6 +59,24 @@ class AiAgentResponseCache extends Model
         ], [
             'model' => $model,
             'response' => $response,
+            'user_id' => $userId,
+        ]);
+    }
+
+    /**
+     * Persist an agent response, replacing any cached one for the same request (Regenerate).
+     *
+     * @param  array<string, mixed>  $response
+     */
+    public static function overwrite(string $agent, string $model, string $fingerprint, array $response, ?int $userId = null): void
+    {
+        static::query()->updateOrCreate([
+            'agent' => $agent,
+            'request_hash' => self::hash($model, $fingerprint),
+        ], [
+            'model' => $model,
+            'response' => $response,
+            'user_id' => $userId,
         ]);
     }
 

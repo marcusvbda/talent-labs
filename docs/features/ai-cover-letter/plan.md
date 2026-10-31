@@ -37,7 +37,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | 2     | Frontend accepts the Max plan        | inertia-frontend | none       | P5                   | M    | DONE    |
 | 3     | Max plan enabled                     | laravel-backend  | 1, 2       | P1, P3, P4, P5       | S    | DONE    |
 | 4     | Length limits and manual maximum     | laravel-backend  | none       | P11, P13             | S    | DONE    |
-| 5     | AI usage per user and letter cache   | laravel-backend  | none       | P18, P20             | S    | PENDING |
+| 5     | AI usage per user and letter cache   | laravel-backend  | none       | P18, P20             | S    | DONE    |
 | 6     | Cover letter agent and validator     | laravel-backend  | 4          | P6-P9, P12, P14, P22 | M    | PENDING |
 | 7     | Letter job, quota, fallback, event   | laravel-backend  | 1, 5, 6    | P10, P15, P17-P20    | M    | PENDING |
 | 8     | Draft AI state and generate endpoint | laravel-backend  | 7          | P10, P16-P19         | M    | PENDING |
@@ -230,7 +230,8 @@ Origin: P11, P13 (D9, D10)
 
 ### Phase 5 — AI usage and letters belong to a user
 
-Status: PENDING
+Status: DONE
+Evidence: forward migration `2026_10_31_000006` applied with `php artisan migrate`; `pint`, `composer types:check` (0 errors) and `php artisan test --compact --filter=Outreach` (31 passed) pass. In a rolled-back transaction: `remember` keeps the first value, `overwrite` replaces it (1 row), deleting the user removes their cache row and leaves the usage row with `user_id` NULL; nothing persisted after rollback. code-reviewer APPROVED. Note for phase 7: the cache key does not include the user, so the letter fingerprint must (it does, per the contract).
 Role: laravel-backend · Depends on: none · Covers: P18, P20 · Size: S
 Origin: P20 "`ai_usage_records.user_id` (nullable, forward migration)"; P18 cache
 
