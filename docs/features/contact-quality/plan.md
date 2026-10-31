@@ -42,7 +42,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 4 | Probe and record published emails | laravel-backend | 1, 3 | P5 | M | DONE |
 | 5 | Storage and AI gates accept tier A | laravel-backend | 4 | P6 | M | DONE |
 | 6 | Pool, recipient, cap, send checks, snapshot | laravel-backend | 5 | P6, P7, P7a, P8, P9 | M | DONE |
-| 7 | Tier ordering | laravel-backend | 6 | P10 | S | PENDING |
+| 7 | Tier ordering | laravel-backend | 6 | P10 | S | DONE |
 | 8 | Admin shows source and tier | filament-admin | 6 | P11 | S | PENDING |
 | 9 | Backfill command | laravel-backend | 4 | P13 | S | PENDING |
 | 10 | Suppression table and probe skip | laravel-backend | 4 | P18, P18a | M | PENDING |
@@ -346,7 +346,8 @@ Origin: P6 (pool); P7 recipient order; P7a daily cap; P8 send checks; P9 snapsho
 
 ### Phase 7 — Tier orders random sending and breaks match ties
 
-Status: PENDING
+Status: DONE
+Evidence: in a rolled-back transaction with a Free user and no preferences, ranks were `{A: 1, C: 3}`; under `sort=match` with equal scores tier A came before C; the default sort kept its newest-first order and did not select the rank; random sending with one slot queued the tier-A posting; with the cap set to 1 after that send, `sendableToday` dropped the capped tier-A posting for another user and kept the verified one; `JobCardResource` output has no rank or tier key (both resources build explicit arrays); `pint --dirty`, `composer types:check` (0 errors) and `--filter=Outreach` (31 tests) pass; `--filter=JobPool` matches no tests. `code-reviewer` APPROVED in round 1. Notes: the day bounds and status list in `uncappedTierASql()` are copied from `Application::countedToday` (PHPStan rejected embedding the scope), so they must change together; `withRecipientTierRank` and `sendableToday` each embed the tier-A subquery, which is fine for now.
 Role: laravel-backend · Depends on: 6 · Covers: P10 · Size: S
 Origin: P10 "random sending takes tier A, then B, then C, then match score"; D9
 

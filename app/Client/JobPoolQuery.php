@@ -18,7 +18,7 @@ final class JobPoolQuery
      * The client's job pool ({@see MatchingJobPostings}) narrowed by the Jobs screen filters,
      * every matching posting once (several postings of one company all show), each with its
      * {@see MatchScore} (`match_score`, `match_location_hit`). Newest first by default; best match
-     * first (ties newest first) with `sort=match`. The pool is a derived table aliased `job_postings`.
+     * first with `sort=match` (ties: better recipient tier, then newest first). The pool is a derived table aliased `job_postings`.
      *
      * @param  array{q?: string|null, language?: string|null, seniority?: array<array-key, mixed>|null, remote?: string|null, today?: bool|null, stack?: array<array-key, mixed>|null, sort?: string|null}  $filters
      * @return Builder<JobPosting>
@@ -29,11 +29,20 @@ final class JobPoolQuery
             ? PreferenceCriteria::fromPreference($user->jobPreference)
             : PreferenceCriteria::empty();
 
-        $pool = MatchScore::addSelects(self::filtered($user, $filters), $criteria);
+        $byMatch = ($filters['sort'] ?? null) === 'match';
+        $filtered = self::filtered($user, $filters);
+
+        if ($byMatch) {
+            MatchingJobPostings::withRecipientTierRank($filtered);
+        }
+
+        $pool = MatchScore::addSelects($filtered, $criteria);
         $query = JobPosting::query()->fromSub($pool, 'job_postings');
 
-        if (($filters['sort'] ?? null) === 'match') {
-            $query->orderByDesc('job_postings.match_score');
+        if ($byMatch) {
+            // Equal scores: better recipient tier first (internal only, never exposed).
+            $query->orderByDesc('job_postings.match_score')
+                ->orderBy('job_postings.recipient_tier_rank');
         }
 
         return $query

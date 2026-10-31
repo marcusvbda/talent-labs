@@ -2,8 +2,10 @@
 
 namespace App\Outreach\Actions;
 
+use App\Client\MatchScore;
 use App\Enums\ApplicationOrigin;
 use App\Models\User;
+use App\Outreach\Data\PreferenceCriteria;
 use App\Outreach\OutreachLimits;
 use App\Outreach\Queries\MatchingJobPostings;
 use App\Outreach\Support\QueueRejectionMessage;
@@ -21,7 +23,8 @@ class QueueRandomApplications
     ) {}
 
     /**
-     * Queue randomly chosen matching postings (fresh within the posting age window) until today's
+     * Queue matching postings that can still get a recipient today (fresh within the posting age window),
+     * best recipient tier first, then best match, random only as the final tie-break, until today's
      * remaining quota is used or the candidates run out. Random sends are recorded as manual and use
      * the profile templates for every plan. Each handle() commits its own transaction, so send slots
      * chain in order and broadcasts fire exactly as for hand-picked postings.
@@ -39,8 +42,18 @@ class QueueRandomApplications
             return ['queued' => $queued, 'rejected' => $rejected];
         }
 
-        $candidates = MatchingJobPostings::forUser($user)
+        $criteria = $user->jobPreference !== null
+            ? PreferenceCriteria::fromPreference($user->jobPreference)
+            : PreferenceCriteria::empty();
+
+        // Better recipients first, then best match; random only breaks ties so clients don't all get the same postings.
+        $candidates = MatchScore::addSelects(
+            MatchingJobPostings::sendableToday(MatchingJobPostings::withRecipientTierRank(MatchingJobPostings::forUser($user))),
+            $criteria,
+        )
             ->where('job_postings.first_seen_at', '>=', now()->subDays(OutreachLimits::MAX_POSTING_AGE_DAYS))
+            ->orderBy('recipient_tier_rank')
+            ->orderByDesc('match_score')
             ->inRandomOrder()
             ->limit($remaining * self::CANDIDATE_FACTOR)
             ->get();

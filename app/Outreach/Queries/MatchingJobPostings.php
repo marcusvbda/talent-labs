@@ -3,12 +3,14 @@
 namespace App\Outreach\Queries;
 
 use App\Collection\Support\PostingRestrictions;
+use App\Enums\ApplicationStatus;
 use App\Enums\ContactConfidence;
 use App\Enums\ContactSource;
 use App\Enums\OutreachStatus;
 use App\Enums\ProfileStatus;
 use App\Enums\RemoteMode;
 use App\Enums\RoleFamily;
+use App\Models\Application;
 use App\Models\ApplicationProfile;
 use App\Models\JobPosting;
 use App\Models\User;
@@ -190,6 +192,68 @@ final class MatchingJobPostings
         self::applyRoleProfile($query, $criteria);
 
         return $query;
+    }
+
+    /**
+     * Adds `recipient_tier_rank` to a {@see forUser()} query: 1 when the posting has an uncapped
+     * tier-A contact (published in this posting, not rejected, under today's
+     * talent.outreach.tier_a_daily_cap across all clients), 2 when the company is verified and
+     * has an smtp_verified named contact (tier B), otherwise 3. Internal ordering only, never
+     * exposed to clients.
+     *
+     * @param  Builder<JobPosting>  $query
+     * @return Builder<JobPosting>
+     */
+    public static function withRecipientTierRank(Builder $query): Builder
+    {
+        [$tierA, $tierABindings] = self::uncappedTierASql();
+
+        return $query->selectRaw(
+            'case when '.$tierA.' then 1 when companies.outreach_status = ? and exists (select 1 from contacts where contacts.company_id = job_postings.company_id and contacts.source = ? and contacts.confidence = ?) then 2 else 3 end as recipient_tier_rank',
+            [...$tierABindings, OutreachStatus::Verified->value, ContactSource::Named->value, ContactConfidence::SmtpVerified->value],
+        );
+    }
+
+    /**
+     * Keeps postings that can still get a recipient today: the company is verified for outreach
+     * (tiers B/C) or the posting has an uncapped tier-A contact. Postings whose only recipients
+     * are capped tier-A emails are dropped so they don't use up random-sending candidates.
+     *
+     * @param  Builder<JobPosting>  $query
+     * @return Builder<JobPosting>
+     */
+    public static function sendableToday(Builder $query): Builder
+    {
+        [$tierA, $tierABindings] = self::uncappedTierASql();
+
+        return $query->where(fn (Builder $group) => $group
+            ->where('companies.outreach_status', OutreachStatus::Verified->value)
+            ->orWhereRaw($tierA, $tierABindings));
+    }
+
+    /**
+     * An `exists` condition: the outer `job_postings` row has a tier-A contact (published in it,
+     * not rejected) whose address is still under talent.outreach.tier_a_daily_cap today across
+     * all clients, counted with the status list and day bounds of {@see Application::countedToday()}.
+     *
+     * @return array{literal-string, list<mixed>}
+     */
+    private static function uncappedTierASql(): array
+    {
+        $statuses = array_map(fn (ApplicationStatus $status): string => $status->value, ApplicationStatus::countedTowardsQuota());
+        $placeholders = implode(', ', array_fill(0, count($statuses), '?'));
+
+        return [
+            '(exists (select 1 from contacts where contacts.job_posting_id = job_postings.id and contacts.source = ? and contacts.confidence <> ? and (select count(*) from applications as a where a.recipient_email = contacts.email and a.status in ('.$placeholders.') and a.queued_at between ? and ?) < ?))',
+            [
+                ContactSource::Posting->value,
+                ContactConfidence::Rejected->value,
+                ...$statuses,
+                now()->startOfDay(),
+                now()->endOfDay(),
+                (int) config('talent.outreach.tier_a_daily_cap'),
+            ],
+        ];
     }
 
     /**
