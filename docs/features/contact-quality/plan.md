@@ -34,25 +34,25 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 
 ## Status board
 
-| Phase | Title                                               | Role             | Depends on             | Origin              | Size | Status  |
-| ----- | --------------------------------------------------- | ---------------- | ---------------------- | ------------------- | ---- | ------- |
-| 1     | Shared published-email extractor                    | laravel-backend  | none                   | P1, P2, P2a         | M    | DONE    |
-| 2     | Contact schema, sources and derived tiers           | laravel-backend  | none                   | P3, P4              | M    | DONE    |
-| 3     | Alias paths ignore posting contacts                 | laravel-backend  | 2                      | P4                  | S    | DONE    |
-| 4     | Probe and record published emails                   | laravel-backend  | 1, 3                   | P5                  | M    | DONE    |
-| 5     | Storage and AI gates accept tier A                  | laravel-backend  | 4                      | P6                  | M    | DONE    |
-| 6     | Pool, recipient, cap, send checks, snapshot         | laravel-backend  | 5                      | P6, P7, P7a, P8, P9 | M    | DONE    |
-| 7     | Tier ordering                                       | laravel-backend  | 6                      | P10                 | S    | DONE    |
-| 8     | Admin shows source and tier                         | filament-admin   | 6                      | P11                 | S    | DONE    |
-| 9     | Backfill command                                    | laravel-backend  | 4                      | P13                 | S    | DONE    |
-| 10    | Suppression table and probe skip                    | laravel-backend  | 4                      | P18, P18a           | M    | DONE    |
-| 11    | Suppression on queueing and sending                 | laravel-backend  | 6, 10                  | P18, P18a           | M    | DONE    |
-| 12    | Reply endpoint and tier report                      | laravel-backend  | 6                      | P12                 | M    | DONE    |
-| 13    | "I got a reply" client action                       | inertia-frontend | 12                     | P12                 | S    | DONE    |
-| 14    | Guarded company page fetcher                        | laravel-backend  | 10                     | P14, P16            | M    | DONE    |
-| 15    | Named-contact coverage report (stops for the owner) | laravel-backend  | 14                     | P14, P16, P18       | M    | DONE    |
-| 16    | Named contacts in production                        | laravel-backend  | 15                     | P15, P18            | M    | DONE    |
-| 17    | Verification and report                             | laravel-backend  | 1-15 (16 if unblocked) | spec x code gap     | S    | PENDING |
+| Phase | Title                                               | Role             | Depends on             | Origin              | Size | Status |
+| ----- | --------------------------------------------------- | ---------------- | ---------------------- | ------------------- | ---- | ------ |
+| 1     | Shared published-email extractor                    | laravel-backend  | none                   | P1, P2, P2a         | M    | DONE   |
+| 2     | Contact schema, sources and derived tiers           | laravel-backend  | none                   | P3, P4              | M    | DONE   |
+| 3     | Alias paths ignore posting contacts                 | laravel-backend  | 2                      | P4                  | S    | DONE   |
+| 4     | Probe and record published emails                   | laravel-backend  | 1, 3                   | P5                  | M    | DONE   |
+| 5     | Storage and AI gates accept tier A                  | laravel-backend  | 4                      | P6                  | M    | DONE   |
+| 6     | Pool, recipient, cap, send checks, snapshot         | laravel-backend  | 5                      | P6, P7, P7a, P8, P9 | M    | DONE   |
+| 7     | Tier ordering                                       | laravel-backend  | 6                      | P10                 | S    | DONE   |
+| 8     | Admin shows source and tier                         | filament-admin   | 6                      | P11                 | S    | DONE   |
+| 9     | Backfill command                                    | laravel-backend  | 4                      | P13                 | S    | DONE   |
+| 10    | Suppression table and probe skip                    | laravel-backend  | 4                      | P18, P18a           | M    | DONE   |
+| 11    | Suppression on queueing and sending                 | laravel-backend  | 6, 10                  | P18, P18a           | M    | DONE   |
+| 12    | Reply endpoint and tier report                      | laravel-backend  | 6                      | P12                 | M    | DONE   |
+| 13    | "I got a reply" client action                       | inertia-frontend | 12                     | P12                 | S    | DONE   |
+| 14    | Guarded company page fetcher                        | laravel-backend  | 10                     | P14, P16            | M    | DONE   |
+| 15    | Named-contact coverage report (stops for the owner) | laravel-backend  | 14                     | P14, P16, P18       | M    | DONE   |
+| 16    | Named contacts in production                        | laravel-backend  | 15                     | P15, P18            | M    | DONE   |
+| 17    | Verification and report                             | laravel-backend  | 1-15 (16 if unblocked) | spec x code gap     | S    | DONE   |
 
 ## Owner decisions
 
@@ -692,7 +692,8 @@ Origin: P15 "Only if the owner approves after P14"; P18 privacy
 
 ### Phase 17 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence: `composer ci:check` passes (frontend format/lint 261 files clean, `tsc --noEmit` clean, pint passed, PHPStan 0 errors, 33 tests passed); in the files changed by the plan there is no `->poll(`, `wire:poll`, `$pollingInterval` or Spanish copy; the only `linkedin.com` match in `app/` is the non-contact domain discard list in `HackerNewsAdapter`, with no scraping or search-engine fetch and no git write command in scripts; `recipient_tier`, `recipient_source`, `source_contacts` and `recipientTier` appear in none of the client resources, controllers, presenters or `resources/js` (the only match is the `recipient_tier_rank` order in `JobPoolQuery`, which is a sort, not an output). The requirement walkthrough: P1/P2/P2a `PublishedEmailExtractor`; P3/P4 `Contact::tier()` and the `000001` migration; P5 `VerifyPublishedEmails`/`SyncPublishedContacts`; P6 `MatchingJobPostings`/`JobPosting::hasSendableTierA()`; P7/P7a/P8/P9 `SelectRecipientForPosting`/`SendApplicationEmail`/`QueueApplication`; P10 `QueueRandomApplications`/`JobPoolQuery`; P11 Filament contacts, infolists and applications table; P12 `ApplicationsController::reply`/`TierPerformance`; P13 `contacts:extract-published`; P14 `CompanyPageFetcher`/`reports:named-contact-coverage`; P15 `DiscoverNamedContacts`; P16 constraint kept; P17 out of scope (D12); P18/P18a `OutreachSuppressionList`/`outreach_suppressions` and `contacts:prune-named`. The covered pending changes were folded into `spec.md` (only P17 remains pending); the owner's earlier uncommitted `spec.md` edits (the `/plan-feature` decisions D4-D14) are part of this commit. Reported without building: a bounce at send time does not mark a tier-A contact as bad for other clients; `reports:funnel` counts verified companies only; `landing-and-legal` P13 must reuse the `outreach_suppressions` table and checks built here; run `/update-feature-spec job-mining` for §2.4 and §2.8.
 Role: laravel-backend · Depends on: 1-15 (16 if unblocked) · Covers: all · Size: S
 Origin: spec x code gap (mandatory final phase)
 
