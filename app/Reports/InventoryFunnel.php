@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\DB;
  * }
  * @phpstan-type GlobalStock array{
  *     companies_by_outreach_status: array{pending: int, no_domain: int, not_verifiable: int, verified: int, total: int},
- *     contacts_by_confidence: array{smtp_verified: int, catch_all: int, mx_only: int, total: int},
+ *     contacts_by_confidence: array{smtp_verified: int, catch_all: int, mx_only: int, inconclusive: int, rejected: int, total: int},
  *     mx_only_share: float,
  *     port25_warning: bool
  * }
@@ -215,15 +215,21 @@ final class InventoryFunnel
             'catch_all' => (int) ($confidenceCounts[ContactConfidence::CatchAll->value] ?? 0),
             'mx_only' => (int) ($confidenceCounts[ContactConfidence::MxOnly->value] ?? 0),
         ];
-        $contacts['total'] = array_sum($contacts);
 
-        $mxOnlyShare = $contacts['total'] > 0 ? $contacts['mx_only'] / $contacts['total'] : 0.0;
+        // The port 25 signal keeps its original base: the share leaves out the inconclusive
+        // and rejected verdicts, which only published emails carry.
+        $aliasTotal = array_sum($contacts);
+        $mxOnlyShare = $aliasTotal > 0 ? $contacts['mx_only'] / $aliasTotal : 0.0;
+
+        $contacts['inconclusive'] = (int) ($confidenceCounts[ContactConfidence::Inconclusive->value] ?? 0);
+        $contacts['rejected'] = (int) ($confidenceCounts[ContactConfidence::Rejected->value] ?? 0);
+        $contacts['total'] = $aliasTotal + $contacts['inconclusive'] + $contacts['rejected'];
 
         return [
             'companies_by_outreach_status' => $companies,
             'contacts_by_confidence' => $contacts,
             'mx_only_share' => $mxOnlyShare,
-            'port25_warning' => $contacts['total'] > 0 && $mxOnlyShare > self::PORT25_MX_ONLY_THRESHOLD,
+            'port25_warning' => $aliasTotal > 0 && $mxOnlyShare > self::PORT25_MX_ONLY_THRESHOLD,
         ];
     }
 

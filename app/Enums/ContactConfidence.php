@@ -10,6 +10,8 @@ enum ContactConfidence: string implements HasColor, HasLabel
     case SmtpVerified = 'smtp_verified';
     case CatchAll = 'catch_all';
     case MxOnly = 'mx_only';
+    case Inconclusive = 'inconclusive';
+    case Rejected = 'rejected';
 
     public function getLabel(): string
     {
@@ -17,6 +19,8 @@ enum ContactConfidence: string implements HasColor, HasLabel
             self::SmtpVerified => 'SMTP verified',
             self::CatchAll => 'Catch-all',
             self::MxOnly => 'MX only',
+            self::Inconclusive => 'Inconclusive',
+            self::Rejected => 'Rejected',
         };
     }
 
@@ -26,6 +30,8 @@ enum ContactConfidence: string implements HasColor, HasLabel
             self::SmtpVerified => 'success',
             self::CatchAll => 'warning',
             self::MxOnly => 'info',
+            self::Inconclusive => 'gray',
+            self::Rejected => 'danger',
         };
     }
 }

@@ -3,14 +3,18 @@
 namespace App\Models;
 
 use App\Ai\Agents\ExtractJobPostingProfile;
+use App\Enums\ContactConfidence;
+use App\Enums\ContactSource;
 use App\Enums\ProfileStatus;
 use App\Enums\RoleFamily;
 use App\Support\AggregatorUrl;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
@@ -42,6 +46,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read JobPostingProfile|null $profile
+ * @property-read Collection<int, Contact> $contacts
  */
 #[Fillable(['source_id', 'collection_run_id', 'last_seen_run_id', 'external_id', 'title', 'company_name', 'location', 'is_remote', 'department', 'employment_type', 'role_family', 'ineligible_reason', 'restrictions', 'url', 'apply_url', 'company_website', 'source_contacts', 'description_html', 'description_text', 'published_at', 'raw', 'first_seen_at', 'last_seen_at'])]
 class JobPosting extends Model
@@ -105,6 +110,26 @@ class JobPosting extends Model
     public function profile(): HasOne
     {
         return $this->hasOne(JobPostingProfile::class);
+    }
+
+    /**
+     * @return HasMany<Contact, $this>
+     */
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class);
+    }
+
+    /**
+     * Whether an email published in this posting is still sendable (tier A): any posting
+     * contact whose verdict is not rejected.
+     */
+    public function hasSendableTierA(): bool
+    {
+        return $this->contacts()
+            ->where('source', ContactSource::Posting)
+            ->where('confidence', '!=', ContactConfidence::Rejected)
+            ->exists();
     }
 
     /**

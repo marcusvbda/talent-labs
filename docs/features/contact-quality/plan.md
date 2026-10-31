@@ -37,7 +37,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | Phase | Title | Role | Depends on | Origin | Size | Status |
 | ----- | ----- | ---- | ---------- | ------ | ---- | ------ |
 | 1 | Shared published-email extractor | laravel-backend | none | P1, P2, P2a | M | DONE |
-| 2 | Contact schema, sources and derived tiers | laravel-backend | none | P3, P4 | M | PENDING |
+| 2 | Contact schema, sources and derived tiers | laravel-backend | none | P3, P4 | M | DONE |
 | 3 | Alias paths ignore posting contacts | laravel-backend | 2 | P4 | S | PENDING |
 | 4 | Probe and record published emails | laravel-backend | 1, 3 | P5 | M | PENDING |
 | 5 | Storage and AI gates accept tier A | laravel-backend | 4 | P6 | M | PENDING |
@@ -142,7 +142,8 @@ Origin: P1 "Extract emails published in the posting for every source"; P2 discar
 
 ### Phase 2 — Contacts carry a source and a derived tier
 
-Status: PENDING
+Status: DONE
+Evidence: `php artisan migrate` ran; columns and the four partial unique indexes verified in `pg_indexes`; `reports:funnel` runs with the new rows; `pint --dirty`, `composer types:check` and the existing suite pass; `code-reviewer` APPROVED. Note: `down()` deletes non-`alias_probe` rows before restoring the old unique index (never run). Later phases must add source filters where `smtp_verified` is read without one (`InventoryFunnel` confidence counts, `MatchingJobPostings`, `SendApplicationEmail`, `BackfillOutreachStatus`).
 Role: laravel-backend · Depends on: none · Covers: P3, P4 · Size: M
 Origin: P3 "Contact tiers, per contact"; P4 "Data (forward migrations only)"
 
