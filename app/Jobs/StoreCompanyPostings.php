@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Actions\Collection\UpsertJobPostings;
 use App\Ai\Jobs\ExtractJobPostingProfileJob;
 use App\Contacts\Actions\RunCompanyDiscovery;
+use App\Contacts\Jobs\SyncPublishedContacts;
 use App\Models\Company;
 use App\Models\JobPosting;
 use App\Models\SourceRun;
@@ -140,5 +141,7 @@ class StoreCompanyPostings implements ShouldQueue
         } catch (BroadcastException $e) {
             report($e);
         }
+
+        SyncPublishedContacts::dispatchForPostings($sourceRun->source_id, $newExternalIds);
     }
 }

@@ -12,6 +12,7 @@ use App\Collection\Support\PublishedEmailExtractor;
 use App\Collection\Support\RoleClassifier;
 use App\Contacts\Actions\ResolveCompanyForPosting;
 use App\Contacts\Actions\RunCompanyDiscovery;
+use App\Contacts\Jobs\SyncPublishedContacts;
 use App\Enums\SourceContactKind;
 use App\Enums\SourceRunStatus;
 use App\Models\JobPosting;
@@ -74,6 +75,9 @@ class FetchJobsFromSource implements ShouldQueue
             /** @var array<string, list<array{item: JobPostingData, row: array<string, mixed>}>> $newByCompany */
             $newByCompany = [];
 
+            /** @var list<string> $knownExternalIds */
+            $knownExternalIds = [];
+
             foreach (array_chunk($items, self::CHUNK_SIZE, true) as $chunk) {
                 $existing = JobPosting::query()
                     ->where('source_id', $source->id)
@@ -89,6 +93,7 @@ class FetchJobsFromSource implements ShouldQueue
 
                     if (array_key_exists($item->externalId, $existing)) {
                         $existingRows[] = $row;
+                        $knownExternalIds[] = (string) $item->externalId;
 
                         continue;
                     }
@@ -185,6 +190,13 @@ class FetchJobsFromSource implements ShouldQueue
                     dispatch($job)->onQueue('collection');
                 }
             }
+        } catch (Throwable $e) {
+            report($e);
+        }
+
+        // Emails published in known postings and in postings stored for verified companies.
+        try {
+            SyncPublishedContacts::dispatchForPostings($source->id, [...$knownExternalIds, ...array_map('strval', $storedExternalIds)]);
         } catch (Throwable $e) {
             report($e);
         }

@@ -39,7 +39,7 @@ Out of scope by owner decision: P17. The local database is empty, so published-e
 | 1 | Shared published-email extractor | laravel-backend | none | P1, P2, P2a | M | DONE |
 | 2 | Contact schema, sources and derived tiers | laravel-backend | none | P3, P4 | M | DONE |
 | 3 | Alias paths ignore posting contacts | laravel-backend | 2 | P4 | S | DONE |
-| 4 | Probe and record published emails | laravel-backend | 1, 3 | P5 | M | PENDING |
+| 4 | Probe and record published emails | laravel-backend | 1, 3 | P5 | M | DONE |
 | 5 | Storage and AI gates accept tier A | laravel-backend | 4 | P6 | M | PENDING |
 | 6 | Pool, recipient, cap, send checks, snapshot | laravel-backend | 5 | P6, P7, P7a, P8, P9 | M | PENDING |
 | 7 | Tier ordering | laravel-backend | 6 | P10 | S | PENDING |
@@ -222,7 +222,8 @@ Origin: P4 (new contact source must not break alias behaviour)
 
 ### Phase 4 — Published emails are probed and recorded
 
-Status: PENDING
+Status: DONE
+Evidence: with a fake `SmtpProbe` and `DnsLookup` bound in the container (rolled-back transaction, no network) every D6 code mapping gave the expected verdict, a second call reused the stored verdict without probing, an eligible posting got its tier-A contact and a posting with `ineligible_reason` got none, and `dispatchForPostings` skipped ineligible and non-target postings and queued nothing once a posting contact existed; `pint --dirty`, `composer types:check` and the existing suite pass (`--filter=Collection` matches no tests); `code-reviewer` APPROVED. Notes for Phase 5: the dispatch for known postings does not require a verified company (within the contract; Phase 5 may gate it); known postings whose emails are all rejected are re-dispatched each run (cheap, unique lock 1h, verdicts reused for the TTL); emails skipped by the 25s budget are stored `Inconclusive` and reused for 30 days.
 Role: laravel-backend · Depends on: 1, 3 · Covers: P5 · Size: M
 Origin: P5 "A published email is probed with the existing SmtpProbe when possible"
 
