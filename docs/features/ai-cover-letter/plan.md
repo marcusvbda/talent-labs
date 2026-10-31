@@ -44,7 +44,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | 9     | Frontend contract, hook and realtime | inertia-frontend | 8          | P17, P21             | S    | DONE    |
 | 10    | Review screen shows the AI letter    | inertia-frontend | 9          | P16, P17, P19, P21   | M    | DONE    |
 | 11    | Profile hint and quota usage         | inertia-frontend | 9          | P10, P19             | S    | DONE    |
-| 12    | Verification and report              | laravel-backend  | 1-11       | spec x code gap      | S    | PENDING |
+| 12    | Verification and report              | laravel-backend  | 1-11       | spec x code gap      | S    | DONE    |
 
 ## Owner decisions
 
@@ -499,7 +499,40 @@ Origin: P10 "the profile screen shows a hint for AI-plan users"; P19 "the plans/
 
 ### Phase 12 — Verification and report
 
-Status: PENDING
+Status: DONE
+Evidence:
+- `composer ci:check` passed (`EXIT=0`): `vp check` (293 files formatted, no lint warnings), `tsc --noEmit`, `pint`, PHPStan 0 errors, `pest` 33 passed (1017 assertions). `yarn run check` and `yarn types:check` also re-run after the spec edit.
+- Forbidden patterns in the 47 files this plan changed: no `->poll(`, `wire:poll`, `$pollingInterval` or `refetchInterval`; no Spanish locale or copy; no git write commands.
+- Capability check: no `PlanKey::` in `app/Ai`, `ReviewDraftPresenter`, `ReviewCoverLetterController`, `GenerateCoverLetterRequest` or `CoverLetterUpdated`.
+- Privacy check: no `Log::`, `logger(`, `report(` or dump calls in the cover letter agent, job, support classes, event, controller or request. The only `report()` is the existing one in `DispatchesClientEvent` (broadcast best-effort, no AI text).
+- Client exposure: draft bodies and `cover_letter.updated` bodies come only from `ReviewDraftPresenter::bodyFor` (verified in phases 7 and 8: no real job URL, recipient, tier or source; the job link stays a `{{ job_url }}` token).
+- Spec: every pending item P1-P22 was the Origin of a phase, so all were folded into `spec.md` section 2.4 (and 2.1-2.3 edited where they changed); only the privacy policy half of P22 stays under `## Pending changes` (owned by `landing-and-legal`).
+
+Walkthrough (requirement: evidence file):
+- P1 Max plan: `app/Enums/PlanKey.php`, `config/talent.php` `plans.catalog.max`
+- P2 capabilities: `app/Plans/Plan.php`, `app/Plans/PlanCatalog.php`
+- P3 config and env: `config/talent.php` (prices, stripe_prices), `.env.example`
+- P4 enum and admin selects: `app/Enums/PlanKey.php` (Filament uses `PlanKey::class`)
+- P5 plans page and checkout: `resources/js/pages/plans.tsx`, `features/plans/plan-card.tsx`, `features/landing/*`; `BillingController` guard unchanged
+- P6 agent and config: `app/Ai/Agents/GenerateCoverLetter.php`, `config/talent.php` `ai.cover_letter`
+- P7 inputs: `GenerateCoverLetter::context()`
+- P8 schema: `GenerateCoverLetter::schema()`
+- P9 instructions: `GenerateCoverLetter::instructions()`
+- P10 only the slot is AI: `ReviewDraftPresenter::bodyFor`, `CoverLetterEligibility`, `resources/js/features/profiles/profile-form.tsx` hint
+- P11 constants: `app/Outreach/OutreachLimits.php`
+- P12 three layers: schema `max`, `instructions()`, `CoverLetterValidator`
+- P13 manual letter maximum: `UpdateApplicationProfileRequest`, `PreviewProfileRequest`
+- P14 validation: `app/Ai/Support/CoverLetterValidator.php`
+- P15 retry and fallback: `app/Ai/Jobs/GenerateCoverLetterJob.php`
+- P16 on demand: `ReviewCoverLetterController`, trigger in `resources/js/features/review/review-modal.tsx`
+- P17 asynchronous: `GenerateCoverLetterJob`, `app/Events/Client/CoverLetterUpdated.php`, `review-modal.tsx`
+- P18 cache and Regenerate: `CoverLetterFingerprint`, `AiAgentResponseCache::overwrite`
+- P19 monthly quota: `CoverLetterQuota`, `ai-letter-bar.tsx`, `plans.tsx` usage line
+- P20 usage per user: `database/migrations/2026_10_31_000006_*`, `AiUsageRecord`
+- P21 review screen: `ai-letter-bar.tsx`, `review-modal.tsx`
+- P22 privacy: no logging (greps above); policy text pending in `landing-and-legal`
+
+Not verified at runtime: the browser flows of phases 2, 10 and 11 (fixtures mode), and the real provider call (no `OPENAI_API_KEY` run). Phases 7 and 8 were exercised against the dev database in rolled-back transactions with a faked agent.
 Role: laravel-backend · Depends on: 1-11 · Covers: all · Size: S
 Origin: spec x code gap (mandatory final phase)
 
