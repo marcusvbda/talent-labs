@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
 import type { ApiError } from '@/data/api';
 import { useCheckout, usePortal } from '@/data/hooks/use-billing';
+import { useAccountStatus } from '@/data/hooks/use-account-status';
 import { usePlans } from '@/data/hooks/use-plans';
 import { PlanCard } from '@/features/plans/plan-card';
 import type { PlanCta } from '@/features/plans/plan-card';
@@ -52,6 +53,7 @@ export default function Plans() {
     const [region, setRegion] = useState<RegionKey | undefined>();
     const [contactOpen, setContactOpen] = useState(false);
     const { data, isError, refetch } = usePlans(region);
+    const aiWriting = useAccountStatus().data?.aiWriting ?? null;
     const checkout = useCheckout();
     const portal = usePortal();
     const [pendingPlan, setPendingPlan] = useState<PlanKey | null>(null);
@@ -131,6 +133,14 @@ export default function Plans() {
                     ) : undefined
                 }
             />
+            {aiWriting && (
+                <p className="text-label-sm text-muted">
+                    {t('plans.ai.usage', {
+                        used: aiWriting.used,
+                        limit: aiWriting.limit,
+                    })}
+                </p>
+            )}
             {isError ? (
                 <Card tone="light">
                     <ErrorState onRetry={() => void refetch()} />

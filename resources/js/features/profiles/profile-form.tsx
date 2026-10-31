@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useAccountStatus } from '@/data/hooks/use-account-status';
 import { useT } from '@/i18n/i18n-provider';
 import { CvCard } from '@/features/profiles/cv-card';
 import { LinksField, linkRowState } from '@/features/profiles/links-field';
@@ -36,6 +37,8 @@ export const isDirty = (profile: ApplicationProfile, draft: ProfileDraft) =>
 
 type TemplateField = 'subject' | 'body';
 
+const COVER_LETTER_VARIABLE = /\{\{\s*cover_letter\s*\}\}/;
+
 export const ProfileForm = ({
     profile,
     draft,
@@ -61,6 +64,7 @@ export const ProfileForm = ({
     const [confirmingDelete, setConfirmingDelete] = useState(false);
     const subjectRef = useRef<HTMLInputElement>(null);
     const bodyRef = useRef<HTMLTextAreaElement>(null);
+    const aiWriting = useAccountStatus().data?.aiWriting ?? null;
     const focused = useRef<TemplateField>('body');
 
     // Inserts at the caret (or replaces the selection) of the last focused
@@ -152,6 +156,13 @@ export const ProfileForm = ({
                     />
                 )}
             </Field>
+            {aiWriting &&
+                (!COVER_LETTER_VARIABLE.test(draft.body) ||
+                    draft.coverLetter.trim() === '') && (
+                    <p className="text-chip text-muted">
+                        {t('profiles.ai.hint')}
+                    </p>
+                )}
             <LinksField
                 links={draft.links}
                 onChange={(links) => onDraftChange({ ...draft, links })}

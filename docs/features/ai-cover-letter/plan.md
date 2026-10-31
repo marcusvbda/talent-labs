@@ -43,7 +43,7 @@ Flagged, not planned: spec §2.3 is outdated (it says one agent and verified com
 | 8     | Draft AI state and generate endpoint | laravel-backend  | 7          | P10, P16-P19         | M    | DONE    |
 | 9     | Frontend contract, hook and realtime | inertia-frontend | 8          | P17, P21             | S    | DONE    |
 | 10    | Review screen shows the AI letter    | inertia-frontend | 9          | P16, P17, P19, P21   | M    | DONE    |
-| 11    | Profile hint and quota usage         | inertia-frontend | 9          | P10, P19             | S    | PENDING |
+| 11    | Profile hint and quota usage         | inertia-frontend | 9          | P10, P19             | S    | DONE    |
 | 12    | Verification and report              | laravel-backend  | 1-11       | spec x code gap      | S    | PENDING |
 
 ## Owner decisions
@@ -470,7 +470,8 @@ Origin: P16 (D15), P17, P19, P21 (D16, D17)
 
 ### Phase 11 — Clients see the slot hint and their usage
 
-Status: PENDING
+Status: DONE
+Evidence: `yarn run check` and `yarn types:check` pass; both lang files are valid JSON with the EN and PT copy from the contract; code-reviewer APPROVED (regex allows any inner whitespace; the `{{ cover_letter }}` text inside a translated string stays literal; plans without AI show neither element). Not opened in a browser: the hint and the usage line were checked by reading the code and the fixture account status (`aiWriting` is set for plan `max` only).
 Role: inertia-frontend · Depends on: 9 · Covers: P10, P19 · Size: S
 Origin: P10 "the profile screen shows a hint for AI-plan users"; P19 "the plans/account screen shows usage"
 
